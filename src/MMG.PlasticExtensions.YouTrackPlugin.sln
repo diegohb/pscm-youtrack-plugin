@@ -1,0 +1,26 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2012
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MMG.PlasticExtensions.YouTrackPlugin", "MMG.PlasticExtensions.YouTrackPlugin\MMG.PlasticExtensions.YouTrackPlugin.csproj", "{B9AD489C-9657-4B06-86CB-2D148F0DCB65}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MMG.PlasticExtensions.Tests", "MMG.PlasticExtensions.Tests\MMG.PlasticExtensions.Tests.csproj", "{ADA50EA5-58D0-4D49-96F2-B12ACDAEB914}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{B9AD489C-9657-4B06-86CB-2D148F0DCB65}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B9AD489C-9657-4B06-86CB-2D148F0DCB65}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B9AD489C-9657-4B06-86CB-2D148F0DCB65}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B9AD489C-9657-4B06-86CB-2D148F0DCB65}.Release|Any CPU.Build.0 = Release|Any CPU
+		{ADA50EA5-58D0-4D49-96F2-B12ACDAEB914}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{ADA50EA5-58D0-4D49-96F2-B12ACDAEB914}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{ADA50EA5-58D0-4D49-96F2-B12ACDAEB914}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{ADA50EA5-58D0-4D49-96F2-B12ACDAEB914}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
