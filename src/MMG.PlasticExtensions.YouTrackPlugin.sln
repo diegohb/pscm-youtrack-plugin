@@ -2,10 +2,22 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2012
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MMG.PlasticExtensions.YouTrackPlugin", "MMG.PlasticExtensions.YouTrackPlugin\MMG.PlasticExtensions.YouTrackPlugin.csproj", "{B9AD489C-9657-4B06-86CB-2D148F0DCB65}"
+	GlobalSection(PlasticSccProperties) = preSolution
+		ControlledByPlastic = True
+		SccProvider = Plastic SCM
+	EndGlobalSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MMG.PlasticExtensions.Tests", "MMG.PlasticExtensions.Tests\MMG.PlasticExtensions.Tests.csproj", "{ADA50EA5-58D0-4D49-96F2-B12ACDAEB914}"
+	GlobalSection(PlasticSccProperties) = preSolution
+		ControlledByPlastic = True
+		SccProvider = Plastic SCM
+	EndGlobalSection
 EndProject
 Global
+	GlobalSection(PlasticSccProperties) = preSolution
+		ControlledByPlastic = True
+		SccProvider = Plastic SCM
+	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Release|Any CPU = Release|Any CPU
