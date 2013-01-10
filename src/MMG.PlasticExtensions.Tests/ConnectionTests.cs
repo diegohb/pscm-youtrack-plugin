@@ -23,13 +23,13 @@ namespace MMG.Plastic_Extensions.Tests
         {
             string issue;
             using (var client = new WebClient()) {
-                var result = client.UploadString("http://localhost:712/rest/user/login?login=developer&password=password", "POST", "");
+                var result = client.UploadString("http://issues.ketchum.com/rest/user/login?login=dbustamante&password=cocoliso", "POST", "");
                 Assert.AreEqual(@"<login>ok</login>", result);
                 var authCookies = client.ResponseHeaders.Get("Set-Cookie");
                 client.Headers.Add("Cookie", authCookies);
                 try
                 {
-                    issue = client.DownloadString(string.Format("http://localhost:712/rest/issue/{0}", "SAMPLEDEPLOY-2"));
+                    issue = client.DownloadString(string.Format("http://issues.ketchum.com/rest/issue/{0}", "SAMPLEDEPLOY-2"));
                     Assert.IsNotEmpty(issue);
                     Console.WriteLine(issue);
                     var xmlDoc = new XmlDocument();
