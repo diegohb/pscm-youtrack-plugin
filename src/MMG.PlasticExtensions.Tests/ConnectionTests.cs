@@ -29,12 +29,12 @@ namespace MMG.Plastic_Extensions.Tests
                 client.Headers.Add("Cookie", authCookies);
                 try
                 {
-                    issue = client.DownloadString(string.Format("http://issues.ketchum.com/rest/issue/{0}", "SAMPLEDEPLOY-2"));
+                http://issues.ketchum.com/issue/SFW-1
+                    issue = client.DownloadString(string.Format("http://issues.ketchum.com/rest/issue/{0}", "SFW-1"));
                     Assert.IsNotEmpty(issue);
-                    Console.WriteLine(issue);
                     var xmlDoc = new XmlDocument();
                     xmlDoc.LoadXml(issue);
-                    Console.WriteLine("Assignee: " + xmlDoc.SelectSingleNode(string.Format("//field[@name='{0}']/value", "Assignee")).InnerText);
+                    Console.WriteLine("{0}: " + xmlDoc.SelectSingleNode(string.Format("//field[@name='{0}']/value", "reporterName")).InnerText);
 
                 }
                 catch (WebException e)
