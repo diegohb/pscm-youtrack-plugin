@@ -6,9 +6,7 @@
 
 using System;
 using System.Collections.Generic;
-using System.Net;
 using System.Web;
-using System.Xml;
 using Codice.Client.Extension;
 
 using log4net;
@@ -56,7 +54,8 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
         public override void OpenTask(string id, string repName)
         {
             _log.DebugFormat("YouTrackExtension: Open task '{0}'", id);
-            System.Diagnostics.Process.Start(string.Format("http://{0}:{1}/issue/{2}", _config.Host, _config.Port, id));
+            
+            System.Diagnostics.Process.Start(string.Format("{0}/issue/{1}", _handler.GetBaseURL(), id));
         }
 
         public override PlasticTask[] LoadTask(string[] pTaskIDs, string pRepoName)
@@ -90,66 +89,6 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
                    && pTaskFullName.StartsWith(_config.BranchPrefix, StringComparison.InvariantCultureIgnoreCase)
                        ? pTaskFullName.Substring(_config.BranchPrefix.Length)
                        : pTaskFullName;
-        }
-    }
-
-    internal class YouTrackHandler
-    {
-        private static readonly ILog _log = LogManager.GetLogger("extensions");
-        private readonly YouTrackExtensionConfiguration _config;
-        private string _authData;
-
-        public YouTrackHandler(YouTrackExtensionConfiguration pConfig)
-        {
-            _config = pConfig;
-            using (var client = new WebClient())
-            {
-                var requestURL = string.Format
-                    ("http://{0}:{1}/rest/user/login?login={2}&password={3}", _config.Host, _config.Port, _config.Username, _config.Password);
-                try
-                {
-                    var result = client.UploadString(requestURL, "POST", "");
-                    if (result == @"<login>ok</login>")
-                        _authData = client.ResponseHeaders.Get("Set-Cookie");
-                }
-                catch (WebException exWeb)
-                {
-                    _log.Error(string.Format("Failed to authenticate using request '{0}'.", requestURL), exWeb);
-                }
-            }
-        }
-
-        public PlasticTask GetPlasticTaskFromTaskID(string pTaskID)
-        {
-            _log.DebugFormat("YouTrackHandler: GetPlasticTaskFromTaskID {0}", pTaskID);
-            var result = new PlasticTask { Id = pTaskID };
-            using (var client = new WebClient())
-            {
-                var requestURL = string.Format("http://{0}:{1}/rest/issue/{2}", _config.Host, _config.Port, pTaskID);
-                client.Headers.Add("Cookie", _authData);
-                try
-                {
-                    var xml = client.DownloadString(requestURL);
-                    var xmlDoc = new XmlDocument();
-                    xmlDoc.LoadXml(xml);
-                    result.Owner = getTextFromXPathElement(xmlDoc, "Assignee");
-                    result.Status = getTextFromXPathElement(xmlDoc, "State");
-                    result.Title = getTextFromXPathElement(xmlDoc, "summary");
-                    result.Description = getTextFromXPathElement(xmlDoc, "description");
-                }
-                catch (System.Net.WebException exWeb)
-                {
-                    _log.WarnFormat("YouTrackHandler: Failed to find youtrack issue '{0}' due to {1}", pTaskID, exWeb);
-                }
-
-            }
-            return result;
-        }
-
-        private static string getTextFromXPathElement(XmlDocument pXMLDoc, string pFieldName)
-        {
-            var node = pXMLDoc.SelectSingleNode(string.Format("//field[@name='{0}']/value", pFieldName));
-            return node != null ? node.InnerText : string.Empty;
         }
     }
 }

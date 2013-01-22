@@ -1,6 +1,6 @@
 ﻿// *************************************************
 // MMG.PlasticExtensions.YouTrackPlugin.YouTrackExtensionConfiguration.cs
-// Last Modified: 11/05/2012 11:29 AM
+// Last Modified: 01/21/2013 9:53 PM
 // Modified By: Bustamante, Diego (bustamd1)
 // *************************************************
 
@@ -11,8 +11,9 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
     public class YouTrackExtensionConfiguration : BaseExtensionConfiguration
     {
         public string Host = "";
-        public int Port = 80;
+        public int? CustomPort = null;
         public string Username = "";
         public string Password = "";
+        public bool UseSSL = false;
     }
 }
