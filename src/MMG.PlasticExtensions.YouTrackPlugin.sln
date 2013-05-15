@@ -13,6 +13,16 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MMG.PlasticExtensions.Tests
 		SccProvider = Plastic SCM
 	EndGlobalSection
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{703B0CD8-4A8A-4FBA-8E72-01B2B4386D90}"
+	GlobalSection(PlasticSccProperties) = preSolution
+		ControlledByPlastic = True
+		SccProvider = Plastic SCM
+	EndGlobalSection
+	ProjectSection(SolutionItems) = preProject
+		.nuget\NuGet.Config = .nuget\NuGet.Config
+		.nuget\NuGet.targets = .nuget\NuGet.targets
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(PlasticSccProperties) = preSolution
 		ControlledByPlastic = True
