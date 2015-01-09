@@ -1,6 +1,8 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2012
+# Visual Studio 2013
+VisualStudioVersion = 12.0.31101.0
+MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MMG.PlasticExtensions.YouTrackPlugin", "MMG.PlasticExtensions.YouTrackPlugin\MMG.PlasticExtensions.YouTrackPlugin.csproj", "{B9AD489C-9657-4B06-86CB-2D148F0DCB65}"
 	GlobalSection(PlasticSccProperties) = preSolution
 		ControlledByPlastic = True
@@ -24,6 +26,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{703B0C
 	EndProjectSection
 EndProject
 Global
+	GlobalSection(CodealikeProperties) = postSolution
+		SolutionGuid = c57218d6-c18d-48a2-8465-d9d762bad98b
+	EndGlobalSection
 	GlobalSection(PlasticSccProperties) = preSolution
 		ControlledByPlastic = True
 		SccProvider = Plastic SCM
