@@ -52,6 +52,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Caching\ExpirableItem.cs" />
+    <Compile Include="Caching\ExpirableItemDictionary.cs" />
+    <Compile Include="Caching\ExpirableItemRemovedEventArgs.cs" />
     <Compile Include="YouTrackExtension.cs" />
     <Compile Include="YouTrackExtensionConfiguration.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
