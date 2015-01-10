@@ -1,17 +1,19 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading;
-using ExpirableDictionary;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿// *************************************************
+// MMG.PlasticExtensions.Tests.ExpirableDictionaryTest.cs
+// Last Modified: 01/10/2015 3:15 PM
+// Modified By: Bustamante, Diego (bustamd1)
+// *************************************************
 
 namespace ExpirableDictionaryTests
 {
-    [TestClass]
+    using System;
+    using System.Threading;
+    using NUnit.Framework;
+
+    [TestFixture]
     public class ExpirableDictionaryTest
     {
-        [TestMethod]
+        [Test]
         public void DictionaryExpiresStaleItems()
         {
             using (var dictionary = new ExpirableItemDictionary<string, object>())
@@ -23,7 +25,7 @@ namespace ExpirableDictionaryTests
             }
         }
 
-        [TestMethod]
+        [Test]
         public void DictionaryDoesNotExpiredNonStaleItems()
         {
             using (var dictionary = new ExpirableItemDictionary<string, object>())
@@ -34,7 +36,7 @@ namespace ExpirableDictionaryTests
             }
         }
 
-        [TestMethod]
+        [Test]
         public void DictionaryRaisesExpirationEvent()
         {
             using (var dictionary = new ExpirableItemDictionary<string, object>())
@@ -48,11 +50,11 @@ namespace ExpirableDictionaryTests
                 string eventKey = null;
                 object eventValue = null;
                 dictionary.ItemExpired += (s, e) =>
-                                              {
-                                                  sender = s;
-                                                  eventKey = e.Key;
-                                                  eventValue = e.Value;
-                                              };
+                {
+                    sender = s;
+                    eventKey = e.Key;
+                    eventValue = e.Value;
+                };
                 Thread.Sleep(51);
                 dictionary.ClearExpiredItems();
                 Assert.AreSame(sender, dictionary);
@@ -61,7 +63,7 @@ namespace ExpirableDictionaryTests
             }
         }
 
-        [TestMethod]
+        [Test]
         public void DictionaryAutoExpiresItems()
         {
             using (var dictionary = new ExpirableItemDictionary<string, object>())
@@ -76,11 +78,11 @@ namespace ExpirableDictionaryTests
                 string eventKey = null;
                 object eventValue = null;
                 dictionary.ItemExpired += (s, e) =>
-                                              {
-                                                  sender = s;
-                                                  eventKey = e.Key;
-                                                  eventValue = e.Value;
-                                              };
+                {
+                    sender = s;
+                    eventKey = e.Key;
+                    eventValue = e.Value;
+                };
                 Thread.Sleep(351);
                 Assert.AreSame(sender, dictionary);
                 Assert.AreEqual(eventKey, key);
