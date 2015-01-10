@@ -389,8 +389,11 @@ namespace ExpirableDictionary
         {
             lock (lockObject)
             {
-                List<KeyValuePair<K, ExpirableItem<T>>> removeList
-                    = ExpirableItems.Where(kvp => kvp.Value.HasExpired).ToList();
+                var removeList = new List<KeyValuePair<K, ExpirableItem<T>>>();
+
+                foreach (var expirableItem in ExpirableItems)
+                    if (expirableItem.Value.HasExpired)
+                        removeList.Add(expirableItem);
 
                 removeList.ForEach
                     (kvp =>
@@ -418,7 +421,7 @@ namespace ExpirableDictionary
             lock (lockObject)
             {
                 ClearExpiredItems();
-                var ret = ExpirableItems.ToDictionary(kvp => kvp.Key, kvp => kvp.Value.Value);
+                var ret = ExpirableItems;
                 return ret.GetEnumerator();
             }
         }
