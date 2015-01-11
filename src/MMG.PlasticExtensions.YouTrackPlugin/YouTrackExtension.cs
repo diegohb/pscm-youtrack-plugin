@@ -15,7 +15,6 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
     public class YouTrackExtension : BasePlasticExtension
     {
         private static readonly ILog _log = LogManager.GetLogger("extensions");
-        private readonly YouTrackExtensionConfiguration _config;
         private const string configFile = "youtrackextension.conf";
         private readonly YouTrackHandler _handler;
 
@@ -24,21 +23,22 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
             try
             {
                 bool bSuccess;
-                _config =
+                var config =
                     (YouTrackExtensionConfiguration) ExtensionServices.LoadConfig(configFile, typeof (YouTrackExtensionConfiguration), out bSuccess);
                 if (!bSuccess)
                 {
                     _log.WarnFormat
                         ("YouTrackExtension: Unable to load configuration file: {0}", configFile);
-                    _config = new YouTrackExtensionConfiguration();
+                    config = new YouTrackExtensionConfiguration();
                 }
                 else
                 {
-                    _config.SetDefaultAttributePrefix("yt");
-                    mBaseConfig = this._config;
-                    _handler = new YouTrackHandler(_config);
+                    config.SetDefaultAttributePrefix("yt");
+                    _handler = new YouTrackHandler(config);
                     _log.InfoFormat("YouTrackExtension: Successfully loaded configuration file: {0}", configFile);
                 }
+                
+                mBaseConfig = config;
             }
             catch (Exception ex)
             {
@@ -67,7 +67,8 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
             var result = new List<PlasticTask>();
             foreach (var taskID in pTaskIDs)
             {
-                result.Add(_handler.GetPlasticTaskFromTaskID(taskID));
+                if (taskID.ToLower().StartsWith(GetBranchPrefix(pRepoName)))
+                    result.Add(_handler.GetPlasticTaskFromTaskID(taskID));
             }
             return result.ToArray();
         }
@@ -85,9 +86,9 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
 
         private string getTaskNameWithoutBranchPrefix(string pTaskFullName)
         {
-            return !string.IsNullOrEmpty(_config.BranchPrefix)
-                   && pTaskFullName.StartsWith(_config.BranchPrefix, StringComparison.InvariantCultureIgnoreCase)
-                ? pTaskFullName.Substring(_config.BranchPrefix.Length)
+            return !string.IsNullOrEmpty(mBaseConfig.BranchPrefix)
+                   && pTaskFullName.StartsWith(mBaseConfig.BranchPrefix, StringComparison.InvariantCultureIgnoreCase)
+                ? pTaskFullName.Substring(mBaseConfig.BranchPrefix.Length)
                 : pTaskFullName;
         }
     }
