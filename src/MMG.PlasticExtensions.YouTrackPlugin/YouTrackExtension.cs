@@ -60,10 +60,10 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
 
         public override PlasticTask[] LoadTask(string[] pTaskIDs, string pRepoName)
         {
-            _log.DebugFormat("YouTrackExtension: Load tasks {0}", string.Join(",", pTaskIDs));
-            if (pTaskIDs[0] == null || pTaskIDs[0] == String.Empty)
-                return null;
+            if (pTaskIDs.Length == 0 || string.IsNullOrEmpty(pTaskIDs[0]))
+                return default (PlasticTask[]);
 
+            _log.DebugFormat("YouTrackExtension: Load tasks {0}", string.Join(",", pTaskIDs));
             var result = new List<PlasticTask>();
             foreach (var taskID in pTaskIDs)
             {
