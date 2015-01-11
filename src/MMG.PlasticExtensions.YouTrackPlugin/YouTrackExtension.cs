@@ -67,15 +67,19 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
             var result = new List<PlasticTask>();
             foreach (var taskID in pTaskIDs)
             {
-                if (taskID.ToLower().StartsWith(GetBranchPrefix(pRepoName)))
-                    result.Add(_handler.GetPlasticTaskFromTaskID(taskID));
+                if (!taskID.ToLower().StartsWith(GetBranchPrefix(pRepoName)))
+                    continue;
+
+                var taskIDWithoutPrefix = getTaskNameWithoutBranchPrefix(taskID);
+                var plasticTask = _handler.GetPlasticTaskFromTaskID(taskIDWithoutPrefix);
+                result.Add(plasticTask);
             }
             return result.ToArray();
         }
 
         public override string GetTaskIdForBranch(string pFullBranchName, string repName)
         {
-            return getTaskNameWithoutBranchPrefix(ExtensionServices.GetTaskNameFromBranch(pFullBranchName));
+            return ExtensionServices.GetTaskNameFromBranch(pFullBranchName);
         }
 
         public override PlasticTaskConfiguration[] GetTaskConfiguration(string task)
