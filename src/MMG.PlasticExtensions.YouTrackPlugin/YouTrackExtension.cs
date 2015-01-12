@@ -67,11 +67,12 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
             var result = new List<PlasticTask>();
             foreach (var taskID in pTaskIDs)
             {
-                if (!taskID.ToLower().StartsWith(GetBranchPrefix(pRepoName)))
-                    continue;
-
-                var taskIDWithoutPrefix = getTaskNameWithoutBranchPrefix(taskID);
-                var plasticTask = _handler.GetPlasticTaskFromTaskID(taskIDWithoutPrefix);
+                var plasticTask = default (PlasticTask); //add an empty plastictask so that array result matches order of task IDs passed in.
+                if (taskID.ToLower().StartsWith(GetBranchPrefix(pRepoName)))
+                {
+                    var taskIDWithoutPrefix = getTaskNameWithoutBranchPrefix(taskID);
+                    plasticTask = _handler.GetPlasticTaskFromTaskID(taskIDWithoutPrefix);
+                }
                 result.Add(plasticTask);
             }
             return result.ToArray();
