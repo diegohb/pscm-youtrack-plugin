@@ -11,6 +11,9 @@ using log4net;
 
 namespace MMG.PlasticExtensions.YouTrackPlugin
 {
+    using System.Collections;
+    using System.Collections.Generic;
+
     internal class YouTrackHandler
     {
         private static readonly ILog _log = LogManager.GetLogger("extensions");
@@ -38,8 +41,9 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
                     var xmlDoc = new XmlDocument();
                     xmlDoc.LoadXml(xml);
                     result.Owner = getTextFromXPathElement(xmlDoc, "Assignee");
-                    result.Status = getTextFromXPathElement(xmlDoc, "State");
-                    result.Title = getTextFromXPathElement(xmlDoc, "summary");
+                    var issueState = getTextFromXPathElement(xmlDoc, "State");
+                    result.Status = issueState;
+                    result.Title = getBranchTitle(issueState, getTextFromXPathElement(xmlDoc, "summary"));
                     result.Description = getTextFromXPathElement(xmlDoc, "description");
                 }
                 catch (WebException exWeb)
@@ -68,6 +72,23 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
         }
 
         #region Support Methods
+
+        private string getBranchTitle(string pIssueState, string pIssueSummary)
+        {
+            //if feature is disabled, return ticket summary.
+            if(!_config.ShowIssueStateInBranchTitle)
+                return pIssueSummary;
+
+            //if feature is enabled but no states are ignored, return default format.
+            if (string.IsNullOrEmpty(_config.IgnoreIssueStateForBranchTitle.Trim())) 
+                return string.Format("{0} [{1}]", pIssueSummary, pIssueState);
+
+            //otherwise, consider the ignore list.
+            var ignoreStates = new ArrayList(_config.IgnoreIssueStateForBranchTitle.Trim().Split(','));
+            return ignoreStates.Contains(pIssueState)
+                ? pIssueSummary
+                : string.Format("{0} [{1}]", pIssueSummary, pIssueState);
+        }
 
         private static string getTextFromXPathElement(XmlDocument pXMLDoc, string pFieldName)
         {

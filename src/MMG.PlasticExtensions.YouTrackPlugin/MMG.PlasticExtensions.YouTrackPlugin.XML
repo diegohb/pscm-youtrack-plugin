@@ -4,5 +4,11 @@
         <name>MMG.PlasticExtensions.YouTrackPlugin</name>
     </assembly>
     <members>
+        <member name="F:MMG.PlasticExtensions.YouTrackPlugin.YouTrackExtensionConfiguration.IgnoreIssueStateForBranchTitle">
+            <summary>
+            Issue state(s) to not display in branch title when ShowIssueStateInBranchTitle = true.
+            </summary>
+            <remarks>Use commas to separate multiple states.</remarks>
+        </member>
     </members>
 </doc>
