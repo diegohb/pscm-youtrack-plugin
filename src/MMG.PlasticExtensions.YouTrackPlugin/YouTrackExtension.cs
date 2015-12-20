@@ -1,6 +1,6 @@
 // *************************************************
 // MMG.PlasticExtensions.YouTrackPlugin.YouTrackExtension.cs
-// Last Modified: 01/10/2015 8:53 PM
+// Last Modified: 12/20/2015 5:06 PM
 // Modified By: Bustamante, Diego (bustamd1)
 // *************************************************
 
@@ -9,7 +9,6 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
     using System;
     using System.Collections.Generic;
     using System.Diagnostics;
-    using Codice.Client.Extension;
     using log4net;
 
     public class YouTrackExtension : BasePlasticExtension
@@ -37,7 +36,7 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
                     _handler = new YouTrackHandler(config);
                     _log.InfoFormat("YouTrackExtension: Successfully loaded configuration file: {0}", configFile);
                 }
-                
+
                 mBaseConfig = config;
             }
             catch (Exception ex)
@@ -61,13 +60,13 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
         public override PlasticTask[] LoadTask(string[] pTaskIDs, string pRepoName)
         {
             if (pTaskIDs.Length == 0 || string.IsNullOrEmpty(pTaskIDs[0]))
-                return default (PlasticTask[]);
+                return default(PlasticTask[]);
 
             _log.DebugFormat("YouTrackExtension: Load tasks {0}", string.Join(",", pTaskIDs));
             var result = new List<PlasticTask>();
             foreach (var taskID in pTaskIDs)
             {
-                var plasticTask = default (PlasticTask); //add an empty plastictask so that array result matches order of task IDs passed in.
+                var plasticTask = default(PlasticTask); //add an empty plastictask so that array result matches order of task IDs passed in.
                 if (taskID.ToLower().StartsWith(GetBranchPrefix(pRepoName)))
                 {
                     var taskIDWithoutPrefix = getTaskNameWithoutBranchPrefix(taskID);

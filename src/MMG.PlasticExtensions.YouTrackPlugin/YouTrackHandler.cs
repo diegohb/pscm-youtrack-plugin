@@ -1,25 +1,22 @@
 // *************************************************
 // MMG.PlasticExtensions.YouTrackPlugin.YouTrackHandler.cs
-// Last Modified: 01/21/2013 9:53 PM
+// Last Modified: 12/20/2015 5:06 PM
 // Modified By: Bustamante, Diego (bustamd1)
 // *************************************************
-
-using System.Net;
-using System.Xml;
-using Codice.Client.Extension;
-using log4net;
 
 namespace MMG.PlasticExtensions.YouTrackPlugin
 {
     using System.Collections;
-    using System.Collections.Generic;
+    using System.Net;
+    using System.Xml;
+    using log4net;
 
     internal class YouTrackHandler
     {
         private static readonly ILog _log = LogManager.GetLogger("extensions");
         private readonly YouTrackExtensionConfiguration _config;
         private string _authData;
-        private int _authRetryCount = 0 ;
+        private int _authRetryCount = 0;
 
         public YouTrackHandler(YouTrackExtensionConfiguration pConfig)
         {
@@ -76,11 +73,11 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
         private string getBranchTitle(string pIssueState, string pIssueSummary)
         {
             //if feature is disabled, return ticket summary.
-            if(!_config.ShowIssueStateInBranchTitle)
+            if (!_config.ShowIssueStateInBranchTitle)
                 return pIssueSummary;
 
             //if feature is enabled but no states are ignored, return default format.
-            if (string.IsNullOrEmpty(_config.IgnoreIssueStateForBranchTitle.Trim())) 
+            if (string.IsNullOrEmpty(_config.IgnoreIssueStateForBranchTitle.Trim()))
                 return string.Format("{0} [{1}]", pIssueSummary, pIssueState);
 
             //otherwise, consider the ignore list.
@@ -122,6 +119,5 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
         }
 
         #endregion
-
     }
 }

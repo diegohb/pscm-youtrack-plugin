@@ -1,13 +1,11 @@
 ﻿// *************************************************
 // MMG.PlasticExtensions.YouTrackPlugin.YouTrackExtensionConfiguration.cs
-// Last Modified: 01/10/2015 9:32 PM
+// Last Modified: 12/20/2015 5:06 PM
 // Modified By: Bustamante, Diego (bustamd1)
 // *************************************************
 
 namespace MMG.PlasticExtensions.YouTrackPlugin
 {
-    using Codice.Client.Extension;
-
     public class YouTrackExtensionConfiguration : BaseExtensionConfiguration
     {
         public string Host = "";
