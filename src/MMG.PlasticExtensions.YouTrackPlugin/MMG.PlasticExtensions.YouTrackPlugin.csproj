@@ -37,14 +37,11 @@
     <DocumentationFile>bin\Release\MMG.PlasticExtensions.YouTrackPlugin.XML</DocumentationFile>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="extensioncommon">
-      <HintPath>..\..\lib\pscm\extensioncommon.dll</HintPath>
-    </Reference>
-    <Reference Include="jiraextension">
-      <HintPath>..\..\lib\pscm\jiraextension.dll</HintPath>
+    <Reference Include="issuetrackerinterface">
+      <HintPath>..\..\lib\pscm\issuetrackerinterface.dll</HintPath>
     </Reference>
     <Reference Include="log4net">
-      <HintPath>C:\Program Files\PlasticSCM4\client\log4net.dll</HintPath>
+      <HintPath>..\..\lib\pscm\log4net.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
