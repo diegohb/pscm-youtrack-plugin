@@ -1,6 +1,6 @@
 // *************************************************
 // MMG.PlasticExtensions.YouTrackPlugin.YouTrackExtension.cs
-// Last Modified: 12/20/2015 5:06 PM
+// Last Modified: 12/20/2015 7:26 PM
 // Modified By: Bustamante, Diego (bustamd1)
 // *************************************************
 
@@ -9,13 +9,23 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
     using System;
     using System.Collections.Generic;
     using System.Diagnostics;
+    using Codice.Client.IssueTracker;
     using log4net;
 
-    public class YouTrackExtension : BasePlasticExtension
+    public class YouTrackExtension : IPlasticIssueTrackerExtension
     {
-        private static readonly ILog _log = LogManager.GetLogger("extensions");
+        private static readonly ILog _log = LogManager.GetLogger("extensions-youtrack");
         private const string configFile = "youtrackextension.conf";
         private readonly YouTrackHandler _handler;
+
+        readonly IssueTrackerConfiguration _config;
+
+        internal YouTrackExtension(IssueTrackerConfiguration pConfig)
+        {
+            _config = pConfig;
+
+            _log.InfoFormat("YouTrackExtension: Successfully loaded configuration file: {0}", configFile);
+        }
 
         public YouTrackExtension()
         {
@@ -37,7 +47,7 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
                     _log.InfoFormat("YouTrackExtension: Successfully loaded configuration file: {0}", configFile);
                 }
 
-                mBaseConfig = config;
+                _config = config;
             }
             catch (Exception ex)
             {
@@ -45,24 +55,74 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
             }
         }
 
-        public override string GetName()
+        public string GetExtensionName()
         {
-            return "YouTrack Extension";
+            return "YouTrack Issue Extension";
         }
 
-        public override void OpenTask(string id, string repName)
+        public void Connect()
         {
-            _log.DebugFormat("YouTrackExtension: Open task '{0}'", id);
-
-            Process.Start(string.Format("{0}/issue/{1}", _handler.GetBaseURL(), id));
+            throw new NotImplementedException();
         }
 
-        public override PlasticTask[] LoadTask(string[] pTaskIDs, string pRepoName)
+        public void Disconnect()
         {
-            if (pTaskIDs.Length == 0 || string.IsNullOrEmpty(pTaskIDs[0]))
-                return default(PlasticTask[]);
+            throw new NotImplementedException();
+        }
 
-            _log.DebugFormat("YouTrackExtension: Load tasks {0}", string.Join(",", pTaskIDs));
+        public bool TestConnection(IssueTrackerConfiguration configuration)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void LogCheckinResult(PlasticChangeset changeset, List<PlasticTask> tasks)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void UpdateLinkedTasksToChangeset(PlasticChangeset changeset, List<string> tasks)
+        {
+            throw new NotImplementedException();
+        }
+
+        public PlasticTask GetTaskForBranch(string fullBranchName)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Dictionary<string, PlasticTask> GetTasksForBranches(List<string> fullBranchNames)
+        {
+            throw new NotImplementedException();
+        }
+
+        public List<PlasticTask> GetPendingTasks()
+        {
+            throw new NotImplementedException();
+        }
+
+        public List<PlasticTask> GetPendingTasks(string assignee)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void MarkTaskAsOpen(string taskId, string assignee)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void OpenTaskExternally(string pTaskID)
+        {
+            _log.DebugFormat("YouTrackExtension: Open task '{0}'", pTaskID);
+
+            Process.Start(string.Format("{0}/issue/{1}", _handler.GetBaseURL(), pTaskID));
+        }
+
+        public List<PlasticTask> LoadTasks(List<string> pTaskIDs)
+        {
+            if (pTaskIDs.Count == 0 || string.IsNullOrEmpty(pTaskIDs[0]))
+                return new List<PlasticTask>();
+
+            _log.DebugFormat("YouTrackExtension: Load tasks {0}", string.Join(",", pTaskIDs.ToArray()));
             var result = new List<PlasticTask>();
             foreach (var taskID in pTaskIDs)
             {
@@ -74,7 +134,7 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
                 }
                 result.Add(plasticTask);
             }
-            return result.ToArray();
+            return result;
         }
 
         public override string GetTaskIdForBranch(string pFullBranchName, string repName)
@@ -90,9 +150,9 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
 
         private string getTaskNameWithoutBranchPrefix(string pTaskFullName)
         {
-            return !string.IsNullOrEmpty(mBaseConfig.BranchPrefix)
-                   && pTaskFullName.StartsWith(mBaseConfig.BranchPrefix, StringComparison.InvariantCultureIgnoreCase)
-                ? pTaskFullName.Substring(mBaseConfig.BranchPrefix.Length)
+            return !string.IsNullOrEmpty(_config.BranchPrefix)
+                   && pTaskFullName.StartsWith(_config.BranchPrefix, StringComparison.InvariantCultureIgnoreCase)
+                ? pTaskFullName.Substring(_config.BranchPrefix.Length)
                 : pTaskFullName;
         }
     }

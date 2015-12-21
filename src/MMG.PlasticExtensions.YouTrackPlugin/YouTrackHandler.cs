@@ -1,6 +1,6 @@
 // *************************************************
 // MMG.PlasticExtensions.YouTrackPlugin.YouTrackHandler.cs
-// Last Modified: 12/20/2015 5:06 PM
+// Last Modified: 12/20/2015 5:10 PM
 // Modified By: Bustamante, Diego (bustamd1)
 // *************************************************
 
@@ -9,6 +9,7 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
     using System.Collections;
     using System.Net;
     using System.Xml;
+    using Codice.Client.IssueTracker;
     using log4net;
 
     internal class YouTrackHandler
