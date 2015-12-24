@@ -65,7 +65,7 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
         {
             var protocol = _config.UseSSL ? "https" : "http";
             var port = _config.CustomPort.HasValue ? _config.CustomPort : _config.UseSSL ? 443 : 80;
-            var serverHost = port != 80 ? string.Format("{0}:{1}", _config.Host, port) : _config.Host;
+            var serverHost = port != 80 ? string.Format("{0}:{1}", _config.Host.DnsSafeHost, port) : _config.Host.Host;
             return string.Format("{0}://{1}", protocol, serverHost);
         }
 

@@ -13,6 +13,7 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
     public class YouTrackExtensionConfigFacade
     {
         private readonly IssueTrackerConfiguration _config;
+        private Uri _hostUri;
 
         public YouTrackExtensionConfigFacade(IssueTrackerConfiguration pConfig)
         {
@@ -34,14 +35,21 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
             get { return getValidParameterValue(ParameterNames.BranchPrefix); }
         }
 
-        public string Host
+        public Uri Host
         {
-            get { return getValidParameterValue(ParameterNames.Host); }
+            get
+            {
+                var hostValue = getValidParameterValue(ParameterNames.Host);
+                if (!Uri.TryCreate(hostValue, UriKind.Absolute, out _hostUri))
+                    throw new ApplicationException(string.Format("Unable to parse host URL '{0}'.", hostValue));
+
+                return _hostUri;
+            }
         }
 
         public int? CustomPort
         {
-            get { return 1; }
+            get { return _hostUri.Port; }
         }
 
         public string UserID
@@ -56,7 +64,7 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
 
         public bool UseSSL
         {
-            get { return true; }
+            get { return _hostUri.Scheme == "https"; }
         }
 
         public bool ShowIssueStateInBranchTitle
@@ -102,7 +110,7 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
                 (new IssueTrackerConfigurationParameter
                 {
                     Name = ParameterNames.Host,
-                    Value = Host,
+                    Value = Host.ToString(),
                     Type = IssueTrackerConfigurationParameterType.Host,
                     IsGlobal = true
                 });
