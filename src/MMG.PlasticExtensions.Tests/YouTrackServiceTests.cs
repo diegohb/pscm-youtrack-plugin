@@ -15,8 +15,9 @@ namespace MMG.PlasticExtensions.Tests
     [TestFixture]
     public class YouTrackServiceTests
     {
+        
         [Test]
-        public void ShouldAuthenticate()
+        public void GetAuthenticatedUser_ShouldReturnUserWithEmail()
         {
             var svc = new YouTrackService(getTestConfig());
             var user = svc.GetAuthenticatedUser();
