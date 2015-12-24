@@ -14,7 +14,7 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
     using YouTrackSharp.Infrastructure;
     using YouTrackSharp.Issues;
 
-    internal class YouTrackService
+    public class YouTrackService
     {
         private static readonly ILog _log = LogManager.GetLogger("extensions");
         private readonly Connection _ytConnection;
@@ -26,7 +26,6 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
         {
             _config = pConfig;
             _ytConnection = new Connection(_config.Host.DnsSafeHost, _config.Host.Port, _config.UseSSL);
-
             authenticate();
             _ytIssues = new IssueManagement(_ytConnection);
         }
@@ -35,18 +34,19 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
         {
             _log.DebugFormat("YouTrackService: GetPlasticTaskFromTaskID {0}", pTaskID);
 
-            var result = new PlasticTask {Id = pTaskID};
+            var result = new PlasticTask {Id = pTaskID, CanBeLinked = false};
 
             try
             {
                 dynamic issue = _ytIssues.GetIssue(pTaskID);
-                if (issue == null)
-                    return new PlasticTask() {Id = pTaskID, CanBeLinked = false};
-
-                result.Owner = issue.Assignee;
-                result.Status = issue.State;
-                result.Title = getBranchTitle(issue.State, issue.Summary);
-                result.Description = issue.Description;
+                if (issue != null)
+                {
+                    result.Owner = issue.Assignee;
+                    result.Status = issue.State;
+                    result.Title = getBranchTitle(issue.State, issue.Summary);
+                    result.Description = issue.Description;
+                    result.CanBeLinked = true;
+                }
             }
             catch (Exception ex)
             {
