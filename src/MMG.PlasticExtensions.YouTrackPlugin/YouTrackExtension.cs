@@ -31,13 +31,11 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
             }
         }
    
-
-
         #region IPlasticIssueTrackerExtension implementation
 
         public string GetExtensionName()
         {
-            return "YouTrack .NET4 Extension";
+            return "YouTrack Issues Viewer";
         }
 
         public void Connect()
