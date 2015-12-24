@@ -52,6 +52,7 @@
     <Reference Include="log4net">
       <HintPath>..\..\lib\pscm\log4net.dll</HintPath>
     </Reference>
+    <Reference Include="Microsoft.CSharp" />
     <Reference Include="System" />
     <Reference Include="System.Data" />
     <Reference Include="System.Web" />
