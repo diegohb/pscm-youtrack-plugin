@@ -101,7 +101,15 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
         {
             _authRetryCount++;
             var creds = new NetworkCredential(_config.UserID, _config.Password);
-            _ytConnection.Authenticate(creds);
+
+            try
+            {
+                _ytConnection.Authenticate(creds);
+            }
+            catch (Exception ex)
+            {
+                _log.Error(string.Format("YouTrackService: Failed to authenticate with YouTrack server '{0}'.", _config.Host.DnsSafeHost), ex);
+            }
         }
 
         #endregion
