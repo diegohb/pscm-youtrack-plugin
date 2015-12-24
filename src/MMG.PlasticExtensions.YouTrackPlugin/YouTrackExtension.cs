@@ -30,13 +30,6 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
                 _log.ErrorFormat("YouTrackExtension: {0}\n\t{1}", ex.Message, ex.StackTrace);
             }
         }
-
-        public void OpenTask(string id, string repName)
-        {
-            _log.DebugFormat("YouTrackExtension: Open task '{0}'", id);
-
-            Process.Start(string.Format("{0}/issue/{1}", _ytService.GetBaseURL(), id));
-        }
         
         public string GetTaskIdForBranch(string pFullBranchName, string repName)
         {
@@ -94,9 +87,11 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
             throw new NotImplementedException();
         }
 
-        public void OpenTaskExternally(string taskId)
+        public void OpenTaskExternally(string pTaskId)
         {
-            throw new NotImplementedException();
+            _log.DebugFormat("YouTrackExtension: Open task '{0}'", pTaskId);
+
+            Process.Start(string.Format("{0}/issue/{1}", _ytService.GetBaseURL(), pTaskId));
         }
 
         public List<PlasticTask> LoadTasks(List<string> taskIds)
