@@ -66,12 +66,24 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
 
         public PlasticTask GetTaskForBranch(string pFullBranchName)
         {
-            throw new NotImplementedException();
+            var taskBranchName = getBranchName(pFullBranchName);
+            if (!taskBranchName.StartsWith(_config.BranchPrefix))
+                return new PlasticTask() { Id = getTicketIDFromTaskBranchName(taskBranchName) }; //TODO: return null once GetTasksForBranches is implemented.
+
+            return _ytService.GetPlasticTaskFromTaskID(getTicketIDFromTaskBranchName(taskBranchName));
         }
 
         public Dictionary<string, PlasticTask> GetTasksForBranches(List<string> pFullBranchNames)
         {
-            throw new NotImplementedException();
+            //TODO: implement specific svc method for this.
+
+            var result = new Dictionary<string, PlasticTask>();
+            foreach (var fullBranchName in pFullBranchNames)
+            {
+                 var plasticTask = GetTaskForBranch(fullBranchName);
+                 result.Add(plasticTask.Id, plasticTask);
+            }
+            return result;
         }
 
         public void OpenTaskExternally(string pTaskId)
@@ -109,12 +121,24 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
 
         #region Support Methods
 
-        private string getTaskNameWithoutBranchPrefix(string pTaskFullName)
+        private string getBranchName(string pFullBranchName)
+        {
+            var lastSeparatorIndex = pFullBranchName.LastIndexOf('/');
+
+            if (lastSeparatorIndex < 0)
+                return pFullBranchName;
+
+            return lastSeparatorIndex == pFullBranchName.Length - 1 
+                ? string.Empty 
+                : pFullBranchName.Substring(lastSeparatorIndex + 1);
+        }
+
+        private string getTicketIDFromTaskBranchName(string pTaskBranchName)
         {
             return !string.IsNullOrEmpty(_config.BranchPrefix)
-                   && pTaskFullName.StartsWith(_config.BranchPrefix, StringComparison.InvariantCultureIgnoreCase)
-                ? pTaskFullName.Substring(_config.BranchPrefix.Length)
-                : pTaskFullName;
+                   && pTaskBranchName.StartsWith(_config.BranchPrefix, StringComparison.InvariantCultureIgnoreCase)
+                ? pTaskBranchName.Substring(_config.BranchPrefix.Length)
+                : pTaskBranchName;
         }
 
         #endregion
