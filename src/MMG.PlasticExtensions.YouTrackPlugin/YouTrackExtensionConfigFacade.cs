@@ -1,6 +1,6 @@
 ﻿// *************************************************
 // MMG.PlasticExtensions.YouTrackPlugin.YouTrackExtensionConfigFacade.cs
-// Last Modified: 12/24/2015 2:29 PM
+// Last Modified: 12/24/2015 2:39 PM
 // Modified By: Bustamante, Diego (bustamd1)
 // *************************************************
 
@@ -20,26 +20,16 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
             _config = pConfig;
         }
 
-        internal class ParameterNames
-        {
-            internal const string BranchPrefix = "Branch Name Prefix";
-            internal const string UserID = "User ID";
-            internal const string Password = "Password";
-            internal const string Host = "Host";
-            internal const string ShowIssueStateInBranchTitle = "Show issues state in branch title";
-            internal const string ClosedIssueStates = "Issue states considered closed";
-        }
-
         public string BranchPrefix
         {
-            get { return getValidParameterValue(ParameterNames.BranchPrefix); }
+            get { return getValidParameterValue(ConfigParameterNames.BranchPrefix); }
         }
 
         public Uri Host
         {
             get
             {
-                var hostValue = getValidParameterValue(ParameterNames.Host);
+                var hostValue = getValidParameterValue(ConfigParameterNames.Host);
                 if (!Uri.TryCreate(hostValue, UriKind.Absolute, out _hostUri))
                     throw new ApplicationException(string.Format("Unable to parse host URL '{0}'.", hostValue));
 
@@ -49,12 +39,12 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
 
         public string UserID
         {
-            get { return getValidParameterValue(ParameterNames.UserID); }
+            get { return getValidParameterValue(ConfigParameterNames.UserID); }
         }
 
         public string Password
         {
-            get { return getValidParameterValue(ParameterNames.Password); }
+            get { return getValidParameterValue(ConfigParameterNames.Password); }
         }
 
         public bool UseSSL
@@ -64,7 +54,7 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
 
         public bool ShowIssueStateInBranchTitle
         {
-            get { return bool.Parse(getValidParameterValue(ParameterNames.ShowIssueStateInBranchTitle, "false")); }
+            get { return bool.Parse(getValidParameterValue(ConfigParameterNames.ShowIssueStateInBranchTitle, "false")); }
         }
 
         /// <summary>
@@ -73,7 +63,7 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
         /// <remarks>Use commas to separate multiple states.</remarks>
         public string IgnoreIssueStateForBranchTitle
         {
-            get { return getValidParameterValue(ParameterNames.ClosedIssueStates, "Completed"); }
+            get { return getValidParameterValue(ConfigParameterNames.ClosedIssueStates, "Completed"); }
         }
 
         public ExtensionWorkingMode WorkingMode
@@ -96,7 +86,7 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
             parameters.Add
                 (new IssueTrackerConfigurationParameter
                 {
-                    Name = ParameterNames.BranchPrefix,
+                    Name = ConfigParameterNames.BranchPrefix,
                     Value = BranchPrefix,
                     Type = IssueTrackerConfigurationParameterType.BranchPrefix,
                     IsGlobal = true
@@ -104,7 +94,7 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
             parameters.Add
                 (new IssueTrackerConfigurationParameter
                 {
-                    Name = ParameterNames.Host,
+                    Name = ConfigParameterNames.Host,
                     Value = Host.ToString(),
                     Type = IssueTrackerConfigurationParameterType.Host,
                     IsGlobal = true
@@ -113,7 +103,7 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
             parameters.Add
                 (new IssueTrackerConfigurationParameter
                 {
-                    Name = ParameterNames.UserID,
+                    Name = ConfigParameterNames.UserID,
                     Value = UserID,
                     Type = IssueTrackerConfigurationParameterType.User,
                     IsGlobal = false
@@ -121,7 +111,7 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
             parameters.Add
                 (new IssueTrackerConfigurationParameter
                 {
-                    Name = ParameterNames.Password,
+                    Name = ConfigParameterNames.Password,
                     Value = Password,
                     Type = IssueTrackerConfigurationParameterType.Password,
                     IsGlobal = false
@@ -129,7 +119,7 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
             parameters.Add
                 (new IssueTrackerConfigurationParameter
                 {
-                    Name = ParameterNames.ShowIssueStateInBranchTitle,
+                    Name = ConfigParameterNames.ShowIssueStateInBranchTitle,
                     Value = ShowIssueStateInBranchTitle.ToString(),
                     Type = IssueTrackerConfigurationParameterType.Boolean,
                     IsGlobal = false
@@ -137,7 +127,7 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
             parameters.Add
                 (new IssueTrackerConfigurationParameter
                 {
-                    Name = ParameterNames.ClosedIssueStates,
+                    Name = ConfigParameterNames.ClosedIssueStates,
                     Value = IgnoreIssueStateForBranchTitle,
                     Type = IssueTrackerConfigurationParameterType.Text,
                     IsGlobal = false

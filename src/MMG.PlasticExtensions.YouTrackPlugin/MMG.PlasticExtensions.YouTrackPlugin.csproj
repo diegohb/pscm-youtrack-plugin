@@ -63,6 +63,8 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ConfigParameterNames.cs" />
+    <Compile Include="Models\YoutrackUser.cs" />
     <Compile Include="YouTrackExtension.cs" />
     <Compile Include="YouTrackExtensionConfigFacade.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

@@ -1,6 +1,6 @@
 // *************************************************
 // MMG.PlasticExtensions.YouTrackPlugin.YouTrackService.cs
-// Last Modified: 12/24/2015 2:22 PM
+// Last Modified: 12/24/2015 3:37 PM
 // Modified By: Bustamante, Diego (bustamd1)
 // *************************************************
 
@@ -11,6 +11,7 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
     using System.Net;
     using Codice.Client.IssueTracker;
     using log4net;
+    using Models;
     using YouTrackSharp.Infrastructure;
     using YouTrackSharp.Issues;
 
@@ -41,10 +42,10 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
                 dynamic issue = _ytIssues.GetIssue(pTaskID);
                 if (issue != null)
                 {
-                    result.Owner = issue.Assignee;
-                    result.Status = issue.State;
-                    result.Title = getBranchTitle(issue.State, issue.Summary);
-                    result.Description = issue.Description;
+                    result.Owner = issue.Assignee.ToString();
+                    result.Status = issue.State.ToString();
+                    result.Title = getBranchTitle(result.Status, issue.Summary.ToString());
+                    result.Description = issue.Description.ToString();
                     result.CanBeLinked = true;
                 }
             }
@@ -70,6 +71,13 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
             return _config.Host.ToString();
         }
 
+        public YoutrackUser GetAuthenticatedUser()
+        {
+            var authUser = _ytConnection.GetCurrentAuthenticatedUser();
+            var user = new YoutrackUser(authUser.Username, authUser.FullName, authUser.Email);
+            return user;
+        }
+
         #region Support Methods
 
         private string getBranchTitle(string pIssueState, string pIssueSummary)
@@ -93,7 +101,15 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
         {
             _authRetryCount++;
             var creds = new NetworkCredential(_config.UserID, _config.Password);
-            _ytConnection.Authenticate(creds);
+
+            try
+            {
+                _ytConnection.Authenticate(creds);
+            }
+            catch (Exception ex)
+            {
+                _log.Error(string.Format("YouTrackService: Failed to authenticate with YouTrack server '{0}'.", _config.Host.DnsSafeHost), ex);
+            }
         }
 
         #endregion
