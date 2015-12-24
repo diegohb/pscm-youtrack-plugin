@@ -8,19 +8,21 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
 {
     using System;
     using System.Diagnostics;
+    using Codice.Client.IssueTracker;
     using log4net;
 
-    public class YouTrackExtension
+    public class YouTrackExtension : IPlasticIssueTrackerExtension
     {
         private static readonly ILog _log = LogManager.GetLogger("extensions");
         private readonly YouTrackHandler _handler;
+        private readonly YouTrackExtensionConfiguration _config;
 
-        public YouTrackExtension()
+        public YouTrackExtension(YouTrackExtensionConfiguration pConfig)
         {
             try
             {
                //init
-                _config = config;
+                _config = pConfig;
             }
             catch (Exception ex)
             {
@@ -42,7 +44,7 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
         
         public string GetTaskIdForBranch(string pFullBranchName, string repName)
         {
-            return ExtensionServices.GetTaskNameFromBranch(pFullBranchName);
+            throw new NotImplementedException(); 
         }
 
 

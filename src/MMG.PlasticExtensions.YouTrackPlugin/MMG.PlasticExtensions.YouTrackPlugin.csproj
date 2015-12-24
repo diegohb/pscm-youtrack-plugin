@@ -52,6 +52,7 @@
     <Compile Include="YouTrackExtension.cs" />
     <Compile Include="YouTrackExtensionConfiguration.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="YouTrackExtensionFactory.cs" />
     <Compile Include="YouTrackHandler.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

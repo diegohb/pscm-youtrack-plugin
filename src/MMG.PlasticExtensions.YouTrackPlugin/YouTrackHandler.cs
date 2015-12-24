@@ -100,7 +100,7 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
             using (var client = new WebClient())
             {
                 var requestURL = string.Format
-                    ("{0}/rest/user/login?login={1}&password={2}", GetBaseURL(), _config.Username, _config.Password);
+                    ("{0}/rest/user/login?login={1}&password={2}", GetBaseURL(), _config.UserID, _config.Password);
                 try
                 {
                     var result = client.UploadString(requestURL, "POST", "");
