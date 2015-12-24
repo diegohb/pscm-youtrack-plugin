@@ -13,38 +13,50 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
     public class YouTrackExtensionConfigFacade
     {
         private readonly IssueTrackerConfiguration _config;
-        private Uri _hostUri;
+        private readonly Uri _hostUri;
+        private readonly string _branchPrefix;
+        private readonly string _userID;
+        private readonly string _password;
+        private readonly bool _showIssueStateInTitle;
+        private readonly string _closedIssueStates;
 
         public YouTrackExtensionConfigFacade(IssueTrackerConfiguration pConfig)
         {
             _config = pConfig;
+
+            _branchPrefix = getValidParameterValue(ConfigParameterNames.BranchPrefix);
+            var hostValue = getValidParameterValue(ConfigParameterNames.Host);
+            if (!Uri.TryCreate(hostValue, UriKind.Absolute, out _hostUri))
+                throw new ApplicationException(string.Format("Unable to parse host URL '{0}'.", hostValue));
+
+            _userID = getValidParameterValue(ConfigParameterNames.UserID);
+            _password = getValidParameterValue(ConfigParameterNames.Password);
+            _showIssueStateInTitle = bool.Parse(getValidParameterValue(ConfigParameterNames.ShowIssueStateInBranchTitle, "false"));
+            _closedIssueStates = getValidParameterValue(ConfigParameterNames.ClosedIssueStates, "Completed");
+
         }
 
         public string BranchPrefix
         {
-            get { return getValidParameterValue(ConfigParameterNames.BranchPrefix); }
+            get { return _branchPrefix; }
         }
 
         public Uri Host
         {
             get
             {
-                var hostValue = getValidParameterValue(ConfigParameterNames.Host);
-                if (!Uri.TryCreate(hostValue, UriKind.Absolute, out _hostUri))
-                    throw new ApplicationException(string.Format("Unable to parse host URL '{0}'.", hostValue));
-
                 return _hostUri;
             }
         }
 
         public string UserID
         {
-            get { return getValidParameterValue(ConfigParameterNames.UserID); }
+            get { return _userID; }
         }
 
         public string Password
         {
-            get { return getValidParameterValue(ConfigParameterNames.Password); }
+            get { return _password; }
         }
 
         public bool UseSSL
@@ -54,7 +66,7 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
 
         public bool ShowIssueStateInBranchTitle
         {
-            get { return bool.Parse(getValidParameterValue(ConfigParameterNames.ShowIssueStateInBranchTitle, "false")); }
+            get { return _showIssueStateInTitle; }
         }
 
         /// <summary>
@@ -63,7 +75,7 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
         /// <remarks>Use commas to separate multiple states.</remarks>
         public string IgnoreIssueStateForBranchTitle
         {
-            get { return getValidParameterValue(ConfigParameterNames.ClosedIssueStates, "Completed"); }
+            get { return _closedIssueStates; }
         }
 
         public ExtensionWorkingMode WorkingMode
