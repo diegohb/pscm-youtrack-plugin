@@ -1,5 +1,5 @@
 // *************************************************
-// MMG.PlasticExtensions.YouTrackPlugin.YouTrackHandler.cs
+// MMG.PlasticExtensions.YouTrackPlugin.YouTrackService.cs
 // Last Modified: 12/24/2015 11:39 AM
 // Modified By: Bustamante, Diego (bustamd1)
 // *************************************************
@@ -14,7 +14,7 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
     using YouTrackSharp.Infrastructure;
     using YouTrackSharp.Issues;
 
-    internal class YouTrackHandler
+    internal class YouTrackService
     {
         private static readonly ILog _log = LogManager.GetLogger("extensions");
         private readonly Connection _ytConnection;
@@ -23,10 +23,11 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
         private string _authData;
         private int _authRetryCount = 0;
 
-        public YouTrackHandler(YouTrackExtensionConfigFacade pConfig)
+        public YouTrackService(YouTrackExtensionConfigFacade pConfig)
         {
             _config = pConfig;
             _ytConnection = new Connection(_config.Host.DnsSafeHost, _config.Host.Port, _config.UseSSL);
+
             authenticate();
             _ytIssues = new IssueManagement(_ytConnection);
             
@@ -34,7 +35,7 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
 
         public PlasticTask GetPlasticTaskFromTaskID(string pTaskID)
         {
-            _log.DebugFormat("YouTrackHandler: GetPlasticTaskFromTaskID {0}", pTaskID);
+            _log.DebugFormat("YouTrackService: GetPlasticTaskFromTaskID {0}", pTaskID);
             var result = new PlasticTask {Id = pTaskID};
             using (var client = new WebClient())
             {
@@ -56,13 +57,13 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
                     if (exWeb.Message.Contains("Unauthorized.") && _authRetryCount < 3)
                     {
                         _log.WarnFormat
-                            ("YouTrackHandler: Failed to fetch youtrack issue '{0}' due to authentication error. Will retry after authentication again. Details: {1}",
+                            ("YouTrackService: Failed to fetch youtrack issue '{0}' due to authentication error. Will retry after authentication again. Details: {1}",
                                 pTaskID, exWeb);
                         authenticate();
                         return GetPlasticTaskFromTaskID(pTaskID);
                     }
 
-                    _log.WarnFormat("YouTrackHandler: Failed to find youtrack issue '{0}' due to {1}", pTaskID, exWeb);
+                    _log.WarnFormat("YouTrackService: Failed to find youtrack issue '{0}' due to {1}", pTaskID, exWeb);
                 }
             }
             return result;

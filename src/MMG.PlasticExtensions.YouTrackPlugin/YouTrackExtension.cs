@@ -15,7 +15,7 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
     public class YouTrackExtension : IPlasticIssueTrackerExtension
     {
         private static readonly ILog _log = LogManager.GetLogger("extensions");
-        private readonly YouTrackHandler _handler;
+        private readonly YouTrackService _ytService;
         private readonly YouTrackExtensionConfigFacade _config;
 
         public YouTrackExtension(YouTrackExtensionConfigFacade pConfig)
@@ -40,7 +40,7 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
         {
             _log.DebugFormat("YouTrackExtension: Open task '{0}'", id);
 
-            Process.Start(string.Format("{0}/issue/{1}", _handler.GetBaseURL(), id));
+            Process.Start(string.Format("{0}/issue/{1}", _ytService.GetBaseURL(), id));
         }
         
         public string GetTaskIdForBranch(string pFullBranchName, string repName)
