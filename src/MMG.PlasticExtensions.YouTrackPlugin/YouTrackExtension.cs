@@ -40,35 +40,36 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
 
         public void Connect()
         {
-            throw new NotImplementedException();
+            //TODO: Implement
         }
 
         public void Disconnect()
         {
-            throw new NotImplementedException();
+            //TODO: Implement
         }
 
-        public bool TestConnection(IssueTrackerConfiguration configuration)
+        public bool TestConnection(IssueTrackerConfiguration pConfiguration)
+        {
+            //TODO: Implement
+            return true;
+        }
+
+        public void LogCheckinResult(PlasticChangeset pChangeset, List<PlasticTask> pTasks)
+        {
+            //TODO: Implement
+        }
+
+        public void UpdateLinkedTasksToChangeset(PlasticChangeset pChangeset, List<string> pTasks)
+        {
+            //TODO: Implement
+        }
+
+        public PlasticTask GetTaskForBranch(string pFullBranchName)
         {
             throw new NotImplementedException();
         }
 
-        public void LogCheckinResult(PlasticChangeset changeset, List<PlasticTask> tasks)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void UpdateLinkedTasksToChangeset(PlasticChangeset changeset, List<string> tasks)
-        {
-            throw new NotImplementedException();
-        }
-
-        public PlasticTask GetTaskForBranch(string fullBranchName)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Dictionary<string, PlasticTask> GetTasksForBranches(List<string> fullBranchNames)
+        public Dictionary<string, PlasticTask> GetTasksForBranches(List<string> pFullBranchNames)
         {
             throw new NotImplementedException();
         }
@@ -80,24 +81,27 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
             Process.Start(string.Format("{0}/issue/{1}", _ytService.GetBaseURL(), pTaskId));
         }
 
-        public List<PlasticTask> LoadTasks(List<string> taskIds)
+        public List<PlasticTask> LoadTasks(List<string> pTaskIds)
         {
-            throw new NotImplementedException();
+            //TODO: Implement
+            return new List<PlasticTask>();
         }
 
         public List<PlasticTask> GetPendingTasks()
         {
-            throw new NotImplementedException();
+            //TODO: Implement
+            return new List<PlasticTask>();
         }
 
-        public List<PlasticTask> GetPendingTasks(string assignee)
+        public List<PlasticTask> GetPendingTasks(string pAssignee)
         {
-            throw new NotImplementedException();
+            //TODO: Implement
+            return new List<PlasticTask>();
         }
 
-        public void MarkTaskAsOpen(string taskId, string assignee)
+        public void MarkTaskAsOpen(string pTaskId, string pAssignee)
         {
-            throw new NotImplementedException();
+            //TODO: Implement
         }
 
         #endregion
