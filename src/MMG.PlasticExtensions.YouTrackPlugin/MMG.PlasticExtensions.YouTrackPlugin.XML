@@ -4,7 +4,7 @@
         <name>MMG.PlasticExtensions.YouTrackPlugin</name>
     </assembly>
     <members>
-        <member name="F:MMG.PlasticExtensions.YouTrackPlugin.YouTrackExtensionConfiguration.IgnoreIssueStateForBranchTitle">
+        <member name="P:MMG.PlasticExtensions.YouTrackPlugin.YouTrackExtensionConfigFacade.IgnoreIssueStateForBranchTitle">
             <summary>
             Issue state(s) to not display in branch title when ShowIssueStateInBranchTitle = true.
             </summary>
