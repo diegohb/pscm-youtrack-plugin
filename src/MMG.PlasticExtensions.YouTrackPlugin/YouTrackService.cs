@@ -1,6 +1,6 @@
 // *************************************************
 // MMG.PlasticExtensions.YouTrackPlugin.YouTrackService.cs
-// Last Modified: 12/24/2015 2:22 PM
+// Last Modified: 12/24/2015 2:49 PM
 // Modified By: Bustamante, Diego (bustamd1)
 // *************************************************
 
@@ -11,6 +11,7 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
     using System.Net;
     using Codice.Client.IssueTracker;
     using log4net;
+    using Models;
     using YouTrackSharp.Infrastructure;
     using YouTrackSharp.Issues;
 
@@ -68,6 +69,13 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
         public string GetBaseURL()
         {
             return _config.Host.ToString();
+        }
+
+        public YoutrackUser GetAuthenticatedUser()
+        {
+            var authUser = _ytConnection.GetCurrentAuthenticatedUser();
+            var user = new YoutrackUser(authUser.Username, authUser.FullName, authUser.Email);
+            return user;
         }
 
         #region Support Methods
