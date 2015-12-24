@@ -12,7 +12,7 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
     {
         public IssueTrackerConfiguration GetConfiguration(IssueTrackerConfiguration pStoredConfiguration)
         {
-            var configFacade = new YouTrackExtensionConfiguration(pStoredConfiguration);
+            var configFacade = new YouTrackExtensionConfigFacade(pStoredConfiguration);
 
             var workingMode = configFacade.WorkingMode;
             var parameters = configFacade.GetYouTrackParameters();
@@ -22,7 +22,7 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
 
         public IPlasticIssueTrackerExtension GetIssueTrackerExtension(IssueTrackerConfiguration pConfiguration)
         {
-            var youtrackConfigFacade = new YouTrackExtensionConfiguration(pConfiguration);
+            var youtrackConfigFacade = new YouTrackExtensionConfigFacade(pConfiguration);
             return new YouTrackExtension(youtrackConfigFacade);
         }
 

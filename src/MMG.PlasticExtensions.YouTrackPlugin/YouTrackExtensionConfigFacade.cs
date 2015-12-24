@@ -1,6 +1,6 @@
 ﻿// *************************************************
-// MMG.PlasticExtensions.YouTrackPlugin.YouTrackExtensionConfiguration.cs
-// Last Modified: 12/24/2015 10:52 AM
+// MMG.PlasticExtensions.YouTrackPlugin.YouTrackExtensionConfigFacade.cs
+// Last Modified: 12/24/2015 11:40 AM
 // Modified By: Bustamante, Diego (bustamd1)
 // *************************************************
 
@@ -10,13 +10,13 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
     using System.Collections.Generic;
     using Codice.Client.IssueTracker;
 
-    public class YouTrackExtensionConfiguration
+    public class YouTrackExtensionConfigFacade
     {
-        private readonly IssueTrackerConfiguration _storedConfig;
+        private readonly IssueTrackerConfiguration _config;
 
-        public YouTrackExtensionConfiguration(IssueTrackerConfiguration pStoredConfig)
+        public YouTrackExtensionConfigFacade(IssueTrackerConfiguration pConfig)
         {
-            _storedConfig = pStoredConfig;
+            _config = pConfig;
         }
 
         internal class ParameterNames
@@ -77,12 +77,12 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
         {
             get
             {
-                if (_storedConfig == null)
+                if (_config == null)
                     return ExtensionWorkingMode.TaskOnBranch;
 
-                return _storedConfig.WorkingMode == ExtensionWorkingMode.None
+                return _config.WorkingMode == ExtensionWorkingMode.None
                     ? ExtensionWorkingMode.TaskOnBranch
-                    : _storedConfig.WorkingMode;
+                    : _config.WorkingMode;
             }
         }
 
@@ -145,7 +145,7 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
 
         private string getValidParameterValue(string pParamName, string pDefaultValue = "")
         {
-            var configValue = _storedConfig.GetValue(pParamName);
+            var configValue = _config.GetValue(pParamName);
 
             if (string.IsNullOrEmpty(pDefaultValue) && string.IsNullOrEmpty(configValue))
                 throw new ApplicationException(string.Format("The configuration value for '{0}' is required but was not provided!", pParamName));

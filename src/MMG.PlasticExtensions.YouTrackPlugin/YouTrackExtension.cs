@@ -15,9 +15,9 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
     {
         private static readonly ILog _log = LogManager.GetLogger("extensions");
         private readonly YouTrackHandler _handler;
-        private readonly YouTrackExtensionConfiguration _config;
+        private readonly YouTrackExtensionConfigFacade _config;
 
-        public YouTrackExtension(YouTrackExtensionConfiguration pConfig)
+        public YouTrackExtension(YouTrackExtensionConfigFacade pConfig)
         {
             try
             {

@@ -1,6 +1,6 @@
 // *************************************************
 // MMG.PlasticExtensions.YouTrackPlugin.YouTrackHandler.cs
-// Last Modified: 12/20/2015 5:06 PM
+// Last Modified: 12/24/2015 11:39 AM
 // Modified By: Bustamante, Diego (bustamd1)
 // *************************************************
 
@@ -9,16 +9,17 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
     using System.Collections;
     using System.Net;
     using System.Xml;
+    using Codice.Client.IssueTracker;
     using log4net;
 
     internal class YouTrackHandler
     {
         private static readonly ILog _log = LogManager.GetLogger("extensions");
-        private readonly YouTrackExtensionConfiguration _config;
+        private readonly YouTrackExtensionConfigFacade _config;
         private string _authData;
         private int _authRetryCount = 0;
 
-        public YouTrackHandler(YouTrackExtensionConfiguration pConfig)
+        public YouTrackHandler(YouTrackExtensionConfigFacade pConfig)
         {
             _config = pConfig;
             authenticate();
