@@ -30,20 +30,8 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
                 _log.ErrorFormat("YouTrackExtension: {0}\n\t{1}", ex.Message, ex.StackTrace);
             }
         }
-        
-        public string GetTaskIdForBranch(string pFullBranchName, string repName)
-        {
-            throw new NotImplementedException(); 
-        }
+   
 
-
-        private string getTaskNameWithoutBranchPrefix(string pTaskFullName)
-        {
-            return !string.IsNullOrEmpty(_config.BranchPrefix)
-                   && pTaskFullName.StartsWith(_config.BranchPrefix, StringComparison.InvariantCultureIgnoreCase)
-                ? pTaskFullName.Substring(_config.BranchPrefix.Length)
-                : pTaskFullName;
-        }
 
         #region IPlasticIssueTrackerExtension implementation
 
@@ -114,9 +102,19 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
             throw new NotImplementedException();
         }
 
-
-
         #endregion
 
+
+        #region Support Methods
+
+        private string getTaskNameWithoutBranchPrefix(string pTaskFullName)
+        {
+            return !string.IsNullOrEmpty(_config.BranchPrefix)
+                   && pTaskFullName.StartsWith(_config.BranchPrefix, StringComparison.InvariantCultureIgnoreCase)
+                ? pTaskFullName.Substring(_config.BranchPrefix.Length)
+                : pTaskFullName;
+        }
+
+        #endregion
     }
 }
