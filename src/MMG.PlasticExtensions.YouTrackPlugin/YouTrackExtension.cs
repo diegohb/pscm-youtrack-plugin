@@ -31,11 +31,6 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
             }
         }
 
-        public string GetName()
-        {
-            return "YouTrack Extension";
-        }
-
         public void OpenTask(string id, string repName)
         {
             _log.DebugFormat("YouTrackExtension: Open task '{0}'", id);
@@ -61,7 +56,7 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
 
         public string GetExtensionName()
         {
-            throw new NotImplementedException();
+            return "YouTrack .NET4 Extension";
         }
 
         public void Connect()
