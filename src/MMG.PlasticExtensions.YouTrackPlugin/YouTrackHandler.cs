@@ -11,10 +11,14 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
     using System.Xml;
     using Codice.Client.IssueTracker;
     using log4net;
+    using YouTrackSharp.Infrastructure;
+    using YouTrackSharp.Issues;
 
     internal class YouTrackHandler
     {
         private static readonly ILog _log = LogManager.GetLogger("extensions");
+        private readonly Connection _ytConnection;
+        private readonly IssueManagement _ytIssues;
         private readonly YouTrackExtensionConfigFacade _config;
         private string _authData;
         private int _authRetryCount = 0;
@@ -22,7 +26,10 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
         public YouTrackHandler(YouTrackExtensionConfigFacade pConfig)
         {
             _config = pConfig;
+            _ytConnection = new Connection(_config.Host.DnsSafeHost, _config.Host.Port, _config.UseSSL);
             authenticate();
+            _ytIssues = new IssueManagement(_ytConnection);
+            
         }
 
         public PlasticTask GetPlasticTaskFromTaskID(string pTaskID)
@@ -63,10 +70,7 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
 
         public string GetBaseURL()
         {
-            var protocol = _config.UseSSL ? "https" : "http";
-            var port = _config.CustomPort.HasValue ? _config.CustomPort : _config.UseSSL ? 443 : 80;
-            var serverHost = port != 80 ? string.Format("{0}:{1}", _config.Host.DnsSafeHost, port) : _config.Host.Host;
-            return string.Format("{0}://{1}", protocol, serverHost);
+            return _config.Host.ToString();
         }
 
         #region Support Methods
@@ -97,26 +101,8 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
         private void authenticate()
         {
             _authRetryCount++;
-
-            using (var client = new WebClient())
-            {
-                var requestURL = string.Format
-                    ("{0}/rest/user/login?login={1}&password={2}", GetBaseURL(), _config.UserID, _config.Password);
-                try
-                {
-                    var result = client.UploadString(requestURL, "POST", "");
-                    if (result == @"<login>ok</login>")
-                    {
-                        _authData = client.ResponseHeaders.Get("Set-Cookie");
-                        _log.DebugFormat("YouTrackHandler: Successfully authenticated in {0} attempt(s).", _authRetryCount);
-                        _authRetryCount = 0;
-                    }
-                }
-                catch (WebException exWeb)
-                {
-                    _log.Error(string.Format("YouTrackHandler: Failed to authenticate using request '{0}'.", requestURL), exWeb);
-                }
-            }
+            var creds = new NetworkCredential(_config.UserID, _config.Password);
+            _ytConnection.Authenticate(creds);
         }
 
         #endregion
