@@ -1,6 +1,6 @@
 // *************************************************
 // MMG.PlasticExtensions.YouTrackPlugin.YouTrackService.cs
-// Last Modified: 12/24/2015 2:49 PM
+// Last Modified: 12/24/2015 3:37 PM
 // Modified By: Bustamante, Diego (bustamd1)
 // *************************************************
 
@@ -42,10 +42,10 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
                 dynamic issue = _ytIssues.GetIssue(pTaskID);
                 if (issue != null)
                 {
-                    result.Owner = issue.Assignee;
-                    result.Status = issue.State;
-                    result.Title = getBranchTitle(issue.State, issue.Summary);
-                    result.Description = issue.Description;
+                    result.Owner = issue.Assignee.ToString();
+                    result.Status = issue.State.ToString();
+                    result.Title = getBranchTitle(result.Status, issue.Summary.ToString());
+                    result.Description = issue.Description.ToString();
                     result.CanBeLinked = true;
                 }
             }

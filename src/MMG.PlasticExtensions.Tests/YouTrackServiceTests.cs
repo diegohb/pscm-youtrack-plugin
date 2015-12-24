@@ -1,6 +1,6 @@
 ﻿// *************************************************
 // MMG.PlasticExtensions.Tests.YouTrackServiceTests.cs
-// Last Modified: 12/24/2015 3:19 PM
+// Last Modified: 12/24/2015 3:37 PM
 // Modified By: Bustamante, Diego (bustamd1)
 // *************************************************
 
@@ -25,6 +25,17 @@ namespace MMG.PlasticExtensions.Tests
             var expectedValue = ConfigurationManager.AppSettings["test.authUserEmail"];
             var actualValue = user.Email;
             Assert.AreEqual(expectedValue, actualValue);
+        }
+
+        [Test]
+        public void GetPlasticTask_ShouldReturnLinkedTask()
+        {
+            var svc = new YouTrackService(getTestConfig());
+            var expectedIssueKey = ConfigurationManager.AppSettings["test.issueKey"];
+            var actualTask = svc.GetPlasticTaskFromTaskID(expectedIssueKey);
+            Assert.IsNotNull(actualTask);
+            Assert.AreEqual(expectedIssueKey, actualTask.Id);
+            Assert.IsTrue(actualTask.CanBeLinked);
         }
 
         private YouTrackExtensionConfigFacade getTestConfig()
