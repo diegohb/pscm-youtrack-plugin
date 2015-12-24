@@ -7,6 +7,7 @@
 namespace MMG.PlasticExtensions.YouTrackPlugin
 {
     using System;
+    using System.Collections.Generic;
     using System.Diagnostics;
     using Codice.Client.IssueTracker;
     using log4net;
@@ -55,5 +56,77 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
                 ? pTaskFullName.Substring(_config.BranchPrefix.Length)
                 : pTaskFullName;
         }
+
+        #region IPlasticIssueTrackerExtension implementation
+
+        public string GetExtensionName()
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Connect()
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Disconnect()
+        {
+            throw new NotImplementedException();
+        }
+
+        public bool TestConnection(IssueTrackerConfiguration configuration)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void LogCheckinResult(PlasticChangeset changeset, List<PlasticTask> tasks)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void UpdateLinkedTasksToChangeset(PlasticChangeset changeset, List<string> tasks)
+        {
+            throw new NotImplementedException();
+        }
+
+        public PlasticTask GetTaskForBranch(string fullBranchName)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Dictionary<string, PlasticTask> GetTasksForBranches(List<string> fullBranchNames)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void OpenTaskExternally(string taskId)
+        {
+            throw new NotImplementedException();
+        }
+
+        public List<PlasticTask> LoadTasks(List<string> taskIds)
+        {
+            throw new NotImplementedException();
+        }
+
+        public List<PlasticTask> GetPendingTasks()
+        {
+            throw new NotImplementedException();
+        }
+
+        public List<PlasticTask> GetPendingTasks(string assignee)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void MarkTaskAsOpen(string taskId, string assignee)
+        {
+            throw new NotImplementedException();
+        }
+
+
+
+        #endregion
+
     }
 }

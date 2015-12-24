@@ -16,6 +16,7 @@
     <SccLocalPath>Plastic SCM</SccLocalPath>
     <SccAuxPath>Plastic SCM</SccAuxPath>
     <SccProvider>Plastic SCM Source Control Service:{774e58ba-f1b9-40a7-b676-834fa2c220fe}</SccProvider>
+    <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -37,8 +38,16 @@
     <DocumentationFile>bin\Release\MMG.PlasticExtensions.YouTrackPlugin.XML</DocumentationFile>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="EasyHttp, Version=1.6.29.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\lib\EasyHttp.1.6.29.0\lib\net40\EasyHttp.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="issuetrackerinterface">
       <HintPath>..\..\lib\pscm\issuetrackerinterface.dll</HintPath>
+    </Reference>
+    <Reference Include="JsonFx, Version=2.0.1209.2802, Culture=neutral, PublicKeyToken=315052dd637f8a52, processorArchitecture=MSIL">
+      <HintPath>..\..\lib\JsonFx.2.0.1209.2802\lib\net40\JsonFx.dll</HintPath>
+      <Private>True</Private>
     </Reference>
     <Reference Include="log4net">
       <HintPath>..\..\lib\pscm\log4net.dll</HintPath>
@@ -47,6 +56,10 @@
     <Reference Include="System.Data" />
     <Reference Include="System.Web" />
     <Reference Include="System.Xml" />
+    <Reference Include="YouTrackSharp, Version=2.0.30.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\lib\YouTrackSharp.2.0.30.0\lib\net40\YouTrackSharp.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="YouTrackExtension.cs" />
@@ -55,7 +68,17 @@
     <Compile Include="YouTrackExtensionFactory.cs" />
     <Compile Include="YouTrackHandler.cs" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>This project references NuGet package(s) that are missing on this computer. Enable NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('$(SolutionDir)\.nuget\NuGet.targets')" Text="$([System.String]::Format('$(ErrorText)', '$(SolutionDir)\.nuget\NuGet.targets'))" />
+  </Target>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">
