@@ -1,6 +1,6 @@
 ﻿// *************************************************
 // MMG.PlasticExtensions.YouTrackPlugin.YouTrackExtensionConfigFacade.cs
-// Last Modified: 12/24/2015 2:39 PM
+// Last Modified: 12/24/2015 4:29 PM
 // Modified By: Bustamante, Diego (bustamd1)
 // *************************************************
 
@@ -33,7 +33,6 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
             _password = getValidParameterValue(ConfigParameterNames.Password);
             _showIssueStateInTitle = bool.Parse(getValidParameterValue(ConfigParameterNames.ShowIssueStateInBranchTitle, "false"));
             _closedIssueStates = getValidParameterValue(ConfigParameterNames.ClosedIssueStates, "Completed");
-
         }
 
         public string BranchPrefix
@@ -43,10 +42,7 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
 
         public Uri Host
         {
-            get
-            {
-                return _hostUri;
-            }
+            get { return _hostUri; }
         }
 
         public string UserID
@@ -150,6 +146,9 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
 
         private string getValidParameterValue(string pParamName, string pDefaultValue = "")
         {
+            if (_config == null)
+                throw new ApplicationException("The configuration has not yet been initialized!");
+
             var configValue = _config.GetValue(pParamName);
 
             if (string.IsNullOrEmpty(pDefaultValue) && string.IsNullOrEmpty(configValue))
