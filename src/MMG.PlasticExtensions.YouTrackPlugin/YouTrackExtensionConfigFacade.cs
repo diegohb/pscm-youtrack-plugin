@@ -1,6 +1,6 @@
 ﻿// *************************************************
 // MMG.PlasticExtensions.YouTrackPlugin.YouTrackExtensionConfigFacade.cs
-// Last Modified: 12/24/2015 11:40 AM
+// Last Modified: 12/24/2015 2:29 PM
 // Modified By: Bustamante, Diego (bustamd1)
 // *************************************************
 
@@ -45,11 +45,6 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
 
                 return _hostUri;
             }
-        }
-
-        public int? CustomPort
-        {
-            get { return _hostUri.Port; }
         }
 
         public string UserID

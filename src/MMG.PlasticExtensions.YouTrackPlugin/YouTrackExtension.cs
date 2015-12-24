@@ -22,8 +22,8 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
         {
             try
             {
-               //init
                 _config = pConfig;
+                _ytService = new YouTrackService(pConfig);
             }
             catch (Exception ex)
             {
