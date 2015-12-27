@@ -171,9 +171,6 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
 
             var configValue = _config.GetValue(pParamName);
 
-            if (string.IsNullOrEmpty(pDefaultValue) && string.IsNullOrEmpty(configValue))
-                throw new ApplicationException(string.Format("The configuration value for '{0}' is required but was not provided!", pParamName));
-
             return string.IsNullOrEmpty(configValue)
                 ? pDefaultValue
                 : configValue;

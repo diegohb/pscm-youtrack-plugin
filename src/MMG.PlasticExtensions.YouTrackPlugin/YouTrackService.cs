@@ -25,6 +25,8 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
 
         public YouTrackService(YouTrackExtensionConfigFacade pConfig)
         {
+            validateConfig(pConfig);
+
             _config = pConfig;
             _ytConnection = new Connection(_config.Host.DnsSafeHost, _config.Host.Port, _config.UseSSL);
             authenticate();
@@ -111,6 +113,27 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
             {
                 _log.Error(string.Format("YouTrackService: Failed to authenticate with YouTrack server '{0}'.", _config.Host.DnsSafeHost), ex);
             }
+        }
+        
+        private void validateConfig(YouTrackExtensionConfigFacade pConfig)
+        {
+            /*//validate URL
+            var testConnection = new Connection(pConfig.Host.DnsSafeHost, pConfig.Host.Port, pConfig.UseSSL);
+            testConnection.Head("/rest/user/login");*/
+
+            if (pConfig.Host == null)
+                throw new ApplicationException(string.Format("YouTrack setting '{0}' cannot be null or empty!", ConfigParameterNames.Host));
+
+            throwErrorIfRequiredStringSettingIsMissing(pConfig.BranchPrefix, ConfigParameterNames.BranchPrefix);
+            throwErrorIfRequiredStringSettingIsMissing(pConfig.UserID, ConfigParameterNames.UserID);
+            throwErrorIfRequiredStringSettingIsMissing(pConfig.Password, ConfigParameterNames.Password);
+
+        }
+
+        private void throwErrorIfRequiredStringSettingIsMissing(string pSettingValue, string pSettingName)
+        {
+            if (string.IsNullOrWhiteSpace(pSettingValue))
+                throw new ApplicationException(string.Format("YouTrack setting '{0}' cannot be null or empty!", pSettingName));
         }
 
         #endregion
