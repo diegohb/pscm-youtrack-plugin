@@ -29,7 +29,6 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
 
             _config = pConfig;
             _ytConnection = new Connection(_config.Host.DnsSafeHost, _config.Host.Port, _config.UseSSL);
-            authenticate();
             _ytIssues = new IssueManagement(_ytConnection);
             _log.Debug("YouTrackService: ctor called");
         }
@@ -80,6 +79,43 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
             var user = new YoutrackUser(authUser.Username, authUser.FullName, authUser.Email);
             return user;
         }
+        
+        public void Authenticate()
+        {
+            _authRetryCount++;
+            var creds = new NetworkCredential(_config.UserID, _config.Password);
+
+            try
+            {
+                _ytConnection.Authenticate(creds);
+            }
+            catch (Exception ex)
+            {
+                _log.Error(string.Format("YouTrackService: Failed to authenticate with YouTrack server '{0}'.", _config.Host.DnsSafeHost), ex);
+            }
+        }
+
+        public void ClearAuthentication()
+        {
+            _ytConnection.Logout();
+        }
+
+        public void VerifyConfiguration(YouTrackExtensionConfigFacade pConfig)
+        {
+            validateConfig(pConfig);
+
+            try
+            {
+                var testConnection = new Connection(pConfig.Host.DnsSafeHost,pConfig.Host.Port, pConfig.UseSSL);
+                testConnection.Authenticate(pConfig.UserID, pConfig.Password);
+                testConnection.Logout();
+            }
+            catch (Exception e)
+            {
+                _log.Warn(string.Format("Failed to verify configuration against host '{0}'.", pConfig.Host), e);
+                throw new ApplicationException(string.Format("Failed to authenticate against the host. Message: {0}", e.Message), e);
+            }
+        }
 
         #region Support Methods
 
@@ -98,21 +134,6 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
             return ignoreStates.Contains(pIssueState)
                 ? pIssueSummary
                 : string.Format("{0} [{1}]", pIssueSummary, pIssueState);
-        }
-
-        private void authenticate()
-        {
-            _authRetryCount++;
-            var creds = new NetworkCredential(_config.UserID, _config.Password);
-
-            try
-            {
-                _ytConnection.Authenticate(creds);
-            }
-            catch (Exception ex)
-            {
-                _log.Error(string.Format("YouTrackService: Failed to authenticate with YouTrack server '{0}'.", _config.Host.DnsSafeHost), ex);
-            }
         }
         
         private void validateConfig(YouTrackExtensionConfigFacade pConfig)
@@ -137,5 +158,6 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
         }
 
         #endregion
+
     }
 }

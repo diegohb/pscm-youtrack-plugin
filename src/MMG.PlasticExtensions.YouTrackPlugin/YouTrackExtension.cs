@@ -40,18 +40,26 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
 
         public void Connect()
         {
-            //TODO: Implement
+            _ytService.Authenticate();
         }
 
         public void Disconnect()
         {
-            //TODO: Implement
+            _ytService.ClearAuthentication();
         }
 
         public bool TestConnection(IssueTrackerConfiguration pConfiguration)
         {
-            //TODO: Implement
-            return true;
+            try
+            {
+                var config = new YouTrackExtensionConfigFacade(pConfiguration);
+                _ytService.VerifyConfiguration(config);
+                return true;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
         }
 
         public void LogCheckinResult(PlasticChangeset pChangeset, List<PlasticTask> pTasks)
