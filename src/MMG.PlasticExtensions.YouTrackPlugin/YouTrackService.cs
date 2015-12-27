@@ -1,6 +1,6 @@
 // *************************************************
 // MMG.PlasticExtensions.YouTrackPlugin.YouTrackService.cs
-// Last Modified: 12/24/2015 3:37 PM
+// Last Modified: 12/27/2015 2:51 PM
 // Modified By: Bustamante, Diego (bustamd1)
 // *************************************************
 
@@ -29,6 +29,7 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
             _ytConnection = new Connection(_config.Host.DnsSafeHost, _config.Host.Port, _config.UseSSL);
             authenticate();
             _ytIssues = new IssueManagement(_ytConnection);
+            _log.Debug("YouTrackService: ctor called");
         }
 
         public PlasticTask GetPlasticTaskFromTaskID(string pTaskID)

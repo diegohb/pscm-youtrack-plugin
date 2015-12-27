@@ -30,103 +30,117 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
                 _log.ErrorFormat("YouTrackExtension: {0}\n\t{1}", ex.Message, ex.StackTrace);
             }
         }
-
-        public string GetName()
-        {
-            return "YouTrack Extension";
-        }
-
-        public void OpenTask(string id, string repName)
-        {
-            _log.DebugFormat("YouTrackExtension: Open task '{0}'", id);
-
-            Process.Start(string.Format("{0}/issue/{1}", _ytService.GetBaseURL(), id));
-        }
-        
-        public string GetTaskIdForBranch(string pFullBranchName, string repName)
-        {
-            throw new NotImplementedException(); 
-        }
-
-
-        private string getTaskNameWithoutBranchPrefix(string pTaskFullName)
-        {
-            return !string.IsNullOrEmpty(_config.BranchPrefix)
-                   && pTaskFullName.StartsWith(_config.BranchPrefix, StringComparison.InvariantCultureIgnoreCase)
-                ? pTaskFullName.Substring(_config.BranchPrefix.Length)
-                : pTaskFullName;
-        }
-
+   
         #region IPlasticIssueTrackerExtension implementation
 
         public string GetExtensionName()
         {
-            throw new NotImplementedException();
+            return "YouTrack Issues Viewer";
         }
 
         public void Connect()
         {
-            throw new NotImplementedException();
+            //TODO: Implement
         }
 
         public void Disconnect()
         {
-            throw new NotImplementedException();
+            //TODO: Implement
         }
 
-        public bool TestConnection(IssueTrackerConfiguration configuration)
+        public bool TestConnection(IssueTrackerConfiguration pConfiguration)
         {
-            throw new NotImplementedException();
+            //TODO: Implement
+            return true;
         }
 
-        public void LogCheckinResult(PlasticChangeset changeset, List<PlasticTask> tasks)
+        public void LogCheckinResult(PlasticChangeset pChangeset, List<PlasticTask> pTasks)
         {
-            throw new NotImplementedException();
+            //TODO: Implement
         }
 
-        public void UpdateLinkedTasksToChangeset(PlasticChangeset changeset, List<string> tasks)
+        public void UpdateLinkedTasksToChangeset(PlasticChangeset pChangeset, List<string> pTasks)
         {
-            throw new NotImplementedException();
+            //TODO: Implement
         }
 
-        public PlasticTask GetTaskForBranch(string fullBranchName)
+        public PlasticTask GetTaskForBranch(string pFullBranchName)
         {
-            throw new NotImplementedException();
+            var taskBranchName = getBranchName(pFullBranchName);
+            if (!taskBranchName.StartsWith(_config.BranchPrefix))
+                return new PlasticTask() { Id = getTicketIDFromTaskBranchName(taskBranchName) }; //TODO: return null once GetTasksForBranches is implemented.
+
+            return _ytService.GetPlasticTaskFromTaskID(getTicketIDFromTaskBranchName(taskBranchName));
         }
 
-        public Dictionary<string, PlasticTask> GetTasksForBranches(List<string> fullBranchNames)
+        public Dictionary<string, PlasticTask> GetTasksForBranches(List<string> pFullBranchNames)
         {
-            throw new NotImplementedException();
+            //TODO: implement specific svc method for this.
+
+            var result = new Dictionary<string, PlasticTask>();
+            foreach (var fullBranchName in pFullBranchNames)
+            {
+                 var plasticTask = GetTaskForBranch(fullBranchName);
+                 result.Add(plasticTask.Id, plasticTask);
+            }
+            return result;
         }
 
-        public void OpenTaskExternally(string taskId)
+        public void OpenTaskExternally(string pTaskId)
         {
-            throw new NotImplementedException();
+            _log.DebugFormat("YouTrackExtension: Open task '{0}'", pTaskId);
+
+            Process.Start(string.Format("{0}/issue/{1}", _ytService.GetBaseURL(), pTaskId));
         }
 
-        public List<PlasticTask> LoadTasks(List<string> taskIds)
+        public List<PlasticTask> LoadTasks(List<string> pTaskIds)
         {
-            throw new NotImplementedException();
+            //TODO: Implement
+            return new List<PlasticTask>();
         }
 
         public List<PlasticTask> GetPendingTasks()
         {
-            throw new NotImplementedException();
+            //TODO: Implement
+            return new List<PlasticTask>();
         }
 
-        public List<PlasticTask> GetPendingTasks(string assignee)
+        public List<PlasticTask> GetPendingTasks(string pAssignee)
         {
-            throw new NotImplementedException();
+            //TODO: Implement
+            return new List<PlasticTask>();
         }
 
-        public void MarkTaskAsOpen(string taskId, string assignee)
+        public void MarkTaskAsOpen(string pTaskId, string pAssignee)
         {
-            throw new NotImplementedException();
+            //TODO: Implement
         }
-
-
 
         #endregion
 
+
+        #region Support Methods
+
+        private string getBranchName(string pFullBranchName)
+        {
+            var lastSeparatorIndex = pFullBranchName.LastIndexOf('/');
+
+            if (lastSeparatorIndex < 0)
+                return pFullBranchName;
+
+            return lastSeparatorIndex == pFullBranchName.Length - 1 
+                ? string.Empty 
+                : pFullBranchName.Substring(lastSeparatorIndex + 1);
+        }
+
+        private string getTicketIDFromTaskBranchName(string pTaskBranchName)
+        {
+            return !string.IsNullOrEmpty(_config.BranchPrefix)
+                   && pTaskBranchName.StartsWith(_config.BranchPrefix, StringComparison.InvariantCultureIgnoreCase)
+                ? pTaskBranchName.Substring(_config.BranchPrefix.Length)
+                : pTaskBranchName;
+        }
+
+        #endregion
     }
 }

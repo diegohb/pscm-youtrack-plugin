@@ -1,6 +1,6 @@
 ﻿// *************************************************
 // MMG.PlasticExtensions.YouTrackPlugin.YouTrackExtensionConfigFacade.cs
-// Last Modified: 12/24/2015 2:39 PM
+// Last Modified: 12/27/2015 3:47 PM
 // Modified By: Bustamante, Diego (bustamd1)
 // *************************************************
 
@@ -9,42 +9,70 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
     using System;
     using System.Collections.Generic;
     using Codice.Client.IssueTracker;
+    using log4net;
 
     public class YouTrackExtensionConfigFacade
     {
+        private static readonly ILog _log = LogManager.GetLogger("extensions");
         private readonly IssueTrackerConfiguration _config;
-        private Uri _hostUri;
+        private readonly Uri _hostUri;
+        private readonly string _branchPrefix;
+        private readonly string _userID;
+        private readonly string _password;
+        private readonly bool _showIssueStateInTitle;
+        private readonly string _closedIssueStates;
+        private readonly bool _defaultInit;
+
+
+        internal YouTrackExtensionConfigFacade()
+        {
+            _branchPrefix = "yt_";
+            _hostUri = new Uri("http://issues.domain.com");
+            _userID = "myusername";
+            _password = "";
+            _showIssueStateInTitle = false;
+            _closedIssueStates = "Completed";
+
+            _defaultInit = true;
+            _log.Debug("YouTrackExtensionConfigFacade: empty ctor called");
+        }
 
         public YouTrackExtensionConfigFacade(IssueTrackerConfiguration pConfig)
         {
             _config = pConfig;
+
+            _branchPrefix = getValidParameterValue(ConfigParameterNames.BranchPrefix);
+            var hostValue = getValidParameterValue(ConfigParameterNames.Host);
+            if (!Uri.TryCreate(hostValue, UriKind.Absolute, out _hostUri))
+                throw new ApplicationException(string.Format("Unable to parse host URL '{0}'.", hostValue));
+
+            _userID = getValidParameterValue(ConfigParameterNames.UserID);
+            _password = getValidParameterValue(ConfigParameterNames.Password);
+            _showIssueStateInTitle = bool.Parse(getValidParameterValue(ConfigParameterNames.ShowIssueStateInBranchTitle, "false"));
+            _closedIssueStates = getValidParameterValue(ConfigParameterNames.ClosedIssueStates, "Completed");
+
+            _defaultInit = false;
+            _log.Debug("YouTrackExtensionConfigFacade: ctor called");
         }
 
         public string BranchPrefix
         {
-            get { return getValidParameterValue(ConfigParameterNames.BranchPrefix); }
+            get { return _branchPrefix; }
         }
 
         public Uri Host
         {
-            get
-            {
-                var hostValue = getValidParameterValue(ConfigParameterNames.Host);
-                if (!Uri.TryCreate(hostValue, UriKind.Absolute, out _hostUri))
-                    throw new ApplicationException(string.Format("Unable to parse host URL '{0}'.", hostValue));
-
-                return _hostUri;
-            }
+            get { return _hostUri; }
         }
 
         public string UserID
         {
-            get { return getValidParameterValue(ConfigParameterNames.UserID); }
+            get { return _userID; }
         }
 
         public string Password
         {
-            get { return getValidParameterValue(ConfigParameterNames.Password); }
+            get { return _password; }
         }
 
         public bool UseSSL
@@ -54,7 +82,7 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
 
         public bool ShowIssueStateInBranchTitle
         {
-            get { return bool.Parse(getValidParameterValue(ConfigParameterNames.ShowIssueStateInBranchTitle, "false")); }
+            get { return _showIssueStateInTitle; }
         }
 
         /// <summary>
@@ -63,7 +91,7 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
         /// <remarks>Use commas to separate multiple states.</remarks>
         public string IgnoreIssueStateForBranchTitle
         {
-            get { return getValidParameterValue(ConfigParameterNames.ClosedIssueStates, "Completed"); }
+            get { return _closedIssueStates; }
         }
 
         public ExtensionWorkingMode WorkingMode
@@ -138,6 +166,9 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
 
         private string getValidParameterValue(string pParamName, string pDefaultValue = "")
         {
+            if (_config == null)
+                throw new ApplicationException("The configuration has not yet been initialized!");
+
             var configValue = _config.GetValue(pParamName);
 
             if (string.IsNullOrEmpty(pDefaultValue) && string.IsNullOrEmpty(configValue))
