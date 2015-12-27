@@ -1,6 +1,6 @@
 ﻿// *************************************************
 // MMG.PlasticExtensions.YouTrackPlugin.YouTrackExtensionFactory.cs
-// Last Modified: 12/27/2015 2:51 PM
+// Last Modified: 12/27/2015 3:47 PM
 // Modified By: Bustamante, Diego (bustamd1)
 // *************************************************
 
@@ -22,7 +22,9 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
         {
             _log.Debug("YouTrackExtensionFactory: GetConfiguration - start");
 
-            var configFacade = new YouTrackExtensionConfigFacade(pStoredConfiguration);
+            var configFacade = pStoredConfiguration != null
+                ? new YouTrackExtensionConfigFacade(pStoredConfiguration)
+                : new YouTrackExtensionConfigFacade();
 
             var workingMode = configFacade.WorkingMode;
             var parameters = configFacade.GetYouTrackParameters();

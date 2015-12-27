@@ -1,6 +1,6 @@
 ﻿// *************************************************
 // MMG.PlasticExtensions.YouTrackPlugin.YouTrackExtensionConfigFacade.cs
-// Last Modified: 12/27/2015 2:51 PM
+// Last Modified: 12/27/2015 3:47 PM
 // Modified By: Bustamante, Diego (bustamd1)
 // *************************************************
 
@@ -21,6 +21,21 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
         private readonly string _password;
         private readonly bool _showIssueStateInTitle;
         private readonly string _closedIssueStates;
+        private readonly bool _defaultInit;
+
+
+        internal YouTrackExtensionConfigFacade()
+        {
+            _branchPrefix = "yt_";
+            _hostUri = new Uri("http://issues.domain.com");
+            _userID = "myusername";
+            _password = "";
+            _showIssueStateInTitle = false;
+            _closedIssueStates = "Completed";
+
+            _defaultInit = true;
+            _log.Debug("YouTrackExtensionConfigFacade: empty ctor called");
+        }
 
         public YouTrackExtensionConfigFacade(IssueTrackerConfiguration pConfig)
         {
@@ -36,6 +51,7 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
             _showIssueStateInTitle = bool.Parse(getValidParameterValue(ConfigParameterNames.ShowIssueStateInBranchTitle, "false"));
             _closedIssueStates = getValidParameterValue(ConfigParameterNames.ClosedIssueStates, "Completed");
 
+            _defaultInit = false;
             _log.Debug("YouTrackExtensionConfigFacade: ctor called");
         }
 
