@@ -1,6 +1,6 @@
 ﻿// *************************************************
 // MMG.PlasticExtensions.YouTrackPlugin.YouTrackExtensionConfigFacade.cs
-// Last Modified: 12/24/2015 4:29 PM
+// Last Modified: 12/27/2015 2:51 PM
 // Modified By: Bustamante, Diego (bustamd1)
 // *************************************************
 
@@ -9,9 +9,11 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
     using System;
     using System.Collections.Generic;
     using Codice.Client.IssueTracker;
+    using log4net;
 
     public class YouTrackExtensionConfigFacade
     {
+        private static readonly ILog _log = LogManager.GetLogger("extensions");
         private readonly IssueTrackerConfiguration _config;
         private readonly Uri _hostUri;
         private readonly string _branchPrefix;
@@ -33,6 +35,8 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
             _password = getValidParameterValue(ConfigParameterNames.Password);
             _showIssueStateInTitle = bool.Parse(getValidParameterValue(ConfigParameterNames.ShowIssueStateInBranchTitle, "false"));
             _closedIssueStates = getValidParameterValue(ConfigParameterNames.ClosedIssueStates, "Completed");
+
+            _log.Debug("YouTrackExtensionConfigFacade: ctor called");
         }
 
         public string BranchPrefix
