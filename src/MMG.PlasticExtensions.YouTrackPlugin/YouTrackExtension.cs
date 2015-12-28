@@ -104,8 +104,7 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
 
         public List<PlasticTask> LoadTasks(List<string> pTaskIds)
         {
-            //TODO: Implement
-            return new List<PlasticTask>();
+            return _ytService.GetPlasticTasks(pTaskIds.ToArray()).ToList();
         }
 
         public List<PlasticTask> GetPendingTasks()
