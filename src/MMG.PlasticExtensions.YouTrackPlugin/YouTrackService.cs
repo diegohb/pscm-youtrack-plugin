@@ -8,6 +8,8 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
 {
     using System;
     using System.Collections;
+    using System.Collections.Generic;
+    using System.Linq;
     using System.Net;
     using Codice.Client.IssueTracker;
     using log4net;
@@ -33,9 +35,10 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
             _log.Debug("YouTrackService: ctor called");
         }
 
-        public PlasticTask GetPlasticTaskFromTaskID(string pTaskID)
+        public PlasticTask GetPlasticTask(string pTaskID)
         {
-            _log.DebugFormat("YouTrackService: GetPlasticTaskFromTaskID {0}", pTaskID);
+            //TODO: implement this as async.
+            _log.DebugFormat("YouTrackService: GetPlasticTask {0}", pTaskID);
 
             var result = new PlasticTask {Id = pTaskID, CanBeLinked = false};
 
@@ -62,9 +65,17 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
                     return GetPlasticTaskFromTaskID(pTaskID);
                 }*/
 
-                _log.WarnFormat("YouTrackService: Failed to find youtrack issue '{0}' due to error: {1}", pTaskID, ex);
+                _log.Warn(string.Format("YouTrackService: Failed to find youtrack issue '{0}' due to error.", pTaskID), ex);
             }
 
+            return result;
+        }
+
+        public IEnumerable<PlasticTask> GetPlasticTasks(string[] pTaskIDs)
+        {
+            _log.DebugFormat("YouTrackService: GetPlasticTasks - {0} task ID(s) supplied", pTaskIDs.Length);
+
+            var result= pTaskIDs.Select(pTaskID => GetPlasticTask(pTaskID)).AsParallel();
             return result;
         }
 

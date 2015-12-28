@@ -9,6 +9,7 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
     using System;
     using System.Collections.Generic;
     using System.Diagnostics;
+    using System.Linq;
     using Codice.Client.IssueTracker;
     using log4net;
 
@@ -78,21 +79,19 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
         {
             var taskBranchName = getBranchName(pFullBranchName);
             if (!taskBranchName.StartsWith(_config.BranchPrefix))
-                return new PlasticTask() { Id = getTicketIDFromTaskBranchName(taskBranchName) }; //TODO: return null once GetTasksForBranches is implemented.
+                return null;
 
-            return _ytService.GetPlasticTaskFromTaskID(getTicketIDFromTaskBranchName(taskBranchName));
+            return _ytService.GetPlasticTask(getTicketIDFromTaskBranchName(taskBranchName));
         }
 
         public Dictionary<string, PlasticTask> GetTasksForBranches(List<string> pFullBranchNames)
         {
-            //TODO: implement specific svc method for this.
+            var ticketIDs = pFullBranchNames.Select(getBranchName)
+                .Where(pBranchName => pBranchName.StartsWith(_config.BranchPrefix))
+                .Select(getTicketIDFromTaskBranchName);
+            var plasticTasks = _ytService.GetPlasticTasks(ticketIDs.ToArray());
 
-            var result = new Dictionary<string, PlasticTask>();
-            foreach (var fullBranchName in pFullBranchNames)
-            {
-                 var plasticTask = GetTaskForBranch(fullBranchName);
-                 result.Add(plasticTask.Id, plasticTask);
-            }
+            var result = plasticTasks.ToDictionary(pTask => pTask.Id, pTask => pTask);
             return result;
         }
 

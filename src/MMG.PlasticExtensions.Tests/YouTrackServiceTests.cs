@@ -33,7 +33,7 @@ namespace MMG.PlasticExtensions.Tests
         {
             var svc = new YouTrackService(getTestConfig());
             var expectedIssueKey = ConfigurationManager.AppSettings["test.issueKey"];
-            var actualTask = svc.GetPlasticTaskFromTaskID(expectedIssueKey);
+            var actualTask = svc.GetPlasticTask(expectedIssueKey);
             Assert.IsNotNull(actualTask);
             Assert.AreEqual(expectedIssueKey, actualTask.Id);
             Assert.IsTrue(actualTask.CanBeLinked);
