@@ -62,7 +62,7 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
                     return GetPlasticTaskFromTaskID(pTaskID);
                 }*/
 
-                _log.Warn(string.Format("YouTrackService: Failed to find youtrack issue '{0}' due to error.", pTaskID), ex);
+                _log.Warn(string.Format("YouTrackService: Failed to fetch youtrack issue '{0}' due to error.", pTaskID), ex);
             }
 
             return new PlasticTask { Id = pTaskID, CanBeLinked = false };
