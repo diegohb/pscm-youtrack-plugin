@@ -191,17 +191,11 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
             try
             {
                 dynamic issue = _ytIssues.GetIssue(pIssueID);
-                string currentAssignee;
+                var currentAssignee = string.Empty;
 
-                try
-                {
+                if(doesPropertyExist(issue, "Assignee"))
                     currentAssignee = issue.Assignee.ToString();
-                }
-                catch (Exception)
-                {
-                    currentAssignee = string.Empty;
-                }
-
+                
                 if (!string.Equals(currentAssignee, pAssignee, StringComparison.InvariantCultureIgnoreCase))
                 {
                     var comment = string.Format("Assigned by PlasticSCM to user '{0}'.", pAssignee);
