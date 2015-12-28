@@ -14,6 +14,7 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
     using System.Net;
     using Codice.Client.IssueTracker;
     using log4net;
+    using Microsoft.CSharp.RuntimeBinder;
     using Models;
     using YouTrackSharp.Infrastructure;
     using YouTrackSharp.Issues;
@@ -46,7 +47,7 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
             
             try
             {
-                dynamic issue = _ytIssues.GetIssue(pTaskID);
+                var issue = _ytIssues.GetIssue(pTaskID);
                 if (issue != null)
                     return hydratePlasticTaskFromIssue(issue);
             }
@@ -88,11 +89,11 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
                 var searchString = string.Format
                     ("#unresolved #{This month}{0} order by: updated desc",
                         string.IsNullOrWhiteSpace(pAssignee) ? string.Empty : string.Format(" for: {0}", pAssignee));
-                IEnumerable<dynamic> issues = _ytIssues.GetIssuesBySearch(searchString, pMaxCount).ToList();
+                var issues = _ytIssues.GetIssuesBySearch(searchString, pMaxCount).ToList();
                 if(!issues.Any())
                     return new List<PlasticTask>();
 
-                var tasks = issues.Select(pIssue => hydratePlasticTaskFromIssue(pIssue)).Cast<PlasticTask>();
+                var tasks = issues.Select(pIssue => hydratePlasticTaskFromIssue(pIssue));
                 return tasks.ToList();
             }
             catch (Exception ex)
@@ -214,21 +215,34 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
 
         #region Support Methods
 
-        private PlasticTask hydratePlasticTaskFromIssue(dynamic pIssue)
+        private PlasticTask hydratePlasticTaskFromIssue(Issue pIssue)
         {
             if (pIssue == null)
                 throw new ArgumentNullException("pIssue");
 
-            var result = new PlasticTask
+            var fields = pIssue.ToExpandoObject() as IDictionary<string, object>;
+
+            var result = new PlasticTask();
+            result.Id = fields["id"].ToString();
+            var title = fields["summary"].ToString();
+            var rawState = (string[])fields["state"];
+            var state = rawState[0];
+            result.Title = getBranchTitle(state, title);
+            result.Status = state;
+
+            if (fields.ContainsKey("assignee"))
             {
-                Id = pIssue.id.ToString(),
-                Status = pIssue.State.ToString()
-            };
-            if (doesPropertyExist(pIssue, "Assignee"))
-                result.Owner = pIssue.Assignee;
-            result.Title = getBranchTitle(result.Status, pIssue.Summary.ToString());
-            if (doesPropertyExist(pIssue, "Description"))
-                result.Description = pIssue.Description.ToString();
+                var rawArray = (ExpandoObject[])fields["assignee"];
+                var rawValue = (IDictionary<string, object>)rawArray[0];
+                var fullname = rawValue["fullName"].ToString();
+                result.Owner = fullname;
+            }
+            else
+                result.Owner = "Unassigned";
+
+            if (fields.ContainsKey("description"))
+                result.Description = fields["description"].ToString();
+            
             result.CanBeLinked = true;
             return result;
         }
