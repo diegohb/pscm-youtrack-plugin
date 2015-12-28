@@ -38,6 +38,8 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
 
         public PlasticTask GetPlasticTask(string pTaskID)
         {
+            ensureAuthenticated();
+
             //TODO: implement this as async.
             _log.DebugFormat("YouTrackService: GetPlasticTask {0}", pTaskID);
 
@@ -74,6 +76,8 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
 
         public IEnumerable<PlasticTask> GetPlasticTasks(string[] pTaskIDs)
         {
+            ensureAuthenticated();
+
             _log.DebugFormat("YouTrackService: GetPlasticTasks - {0} task ID(s) supplied", pTaskIDs.Length);
 
             var result = pTaskIDs.Select(pTaskID => GetPlasticTask(pTaskID)).AsParallel();
@@ -87,6 +91,8 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
 
         public YoutrackUser GetAuthenticatedUser()
         {
+            ensureAuthenticated();
+
             var authUser = _ytConnection.GetCurrentAuthenticatedUser();
             var user = new YoutrackUser(authUser.Username, authUser.FullName, authUser.Email);
             return user;
@@ -94,6 +100,12 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
 
         public void Authenticate()
         {
+            if (_ytConnection.IsAuthenticated)
+            {
+                _log.DebugFormat("YouTrackService: Authenticate() was called but already authenticated.");
+                return;
+            }
+
             _authRetryCount++;
             var creds = new NetworkCredential(_config.UserID, _config.Password);
 
@@ -104,11 +116,14 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
             catch (Exception ex)
             {
                 _log.Error(string.Format("YouTrackService: Failed to authenticate with YouTrack server '{0}'.", _config.Host.DnsSafeHost), ex);
+                throw;
             }
         }
 
         public void ClearAuthentication()
         {
+            ensureAuthenticated();
+
             _ytConnection.Logout();
         }
 
@@ -131,6 +146,8 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
 
         public void EnsureIssueInProgress(string pIssueID)
         {
+            ensureAuthenticated();
+
             if (!checkIssueExistenceAndLog(pIssueID)) return;
 
             try
@@ -150,6 +167,8 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
 
         public void AssignIssue(string pIssueID, string pAssignee, bool pAddComment = true)
         {
+            ensureAuthenticated();
+
             if (!checkIssueExistenceAndLog(pIssueID)) return;
 
             try
@@ -188,6 +207,14 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
 
             _log.WarnFormat("Unable to start work on ticket '{0}' because it cannot be found.", pTicketID);
             return false;
+        }
+
+        private void ensureAuthenticated()
+        {
+            if (_ytConnection.IsAuthenticated)
+                return;
+
+            Authenticate();
         }
 
         private string getBranchTitle(string pIssueState, string pIssueSummary)
