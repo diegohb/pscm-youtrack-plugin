@@ -91,7 +91,8 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
 
         public YoutrackUser GetAuthenticatedUser()
         {
-            ensureAuthenticated();
+            if (!_ytConnection.IsAuthenticated)
+                throw new ApplicationException("Not authenticated!");
 
             var authUser = _ytConnection.GetCurrentAuthenticatedUser();
             var user = new YoutrackUser(authUser.Username, authUser.FullName, authUser.Email);
