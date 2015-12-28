@@ -20,6 +20,7 @@ namespace MMG.PlasticExtensions.Tests
         public void GetAuthenticatedUser_ShouldReturnUserWithEmail()
         {
             var svc = new YouTrackService(getTestConfig());
+            svc.Authenticate();
             var user = svc.GetAuthenticatedUser();
             Assert.IsNotNull(user);
 
