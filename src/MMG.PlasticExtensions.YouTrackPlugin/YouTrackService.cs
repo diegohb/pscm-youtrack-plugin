@@ -87,7 +87,7 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
                 //TODO: search within project only.
                 //TODO: customize order by setting.
                 var searchString = string.Format
-                    ("#unresolved #{This month}{0} order by: updated desc",
+                    ("#unresolved #{{This month}}{0} order by: updated desc",
                         string.IsNullOrWhiteSpace(pAssignee) ? string.Empty : string.Format(" for: {0}", pAssignee));
                 var issues = _ytIssues.GetIssuesBySearch(searchString, pMaxCount).ToList();
                 if(!issues.Any())
@@ -225,8 +225,8 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
             var result = new PlasticTask();
             result.Id = fields["id"].ToString();
             var title = fields["summary"].ToString();
-            var rawState = (string[])fields["state"];
-            var state = rawState[0];
+            var rawState = fields["state"] as string[];
+            var state = rawState != null ? rawState[0] : fields["state"].ToString();
             result.Title = getBranchTitle(state, title);
             result.Status = state;
 
@@ -241,7 +241,7 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
                 result.Owner = "Unassigned";
 
             if (fields.ContainsKey("description"))
-                result.Description = fields["description"].ToString();
+                result.Description = fields["description"] as string;
             
             result.CanBeLinked = true;
             return result;
