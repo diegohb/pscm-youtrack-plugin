@@ -111,14 +111,17 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
 
         public List<PlasticTask> GetPendingTasks()
         {
-            //TODO: Implement
-            return new List<PlasticTask>();
+            var plasticTasks = _ytService.GetUnresolvedPlasticTasks().ToList();
+            _log.DebugFormat("YouTrackExtension: Loaded {0} YouTrack unresolved plastic tasks.", plasticTasks.Count);
+            return plasticTasks;
         }
 
         public List<PlasticTask> GetPendingTasks(string pAssignee)
         {
-            //TODO: Implement
-            return new List<PlasticTask>();
+            var plasticTasks = _ytService.GetUnresolvedPlasticTasks(pAssignee).ToList();
+            _log.DebugFormat("YouTrackExtension: Loaded {0} YouTrack unresolved plastic tasks.", plasticTasks.Count);
+            return plasticTasks;
+
         }
 
         public void MarkTaskAsOpen(string pTaskId, string pAssignee)

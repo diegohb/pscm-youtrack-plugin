@@ -77,7 +77,7 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
             return result;
         }
         
-        public IEnumerable<PlasticTask> GetUnresolvedPlasticTasks(int pMaxCount = 1000)
+        public IEnumerable<PlasticTask> GetUnresolvedPlasticTasks(string pAssignee = "", int pMaxCount = 1000)
         {
             ensureAuthenticated();
 
@@ -85,7 +85,9 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
             {
                 //TODO: search within project only.
                 //TODO: customize order by setting.
-                var searchString = "#unresolved #{This month} order by: updated desc"; 
+                var searchString = string.Format
+                    ("#unresolved #{This month}{0} order by: updated desc",
+                        string.IsNullOrWhiteSpace(pAssignee) ? string.Empty : string.Format(" for: {0}", pAssignee));
                 IEnumerable<dynamic> issues = _ytIssues.GetIssuesBySearch(searchString, pMaxCount).ToList();
                 if(!issues.Any())
                     return new List<PlasticTask>();
