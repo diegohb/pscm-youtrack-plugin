@@ -38,24 +38,17 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
 
         public PlasticTask GetPlasticTask(string pTaskID)
         {
+            _log.DebugFormat("YouTrackService: GetPlasticTask {0}", pTaskID);
+
             ensureAuthenticated();
 
             //TODO: implement this as async.
-            _log.DebugFormat("YouTrackService: GetPlasticTask {0}", pTaskID);
-
-            var result = new PlasticTask { Id = pTaskID, CanBeLinked = false };
-
+            
             try
             {
                 dynamic issue = _ytIssues.GetIssue(pTaskID);
                 if (issue != null)
-                {
-                    result.Owner = issue.Assignee.ToString();
-                    result.Status = issue.State.ToString();
-                    result.Title = getBranchTitle(result.Status, issue.Summary.ToString());
-                    result.Description = issue.Description.ToString();
-                    result.CanBeLinked = true;
-                }
+                    return hydratePlasticTaskFromIssue(issue);
             }
             catch (Exception ex)
             {
@@ -71,7 +64,7 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
                 _log.Warn(string.Format("YouTrackService: Failed to find youtrack issue '{0}' due to error.", pTaskID), ex);
             }
 
-            return result;
+            return new PlasticTask { Id = pTaskID, CanBeLinked = false };
         }
 
         public IEnumerable<PlasticTask> GetPlasticTasks(string[] pTaskIDs)
@@ -82,6 +75,29 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
 
             var result = pTaskIDs.Select(pTaskID => GetPlasticTask(pTaskID)).AsParallel();
             return result;
+        }
+        
+        public IEnumerable<PlasticTask> GetUnresolvedPlasticTasks(int pMaxCount = 1000)
+        {
+            ensureAuthenticated();
+
+            try
+            {
+                //TODO: search within project only.
+                //TODO: customize order by setting.
+                var searchString = "#unresolved #{This month} order by: updated desc"; 
+                IEnumerable<dynamic> issues = _ytIssues.GetIssuesBySearch(searchString, pMaxCount).ToList();
+                if(!issues.Any())
+                    return new List<PlasticTask>();
+
+                var tasks = issues.Select(pIssue => hydratePlasticTaskFromIssue(pIssue)).Cast<PlasticTask>();
+                return tasks.ToList();
+            }
+            catch (Exception ex)
+            {
+                _log.Error("YouTrackService: Failed to fetch unresolved issues.", ex);
+                throw;
+            }
         }
 
         public string GetIssueWebUrl(string pIssueID)
@@ -202,6 +218,25 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
 
         #region Support Methods
 
+        private PlasticTask hydratePlasticTaskFromIssue(dynamic pIssue)
+        {
+            if (pIssue == null)
+                throw new ArgumentNullException("pIssue");
+
+            var result = new PlasticTask
+            {
+                Id = pIssue.id.ToString(),
+                Status = pIssue.State.ToString()
+            };
+            if (doesPropertyExist(pIssue, "Assignee"))
+                result.Owner = pIssue.Assignee;
+            result.Title = getBranchTitle(result.Status, pIssue.Summary.ToString());
+            if (doesPropertyExist(pIssue, "Description"))
+                result.Description = pIssue.Description.ToString();
+            result.CanBeLinked = true;
+            return result;
+        }
+
         private bool checkIssueExistenceAndLog(string pTicketID)
         {
             if (_ytIssues.CheckIfIssueExists(pTicketID)) return true;
@@ -254,6 +289,11 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
         {
             if (string.IsNullOrWhiteSpace(pSettingValue))
                 throw new ApplicationException(string.Format("YouTrack setting '{0}' cannot be null or empty!", pSettingName));
+        }
+
+        private static bool doesPropertyExist(dynamic pObject, string pPropertyName)
+        {
+            return pObject.GetType().GetProperty(pPropertyName) != null;
         }
 
         #endregion

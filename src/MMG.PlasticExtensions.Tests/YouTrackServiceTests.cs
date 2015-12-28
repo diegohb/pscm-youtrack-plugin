@@ -63,6 +63,15 @@ namespace MMG.PlasticExtensions.Tests
             svc.AssignIssue(testIssueID, "dbustamante");
         }
 
+        [Test]
+        public void GetUnresolvedIssues_ShouldReturnTicketsUnresolved()
+        {
+            var config = getTestConfig();
+            var svc = new YouTrackService(config);
+            var issues = svc.GetUnresolvedPlasticTasks();
+            CollectionAssert.IsNotEmpty(issues);
+        }
+
         private YouTrackExtensionConfigFacade getTestConfig()
         {
             var testStoredConfig = new IssueTrackerConfiguration()
