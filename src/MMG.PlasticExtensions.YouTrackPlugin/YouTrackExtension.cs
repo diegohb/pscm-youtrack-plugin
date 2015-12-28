@@ -97,9 +97,9 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
 
         public void OpenTaskExternally(string pTaskId)
         {
-            _log.DebugFormat("YouTrackExtension: Open task '{0}'", pTaskId);
-
-            Process.Start(string.Format("{0}/issue/{1}", _ytService.GetBaseURL(), pTaskId));
+            var issueWebUrl = _ytService.GetIssueWebUrl(pTaskId);
+            _log.DebugFormat("YouTrackExtension: Open task '{0}' at {1}", pTaskId, issueWebUrl);
+            Process.Start(issueWebUrl);
         }
 
         public List<PlasticTask> LoadTasks(List<string> pTaskIds)

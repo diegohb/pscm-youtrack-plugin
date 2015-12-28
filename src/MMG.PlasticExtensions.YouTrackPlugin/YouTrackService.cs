@@ -84,9 +84,9 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
             return result;
         }
 
-        public string GetBaseURL()
+        public string GetIssueWebUrl(string pIssueID)
         {
-            return _config.Host.ToString();
+            return new Uri(_config.Host, string.Format("/issue/{0}", pIssueID)).ToString();
         }
 
         public YoutrackUser GetAuthenticatedUser()
