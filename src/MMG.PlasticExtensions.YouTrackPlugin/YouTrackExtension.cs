@@ -123,7 +123,15 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
 
         public void MarkTaskAsOpen(string pTaskId, string pAssignee)
         {
-            //TODO: Implement
+            try
+            {
+                _ytService.EnsureIssueInProgress(pTaskId);
+                _ytService.AssignIssue(pTaskId, pAssignee, false);
+            }
+            catch (Exception e)
+            {
+                _log.Error(string.Format("Failed to set issue '{0}' open and assigned.", pTaskId), e);
+            }
         }
 
         #endregion

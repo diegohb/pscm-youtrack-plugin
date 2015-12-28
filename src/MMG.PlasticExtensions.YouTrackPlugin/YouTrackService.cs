@@ -9,6 +9,7 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
     using System;
     using System.Collections;
     using System.Collections.Generic;
+    using System.Dynamic;
     using System.Linq;
     using System.Net;
     using Codice.Client.IssueTracker;
@@ -40,7 +41,7 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
             //TODO: implement this as async.
             _log.DebugFormat("YouTrackService: GetPlasticTask {0}", pTaskID);
 
-            var result = new PlasticTask {Id = pTaskID, CanBeLinked = false};
+            var result = new PlasticTask { Id = pTaskID, CanBeLinked = false };
 
             try
             {
@@ -75,7 +76,7 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
         {
             _log.DebugFormat("YouTrackService: GetPlasticTasks - {0} task ID(s) supplied", pTaskIDs.Length);
 
-            var result= pTaskIDs.Select(pTaskID => GetPlasticTask(pTaskID)).AsParallel();
+            var result = pTaskIDs.Select(pTaskID => GetPlasticTask(pTaskID)).AsParallel();
             return result;
         }
 
@@ -90,7 +91,7 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
             var user = new YoutrackUser(authUser.Username, authUser.FullName, authUser.Email);
             return user;
         }
-        
+
         public void Authenticate()
         {
             _authRetryCount++;
@@ -117,7 +118,7 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
 
             try
             {
-                var testConnection = new Connection(pConfig.Host.DnsSafeHost,pConfig.Host.Port, pConfig.UseSSL);
+                var testConnection = new Connection(pConfig.Host.DnsSafeHost, pConfig.Host.Port, pConfig.UseSSL);
                 testConnection.Authenticate(pConfig.UserID, pConfig.Password);
                 testConnection.Logout();
             }
@@ -128,7 +129,66 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
             }
         }
 
+        public void EnsureIssueInProgress(string pIssueID)
+        {
+            if (!checkIssueExistenceAndLog(pIssueID)) return;
+
+            try
+            {
+                dynamic issue = _ytIssues.GetIssue(pIssueID);
+                if (issue.State.ToString() != "In Progress")
+                    _ytIssues.ApplyCommand(pIssueID, "State: In Progress", string.Format("User '{0}' has created a branch for this task.", GetAuthenticatedUser().Username));
+                else
+                    _log.InfoFormat("Issue '{0}' already marked in-progress.", pIssueID);
+            }
+            catch (Exception ex)
+            {
+                _log.Error("Unable to mark issue '{0}' in-progress.", ex);
+                throw new ApplicationException("Error occurred marking issue in-progress.", ex);
+            }
+        }
+
+        public void AssignIssue(string pIssueID, string pAssignee, bool pAddComment = true)
+        {
+            if (!checkIssueExistenceAndLog(pIssueID)) return;
+
+            try
+            {
+                dynamic issue = _ytIssues.GetIssue(pIssueID);
+                string currentAssignee;
+
+                try
+                {
+                    currentAssignee = issue.Assignee.ToString();
+                }
+                catch (Exception)
+                {
+                    currentAssignee = string.Empty;
+                }
+
+                if (!string.Equals(currentAssignee, pAssignee, StringComparison.InvariantCultureIgnoreCase))
+                {
+                    var comment = string.Format("Assigned by PlasticSCM to user '{0}'.", pAssignee);
+                    _ytIssues.ApplyCommand(pIssueID, string.Format("for {0}", pAssignee), pAddComment ? comment : string.Empty);
+                }
+            }
+            catch (Exception ex)
+            {
+                _log.Error(string.Format("Unable to assign issue '{0}' to '{1}'.", pIssueID, pAssignee), ex);
+                throw new ApplicationException("Error occurred marking issue assigned.", ex);
+            }
+        }
+
+
         #region Support Methods
+
+        private bool checkIssueExistenceAndLog(string pTicketID)
+        {
+            if (_ytIssues.CheckIfIssueExists(pTicketID)) return true;
+
+            _log.WarnFormat("Unable to start work on ticket '{0}' because it cannot be found.", pTicketID);
+            return false;
+        }
 
         private string getBranchTitle(string pIssueState, string pIssueSummary)
         {
@@ -146,7 +206,7 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
                 ? pIssueSummary
                 : string.Format("{0} [{1}]", pIssueSummary, pIssueState);
         }
-        
+
         private void validateConfig(YouTrackExtensionConfigFacade pConfig)
         {
             /*//validate URL

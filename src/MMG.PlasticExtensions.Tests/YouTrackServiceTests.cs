@@ -12,7 +12,7 @@ namespace MMG.PlasticExtensions.Tests
     using NUnit.Framework;
     using YouTrackPlugin;
 
-    [TestFixture]
+    [TestFixture, Ignore("These aren't real unit tests and must be run manually after configuring app.config values.")]
     public class YouTrackServiceTests
     {
         
@@ -37,6 +37,30 @@ namespace MMG.PlasticExtensions.Tests
             Assert.IsNotNull(actualTask);
             Assert.AreEqual(expectedIssueKey, actualTask.Id);
             Assert.IsTrue(actualTask.CanBeLinked);
+        }
+
+        [Test]
+        public void BeginWorkOnIssue_ShouldUpdateTicketToInProgress()
+        {
+            var config = getTestConfig();
+            var svc = new YouTrackService(config);
+            svc.Authenticate();
+            Assert.IsNotNull(svc.GetAuthenticatedUser());
+
+            var testIssueID = ConfigurationManager.AppSettings["test.issueKey"];
+            svc.EnsureIssueInProgress(testIssueID);
+        }
+
+        [Test]
+        public void AssignIssue_ShouldUpdateTicketToAssigned()
+        {
+            var config = getTestConfig();
+            var svc = new YouTrackService(config);
+            svc.Authenticate();
+            Assert.IsNotNull(svc.GetAuthenticatedUser());
+
+            var testIssueID = ConfigurationManager.AppSettings["test.issueKey"];
+            svc.AssignIssue(testIssueID, "dbustamante");
         }
 
         private YouTrackExtensionConfigFacade getTestConfig()
