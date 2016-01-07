@@ -73,6 +73,16 @@ namespace MMG.PlasticExtensions.Tests
             CollectionAssert.IsNotEmpty(issues);
         }
 
+        [Test]
+        public void GetUnresolvedIssuesByAssignee_ShouldReturnTicketsForAssignee()
+        {
+            var config = getTestConfig();
+            var svc = new YouTrackService(config);
+            var assigneeName = ConfigurationManager.AppSettings["test.fieldValue"];
+            var issues = svc.GetUnresolvedPlasticTasks(assigneeName);
+            CollectionAssert.IsNotEmpty(issues);
+        }
+
         private YouTrackExtensionConfigFacade getTestConfig()
         {
             var testStoredConfig = new IssueTrackerConfiguration()
