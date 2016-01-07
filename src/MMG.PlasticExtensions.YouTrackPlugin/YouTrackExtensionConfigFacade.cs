@@ -22,6 +22,7 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
         private readonly bool _showIssueStateInTitle;
         private readonly string _closedIssueStates;
         private readonly bool _defaultInit;
+        private readonly string _usernameMapping;
 
 
         internal YouTrackExtensionConfigFacade()
@@ -32,6 +33,7 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
             _password = "";
             _showIssueStateInTitle = false;
             _closedIssueStates = "Completed";
+            _usernameMapping = "";
 
             _defaultInit = true;
             _log.Debug("YouTrackExtensionConfigFacade: empty ctor called");
@@ -50,6 +52,7 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
             _password = getValidParameterValue(ConfigParameterNames.Password);
             _showIssueStateInTitle = bool.Parse(getValidParameterValue(ConfigParameterNames.ShowIssueStateInBranchTitle, "false"));
             _closedIssueStates = getValidParameterValue(ConfigParameterNames.ClosedIssueStates, "Completed");
+            _usernameMapping = getValidParameterValue(ConfigParameterNames.UsernameMapping);
 
             _defaultInit = false;
             _log.Debug("YouTrackExtensionConfigFacade: ctor called");
@@ -63,6 +66,11 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
         public Uri Host
         {
             get { return _hostUri; }
+        }
+
+        public string UsernameMapping
+        {
+            get { return _usernameMapping; }
         }
 
         public string UserID
@@ -127,7 +135,14 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
                     Type = IssueTrackerConfigurationParameterType.Host,
                     IsGlobal = true
                 });
-
+            parameters.Add
+                (new IssueTrackerConfigurationParameter
+                {
+                    Name = ConfigParameterNames.UsernameMapping,
+                    Value = UsernameMapping,
+                    Type = IssueTrackerConfigurationParameterType.Text,
+                    IsGlobal = true
+                });
             parameters.Add
                 (new IssueTrackerConfigurationParameter
                 {
