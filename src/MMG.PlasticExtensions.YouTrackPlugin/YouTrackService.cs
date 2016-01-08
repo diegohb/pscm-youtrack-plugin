@@ -1,6 +1,6 @@
 // *************************************************
 // MMG.PlasticExtensions.YouTrackPlugin.YouTrackService.cs
-// Last Modified: 12/27/2015 2:51 PM
+// Last Modified: 01/07/2016 6:25 PM
 // Modified By: Bustamante, Diego (bustamd1)
 // *************************************************
 
@@ -14,7 +14,6 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
     using System.Net;
     using Codice.Client.IssueTracker;
     using log4net;
-    using Microsoft.CSharp.RuntimeBinder;
     using Models;
     using YouTrackSharp.Infrastructure;
     using YouTrackSharp.Issues;
@@ -29,8 +28,6 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
 
         public YouTrackService(YouTrackExtensionConfigFacade pConfig)
         {
-            validateConfig(pConfig);
-
             _config = pConfig;
             _ytConnection = new Connection(_config.Host.DnsSafeHost, _config.Host.Port, _config.UseSSL);
             _ytIssues = new IssueManagement(_ytConnection);
@@ -128,8 +125,10 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
                 return;
             }
 
+            validateConfig(_config);
+
             _authRetryCount++;
-            var creds = new NetworkCredential(_config.UserID, _config.Password);
+            var creds = new NetworkCredential(_config.UserID, _config.GetDecryptedPassword());
 
             try
             {
@@ -149,14 +148,14 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
             _ytConnection.Logout();
         }
 
-        public void VerifyConfiguration(YouTrackExtensionConfigFacade pConfig)
+        public static void VerifyConfiguration(YouTrackExtensionConfigFacade pConfig)
         {
             validateConfig(pConfig);
 
             try
             {
                 var testConnection = new Connection(pConfig.Host.DnsSafeHost, pConfig.Host.Port, pConfig.UseSSL);
-                testConnection.Authenticate(pConfig.UserID, pConfig.Password);
+                testConnection.Authenticate(pConfig.UserID, pConfig.GetDecryptedPassword());
                 testConnection.Logout();
             }
             catch (Exception e)
@@ -301,8 +300,11 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
                 : string.Format("{0} [{1}]", pIssueSummary, pIssueState);
         }
 
-        private void validateConfig(YouTrackExtensionConfigFacade pConfig)
+        private static void validateConfig(YouTrackExtensionConfigFacade pConfig)
         {
+            if (pConfig.Host.Host.Equals("issues.domain.com", StringComparison.InvariantCultureIgnoreCase))
+                return;
+
             /*//validate URL
             var testConnection = new Connection(pConfig.Host.DnsSafeHost, pConfig.Host.Port, pConfig.UseSSL);
             testConnection.Head("/rest/user/login");*/
@@ -313,10 +315,9 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
             throwErrorIfRequiredStringSettingIsMissing(pConfig.BranchPrefix, ConfigParameterNames.BranchPrefix);
             throwErrorIfRequiredStringSettingIsMissing(pConfig.UserID, ConfigParameterNames.UserID);
             throwErrorIfRequiredStringSettingIsMissing(pConfig.Password, ConfigParameterNames.Password);
-
         }
 
-        private void throwErrorIfRequiredStringSettingIsMissing(string pSettingValue, string pSettingName)
+        private static void throwErrorIfRequiredStringSettingIsMissing(string pSettingValue, string pSettingName)
         {
             if (string.IsNullOrWhiteSpace(pSettingValue))
                 throw new ApplicationException(string.Format("YouTrack setting '{0}' cannot be null or empty!", pSettingName));

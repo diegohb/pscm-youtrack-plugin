@@ -53,10 +53,12 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
 
         public bool TestConnection(IssueTrackerConfiguration pConfiguration)
         {
+            _log.Debug("YouTrackExtension: TestConnection - start");
+
             try
             {
                 var config = new YouTrackExtensionConfigFacade(pConfiguration);
-                _ytService.VerifyConfiguration(config);
+                YouTrackService.VerifyConfiguration(config);
                 return true;
             }
             catch (Exception)
