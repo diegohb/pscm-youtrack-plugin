@@ -74,7 +74,7 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
             var result = pTaskIDs.Select(pTaskID => GetPlasticTask(pTaskID)).AsParallel();
             return result;
         }
-
+        
         public IEnumerable<PlasticTask> GetUnresolvedPlasticTasks(string pAssignee = "", int pMaxCount = 1000)
         {
             ensureAuthenticated();
@@ -83,11 +83,13 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
             {
                 //TODO: search within project only.
                 //TODO: customize order by setting.
+
+                var assignee = applyUserMapping(pAssignee);
                 var searchString = string.Format
                     ("#unresolved #{{This month}}{0} order by: updated desc",
-                        string.IsNullOrWhiteSpace(pAssignee) ? string.Empty : string.Format(" for: {0}", pAssignee));
+                        string.IsNullOrWhiteSpace(assignee) ? string.Empty : string.Format(" for: {0}", assignee));
                 var issues = _ytIssues.GetIssuesBySearch(searchString, pMaxCount).ToList();
-                if (!issues.Any())
+                if(!issues.Any())
                     return new List<PlasticTask>();
 
                 var tasks = issues.Select(pIssue => hydratePlasticTaskFromIssue(pIssue));
@@ -213,7 +215,35 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
             }
         }
 
+
         #region Support Methods
+
+        /// <summary>
+        /// This method will take the mapping setting and allow mapping different authentication methods' usernames to issue username. 
+        /// </summary>
+        /// <param name="pAssignee">The username specified for configuration value UserID</param>
+        /// <returns>the username to pass to youtrack to filter for issues assignee.</returns>
+        private string applyUserMapping(string pAssignee)
+        {
+            if (string.IsNullOrEmpty(pAssignee))
+                return string.Empty;
+
+            var youtrackAuthUsername = pAssignee;
+
+            try
+            {
+                var usernameMappings = _config.UsernameMapping.Split(';')
+                    .Select(pMapping => new KeyValuePair<string, string>(pMapping.Split(':')[0], pMapping.Split(':')[1])).ToDictionary(p => p.Key, p => p.Value);
+                var youtrackIssueUsername = usernameMappings[youtrackAuthUsername];
+
+                return string.IsNullOrEmpty(youtrackIssueUsername) ? youtrackAuthUsername : youtrackIssueUsername;
+            }
+            catch (Exception e)
+            {
+                _log.Error("Error occurred trying to apply user mappings.", e);
+                return youtrackAuthUsername;
+            }
+        }
 
         private PlasticTask hydratePlasticTaskFromIssue(Issue pIssue)
         {
@@ -232,17 +262,22 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
 
             if (fields.ContainsKey("assignee"))
             {
-                var rawArray = (ExpandoObject[]) fields["assignee"];
-                var rawValue = (IDictionary<string, object>) rawArray[0];
-                var fullname = rawValue["fullName"].ToString();
-                result.Owner = fullname;
+                var rawArray = (ExpandoObject[])fields["assignee"];
+                var rawValue = (IDictionary<string, object>)rawArray[0];
+                //TODO: can be reimplemented once a setting is created to allow user to choose username or display name. 
+                // if user displayName, will need to also implement API call to YT for user info.
+                //var fullname = rawValue["fullName"].ToString(); 
+                var issueUsername = rawValue["value"].ToString();
+                result.Owner = issueUsername;
             }
+            else if (fields.ContainsKey("assigneename"))
+                result.Owner = fields["assigneename"] as string;
             else
                 result.Owner = "Unassigned";
 
             if (fields.ContainsKey("description"))
                 result.Description = fields["description"] as string;
-
+            
             result.CanBeLinked = true;
             return result;
         }

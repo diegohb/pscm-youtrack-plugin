@@ -6,8 +6,10 @@
 
 namespace MMG.PlasticExtensions.Tests
 {
+    using System;
     using System.Collections.Generic;
     using System.Configuration;
+    using System.Linq;
     using Codice.Client.IssueTracker;
     using NUnit.Framework;
     using YouTrackPlugin;
@@ -69,8 +71,10 @@ namespace MMG.PlasticExtensions.Tests
         {
             var config = getTestConfig();
             var svc = new YouTrackService(config);
-            var issues = svc.GetUnresolvedPlasticTasks();
+            var issues = svc.GetUnresolvedPlasticTasks().ToList();
             CollectionAssert.IsNotEmpty(issues);
+            var assigneeName = ConfigurationManager.AppSettings["test.fieldValue"];
+            Assert.IsTrue(issues.Any(pIssue => !pIssue.Owner.Equals(assigneeName, StringComparison.InvariantCultureIgnoreCase)));
         }
 
         [Test]
@@ -79,8 +83,9 @@ namespace MMG.PlasticExtensions.Tests
             var config = getTestConfig();
             var svc = new YouTrackService(config);
             var assigneeName = ConfigurationManager.AppSettings["test.fieldValue"];
-            var issues = svc.GetUnresolvedPlasticTasks(assigneeName);
+            var issues = svc.GetUnresolvedPlasticTasks(assigneeName).ToList();
             CollectionAssert.IsNotEmpty(issues);
+            Assert.IsTrue(issues.All(pIssue=> pIssue.Owner.Equals(assigneeName, StringComparison.InvariantCultureIgnoreCase)));
         }
 
         private YouTrackExtensionConfigFacade getTestConfig()
