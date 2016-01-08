@@ -146,7 +146,7 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
             _ytConnection.Logout();
         }
 
-        public void VerifyConfiguration(YouTrackExtensionConfigFacade pConfig)
+        public static void VerifyConfiguration(YouTrackExtensionConfigFacade pConfig)
         {
             validateConfig(pConfig);
 
@@ -280,7 +280,7 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
                 : string.Format("{0} [{1}]", pIssueSummary, pIssueState);
         }
 
-        private void validateConfig(YouTrackExtensionConfigFacade pConfig)
+        private static void validateConfig(YouTrackExtensionConfigFacade pConfig)
         {
             if (pConfig.Host.Host.Equals("issues.domain.com", StringComparison.InvariantCultureIgnoreCase))
                 return;
@@ -297,7 +297,7 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
             throwErrorIfRequiredStringSettingIsMissing(pConfig.Password, ConfigParameterNames.Password);
         }
 
-        private void throwErrorIfRequiredStringSettingIsMissing(string pSettingValue, string pSettingName)
+        private static void throwErrorIfRequiredStringSettingIsMissing(string pSettingValue, string pSettingName)
         {
             if (string.IsNullOrWhiteSpace(pSettingValue))
                 throw new ApplicationException(string.Format("YouTrack setting '{0}' cannot be null or empty!", pSettingName));

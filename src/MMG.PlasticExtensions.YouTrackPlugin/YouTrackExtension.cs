@@ -58,7 +58,7 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
             try
             {
                 var config = new YouTrackExtensionConfigFacade(pConfiguration);
-                _ytService.VerifyConfiguration(config);
+                YouTrackService.VerifyConfiguration(config);
                 return true;
             }
             catch (Exception)
