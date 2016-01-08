@@ -1,6 +1,6 @@
 // *************************************************
 // MMG.PlasticExtensions.YouTrackPlugin.YouTrackService.cs
-// Last Modified: 12/27/2015 2:51 PM
+// Last Modified: 01/07/2016 6:25 PM
 // Modified By: Bustamante, Diego (bustamd1)
 // *************************************************
 
@@ -14,7 +14,6 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
     using System.Net;
     using Codice.Client.IssueTracker;
     using log4net;
-    using Microsoft.CSharp.RuntimeBinder;
     using Models;
     using YouTrackSharp.Infrastructure;
     using YouTrackSharp.Issues;
@@ -29,8 +28,6 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
 
         public YouTrackService(YouTrackExtensionConfigFacade pConfig)
         {
-            validateConfig(pConfig);
-
             _config = pConfig;
             _ytConnection = new Connection(_config.Host.DnsSafeHost, _config.Host.Port, _config.UseSSL);
             _ytIssues = new IssueManagement(_ytConnection);
@@ -44,7 +41,7 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
             ensureAuthenticated();
 
             //TODO: implement this as async.
-            
+
             try
             {
                 var issue = _ytIssues.GetIssue(pTaskID);
@@ -65,7 +62,7 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
                 _log.Warn(string.Format("YouTrackService: Failed to fetch youtrack issue '{0}' due to error.", pTaskID), ex);
             }
 
-            return new PlasticTask { Id = pTaskID, CanBeLinked = false };
+            return new PlasticTask {Id = pTaskID, CanBeLinked = false};
         }
 
         public IEnumerable<PlasticTask> GetPlasticTasks(string[] pTaskIDs)
@@ -77,7 +74,7 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
             var result = pTaskIDs.Select(pTaskID => GetPlasticTask(pTaskID)).AsParallel();
             return result;
         }
-        
+
         public IEnumerable<PlasticTask> GetUnresolvedPlasticTasks(string pAssignee = "", int pMaxCount = 1000)
         {
             ensureAuthenticated();
@@ -90,7 +87,7 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
                     ("#unresolved #{{This month}}{0} order by: updated desc",
                         string.IsNullOrWhiteSpace(pAssignee) ? string.Empty : string.Format(" for: {0}", pAssignee));
                 var issues = _ytIssues.GetIssuesBySearch(searchString, pMaxCount).ToList();
-                if(!issues.Any())
+                if (!issues.Any())
                     return new List<PlasticTask>();
 
                 var tasks = issues.Select(pIssue => hydratePlasticTaskFromIssue(pIssue));
@@ -126,8 +123,10 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
                 return;
             }
 
+            validateConfig(_config);
+
             _authRetryCount++;
-            var creds = new NetworkCredential(_config.UserID, _config.Password);
+            var creds = new NetworkCredential(_config.UserID, _config.GetDecryptedPassword());
 
             try
             {
@@ -147,14 +146,14 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
             _ytConnection.Logout();
         }
 
-        public void VerifyConfiguration(YouTrackExtensionConfigFacade pConfig)
+        public static void VerifyConfiguration(YouTrackExtensionConfigFacade pConfig)
         {
             validateConfig(pConfig);
 
             try
             {
                 var testConnection = new Connection(pConfig.Host.DnsSafeHost, pConfig.Host.Port, pConfig.UseSSL);
-                testConnection.Authenticate(pConfig.UserID, pConfig.Password);
+                testConnection.Authenticate(pConfig.UserID, pConfig.GetDecryptedPassword());
                 testConnection.Logout();
             }
             catch (Exception e)
@@ -174,7 +173,9 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
             {
                 dynamic issue = _ytIssues.GetIssue(pIssueID);
                 if (issue.State.ToString() != "In Progress")
-                    _ytIssues.ApplyCommand(pIssueID, "State: In Progress", string.Format("User '{0}' has created a branch for this task.", GetAuthenticatedUser().Username));
+                    _ytIssues.ApplyCommand
+                        (pIssueID, "State: In Progress",
+                            string.Format("User '{0}' has created a branch for this task.", GetAuthenticatedUser().Username));
                 else
                     _log.InfoFormat("Issue '{0}' already marked in-progress.", pIssueID);
             }
@@ -196,9 +197,9 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
                 dynamic issue = _ytIssues.GetIssue(pIssueID);
                 var currentAssignee = string.Empty;
 
-                if(doesPropertyExist(issue, "Assignee"))
+                if (doesPropertyExist(issue, "Assignee"))
                     currentAssignee = issue.Assignee.ToString();
-                
+
                 if (!string.Equals(currentAssignee, pAssignee, StringComparison.InvariantCultureIgnoreCase))
                 {
                     var comment = string.Format("Assigned by PlasticSCM to user '{0}'.", pAssignee);
@@ -211,7 +212,6 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
                 throw new ApplicationException("Error occurred marking issue assigned.", ex);
             }
         }
-
 
         #region Support Methods
 
@@ -232,8 +232,8 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
 
             if (fields.ContainsKey("assignee"))
             {
-                var rawArray = (ExpandoObject[])fields["assignee"];
-                var rawValue = (IDictionary<string, object>)rawArray[0];
+                var rawArray = (ExpandoObject[]) fields["assignee"];
+                var rawValue = (IDictionary<string, object>) rawArray[0];
                 var fullname = rawValue["fullName"].ToString();
                 result.Owner = fullname;
             }
@@ -242,7 +242,7 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
 
             if (fields.ContainsKey("description"))
                 result.Description = fields["description"] as string;
-            
+
             result.CanBeLinked = true;
             return result;
         }
@@ -280,8 +280,11 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
                 : string.Format("{0} [{1}]", pIssueSummary, pIssueState);
         }
 
-        private void validateConfig(YouTrackExtensionConfigFacade pConfig)
+        private static void validateConfig(YouTrackExtensionConfigFacade pConfig)
         {
+            if (pConfig.Host.Host.Equals("issues.domain.com", StringComparison.InvariantCultureIgnoreCase))
+                return;
+
             /*//validate URL
             var testConnection = new Connection(pConfig.Host.DnsSafeHost, pConfig.Host.Port, pConfig.UseSSL);
             testConnection.Head("/rest/user/login");*/
@@ -292,10 +295,9 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
             throwErrorIfRequiredStringSettingIsMissing(pConfig.BranchPrefix, ConfigParameterNames.BranchPrefix);
             throwErrorIfRequiredStringSettingIsMissing(pConfig.UserID, ConfigParameterNames.UserID);
             throwErrorIfRequiredStringSettingIsMissing(pConfig.Password, ConfigParameterNames.Password);
-
         }
 
-        private void throwErrorIfRequiredStringSettingIsMissing(string pSettingValue, string pSettingName)
+        private static void throwErrorIfRequiredStringSettingIsMissing(string pSettingValue, string pSettingName)
         {
             if (string.IsNullOrWhiteSpace(pSettingValue))
                 throw new ApplicationException(string.Format("YouTrack setting '{0}' cannot be null or empty!", pSettingName));
@@ -307,6 +309,5 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
         }
 
         #endregion
-
     }
 }

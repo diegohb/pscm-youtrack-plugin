@@ -8,8 +8,10 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
 {
     using System;
     using System.Collections.Generic;
+    using System.Security;
     using Codice.Client.IssueTracker;
     using log4net;
+    using Codice.Utils;
 
     public class YouTrackExtensionConfigFacade
     {
@@ -28,7 +30,7 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
         {
             _branchPrefix = "yt_";
             _hostUri = new Uri("http://issues.domain.com");
-            _userID = "myusername";
+            _userID = "";
             _password = "";
             _showIssueStateInTitle = false;
             _closedIssueStates = "Completed";
@@ -83,6 +85,11 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
         public bool ShowIssueStateInBranchTitle
         {
             get { return _showIssueStateInTitle; }
+        }
+
+        internal bool IsDefaultInit
+        {
+            get { return _defaultInit; }
         }
 
         /// <summary>
@@ -141,7 +148,7 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
                 {
                     Name = ConfigParameterNames.Password,
                     Value = Password,
-                    Type = IssueTrackerConfigurationParameterType.Text, //TODO: figure out how to use Password setting (IssueTrackerConfigurationParameterType.Password)
+                    Type = IssueTrackerConfigurationParameterType.Password,
                     IsGlobal = false
                 });
             parameters.Add
@@ -162,6 +169,19 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
                 });
 
             return parameters;
+        }
+
+        internal string GetDecryptedPassword()
+        {
+
+            if (_config == null)
+                throw new ApplicationException("The configuration has not yet been initialized!");
+
+            if (string.IsNullOrEmpty(Password))
+                throw new ApplicationException("Password value can not be empty!");
+
+            var decryptedPassword = CryptoServices.GetDecryptedPassword(Password);
+            return decryptedPassword;
         }
 
         private string getValidParameterValue(string pParamName, string pDefaultValue = "")
