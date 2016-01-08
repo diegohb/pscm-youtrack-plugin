@@ -141,7 +141,7 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
                 {
                     Name = ConfigParameterNames.Password,
                     Value = Password,
-                    Type = IssueTrackerConfigurationParameterType.Text, //TODO: figure out how to use Password setting (IssueTrackerConfigurationParameterType.Password)
+                    Type = IssueTrackerConfigurationParameterType.Password,
                     IsGlobal = false
                 });
             parameters.Add
