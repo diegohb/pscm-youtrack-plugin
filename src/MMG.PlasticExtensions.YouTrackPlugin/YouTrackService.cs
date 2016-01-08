@@ -216,22 +216,30 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
 
         #region Support Methods
 
+        /// <summary>
+        /// This method will take the mapping setting and allow mapping different authentication methods' usernames to issue username. 
+        /// </summary>
+        /// <param name="pAssignee">The username specified for configuration value UserID</param>
+        /// <returns>the username to pass to youtrack to filter for issues assignee.</returns>
         private string applyUserMapping(string pAssignee)
         {
-            var leftUsername = string.IsNullOrEmpty(pAssignee) ? GetAuthenticatedUser().Username : pAssignee;
+            if (string.IsNullOrEmpty(pAssignee))
+                return string.Empty;
+
+            var youtrackAuthUsername = pAssignee;
 
             try
             {
                 var usernameMappings = _config.UsernameMapping.Split(';')
                     .Select(pMapping => new KeyValuePair<string, string>(pMapping.Split(':')[0], pMapping.Split(':')[1])).ToDictionary(p => p.Key, p => p.Value);
-                var rightUsername = usernameMappings[leftUsername];
+                var youtrackIssueUsername = usernameMappings[youtrackAuthUsername];
 
-                return string.IsNullOrEmpty(rightUsername) ? leftUsername : rightUsername;
+                return string.IsNullOrEmpty(youtrackIssueUsername) ? youtrackAuthUsername : youtrackIssueUsername;
             }
             catch (Exception e)
             {
                 _log.Error("Error occurred trying to apply user mappings.", e);
-                return leftUsername;
+                return youtrackAuthUsername;
             }
         }
 
