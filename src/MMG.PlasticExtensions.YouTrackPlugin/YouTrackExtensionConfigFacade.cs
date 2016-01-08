@@ -8,8 +8,10 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
 {
     using System;
     using System.Collections.Generic;
+    using System.Security;
     using Codice.Client.IssueTracker;
     using log4net;
+    using Codice.Utils;
 
     public class YouTrackExtensionConfigFacade
     {
@@ -162,6 +164,19 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
                 });
 
             return parameters;
+        }
+
+        internal string GetDecryptedPassword()
+        {
+
+            if (_config == null)
+                throw new ApplicationException("The configuration has not yet been initialized!");
+
+            if (string.IsNullOrEmpty(Password))
+                throw new ApplicationException("Password value can not be empty!");
+
+            var decryptedPassword = CryptoServices.GetDecryptedPassword(Password);
+            return decryptedPassword;
         }
 
         private string getValidParameterValue(string pParamName, string pDefaultValue = "")

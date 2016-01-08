@@ -127,7 +127,7 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
             }
 
             _authRetryCount++;
-            var creds = new NetworkCredential(_config.UserID, _config.Password);
+            var creds = new NetworkCredential(_config.UserID, _config.GetDecryptedPassword());
 
             try
             {
@@ -154,7 +154,7 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
             try
             {
                 var testConnection = new Connection(pConfig.Host.DnsSafeHost, pConfig.Host.Port, pConfig.UseSSL);
-                testConnection.Authenticate(pConfig.UserID, pConfig.Password);
+                testConnection.Authenticate(pConfig.UserID, pConfig.GetDecryptedPassword());
                 testConnection.Logout();
             }
             catch (Exception e)
