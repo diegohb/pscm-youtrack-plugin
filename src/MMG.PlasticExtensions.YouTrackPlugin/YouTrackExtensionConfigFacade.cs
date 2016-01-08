@@ -1,6 +1,6 @@
 ﻿// *************************************************
 // MMG.PlasticExtensions.YouTrackPlugin.YouTrackExtensionConfigFacade.cs
-// Last Modified: 12/27/2015 3:47 PM
+// Last Modified: 01/08/2016 8:12 AM
 // Modified By: Bustamante, Diego (bustamd1)
 // *************************************************
 
@@ -8,10 +8,9 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
 {
     using System;
     using System.Collections.Generic;
-    using System.Security;
     using Codice.Client.IssueTracker;
-    using log4net;
     using Codice.Utils;
+    using log4net;
 
     public class YouTrackExtensionConfigFacade
     {
@@ -145,18 +144,18 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
             parameters.Add
                 (new IssueTrackerConfigurationParameter
                 {
-                    Name = ConfigParameterNames.UsernameMapping,
-                    Value = UsernameMapping,
-                    Type = IssueTrackerConfigurationParameterType.Text,
-                    IsGlobal = true
-                });
-            parameters.Add
-                (new IssueTrackerConfigurationParameter
-                {
                     Name = ConfigParameterNames.UserID,
                     Value = UserID,
                     Type = IssueTrackerConfigurationParameterType.User,
                     IsGlobal = false
+                });
+            parameters.Add
+                (new IssueTrackerConfigurationParameter
+                {
+                    Name = ConfigParameterNames.UsernameMapping,
+                    Value = UsernameMapping,
+                    Type = IssueTrackerConfigurationParameterType.Text,
+                    IsGlobal = true
                 });
             parameters.Add
                 (new IssueTrackerConfigurationParameter
@@ -188,7 +187,6 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
 
         internal string GetDecryptedPassword()
         {
-
             if (_config == null)
                 throw new ApplicationException("The configuration has not yet been initialized!");
 
