@@ -86,9 +86,11 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
             {
                 //TODO: search within project only.
                 //TODO: customize order by setting.
+
+                var assignee = applyUserMapping(pAssignee);
                 var searchString = string.Format
                     ("#unresolved #{{This month}}{0} order by: updated desc",
-                        string.IsNullOrWhiteSpace(pAssignee) ? string.Empty : string.Format(" for: {0}", pAssignee));
+                        string.IsNullOrWhiteSpace(assignee) ? string.Empty : string.Format(" for: {0}", assignee));
                 var issues = _ytIssues.GetIssuesBySearch(searchString, pMaxCount).ToList();
                 if(!issues.Any())
                     return new List<PlasticTask>();
@@ -102,7 +104,7 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
                 throw;
             }
         }
-
+        
         public string GetIssueWebUrl(string pIssueID)
         {
             return new Uri(_config.Host, string.Format("/issue/{0}", pIssueID)).ToString();
@@ -214,6 +216,25 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
 
 
         #region Support Methods
+
+        private string applyUserMapping(string pAssignee)
+        {
+            var leftUsername = string.IsNullOrEmpty(pAssignee) ? GetAuthenticatedUser().Username : pAssignee;
+
+            try
+            {
+                var usernameMappings = _config.UsernameMapping.Split(';')
+                    .Select(pMapping => new KeyValuePair<string, string>(pMapping.Split(':')[0], pMapping.Split(':')[1])).ToDictionary(p => p.Key, p => p.Value);
+                var rightUsername = usernameMappings[leftUsername];
+
+                return string.IsNullOrEmpty(rightUsername) ? leftUsername : rightUsername;
+            }
+            catch (Exception e)
+            {
+                _log.Error("Error occurred trying to apply user mappings.", e);
+                return leftUsername;
+            }
+        }
 
         private PlasticTask hydratePlasticTaskFromIssue(Issue pIssue)
         {
