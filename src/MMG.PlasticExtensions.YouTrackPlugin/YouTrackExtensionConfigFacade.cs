@@ -28,7 +28,7 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
         {
             _branchPrefix = "yt_";
             _hostUri = new Uri("http://issues.domain.com");
-            _userID = "myusername";
+            _userID = "";
             _password = "";
             _showIssueStateInTitle = false;
             _closedIssueStates = "Completed";
@@ -83,6 +83,11 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
         public bool ShowIssueStateInBranchTitle
         {
             get { return _showIssueStateInTitle; }
+        }
+
+        internal bool IsDefaultInit
+        {
+            get { return _defaultInit; }
         }
 
         /// <summary>
