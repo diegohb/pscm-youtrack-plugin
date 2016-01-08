@@ -232,11 +232,16 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
 
             if (fields.ContainsKey("assignee"))
             {
-                var rawArray = (ExpandoObject[]) fields["assignee"];
-                var rawValue = (IDictionary<string, object>) rawArray[0];
-                var fullname = rawValue["fullName"].ToString();
-                result.Owner = fullname;
+                var rawArray = (ExpandoObject[])fields["assignee"];
+                var rawValue = (IDictionary<string, object>)rawArray[0];
+                //TODO: can be reimplemented once a setting is created to allow user to choose username or display name. 
+                // if user displayName, will need to also implement API call to YT for user info.
+                //var fullname = rawValue["fullName"].ToString(); 
+                var issueUsername = rawValue["value"].ToString();
+                result.Owner = issueUsername;
             }
+            else if (fields.ContainsKey("assigneename"))
+                result.Owner = fields["assigneename"] as string;
             else
                 result.Owner = "Unassigned";
 
