@@ -15,5 +15,8 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
         public const string UsernameMapping = "Username Mapping";
         public const string ShowIssueStateInBranchTitle = "Show issues state in branch title";
         public const string ClosedIssueStates = "Issue states considered closed";
+        public const string Filter = "YouTrack Filter";
+        public const string SortColumn = "YouTrack Sort Column";
+        public const string SortOrder = "YouTrack Sort Order";
     }
 }

@@ -24,7 +24,12 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
         private readonly string _closedIssueStates;
         private readonly bool _defaultInit;
         private readonly string _usernameMapping;
-
+        private readonly string _baseFilterString;
+        private readonly string _defaultFilterString;
+        private readonly string _sortColumn;
+        private readonly string _defaultSortColumn;
+        private readonly string _sortOrder;
+        private readonly string _defaultSortOrder;
 
         internal YouTrackExtensionConfigFacade()
         {
@@ -35,7 +40,12 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
             _showIssueStateInTitle = false;
             _closedIssueStates = "Completed";
             _usernameMapping = "";
-
+            _baseFilterString = "";
+            _defaultFilterString = "#unresolved #{{This month}}";
+            _sortColumn = "";
+            _defaultSortColumn = "updated";
+            _sortOrder = "";
+            _defaultSortOrder = "desc";
             _defaultInit = true;
             _log.Debug("YouTrackExtensionConfigFacade: empty ctor called");
         }
@@ -54,6 +64,9 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
             _showIssueStateInTitle = bool.Parse(getValidParameterValue(ConfigParameterNames.ShowIssueStateInBranchTitle, "false"));
             _closedIssueStates = getValidParameterValue(ConfigParameterNames.ClosedIssueStates, "Completed");
             _usernameMapping = getValidParameterValue(ConfigParameterNames.UsernameMapping);
+            _baseFilterString = getValidParameterValue(ConfigParameterNames.Filter, _defaultFilterString);
+            _sortColumn = getValidParameterValue(ConfigParameterNames.SortColumn, _defaultSortColumn);
+            _sortOrder = getValidParameterValue(ConfigParameterNames.SortOrder, _defaultSortOrder);
 
             _defaultInit = false;
             _log.Debug("YouTrackExtensionConfigFacade: ctor called");
@@ -67,6 +80,20 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
         public Uri Host
         {
             get { return _hostUri; }
+        }
+
+        public string BaseFilterString
+        {
+            get { return _baseFilterString; }
+        }
+
+        public string SortColumn
+        {
+            get { return _sortColumn; }
+        }
+        public string SortOrder
+        {
+            get { return _sortOrder; }
         }
 
         public string UsernameMapping
@@ -141,6 +168,27 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
                     Type = IssueTrackerConfigurationParameterType.Host,
                     IsGlobal = true
                 });
+            parameters.Add(new IssueTrackerConfigurationParameter
+                {
+                    Name = ConfigParameterNames.Filter,
+                    Value = BaseFilterString,
+                    Type = IssueTrackerConfigurationParameterType.Text,
+                    IsGlobal = false
+                });
+            parameters.Add(new IssueTrackerConfigurationParameter
+            {
+                Name = ConfigParameterNames.SortColumn,
+                Value = SortColumn,
+                Type = IssueTrackerConfigurationParameterType.Text,
+                IsGlobal = false
+            });
+            parameters.Add(new IssueTrackerConfigurationParameter
+            {
+                Name = ConfigParameterNames.SortOrder,
+                Value = SortOrder,
+                Type = IssueTrackerConfigurationParameterType.Text,
+                IsGlobal = false
+            });
             parameters.Add
                 (new IssueTrackerConfigurationParameter
                 {
