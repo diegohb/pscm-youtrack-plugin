@@ -1,7 +1,7 @@
 ﻿// *************************************************
 // MMG.PlasticExtensions.YouTrackPlugin.YouTrackExtensionConfigFacade.cs
-// Last Modified: 01/08/2016 8:12 AM
-// Modified By: Bustamante, Diego (bustamd1)
+// Last Modified: 03/17/2016 11:02 AM
+// Modified By: Green, Brett (greenb1)
 // *************************************************
 
 namespace MMG.PlasticExtensions.YouTrackPlugin
@@ -12,31 +12,24 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
     using Codice.Utils;
     using log4net;
 
-    public class YouTrackExtensionConfigFacade
+    public class YouTrackExtensionConfigFacade : IYouTrackExtensionConfigFacade
     {
         private static readonly ILog _log = LogManager.GetLogger("extensions");
         private readonly IssueTrackerConfiguration _config;
         private readonly Uri _hostUri;
-        private readonly string _branchPrefix;
-        private readonly string _userID;
-        private readonly string _password;
-        private readonly bool _showIssueStateInTitle;
-        private readonly string _closedIssueStates;
-        private readonly bool _defaultInit;
-        private readonly string _usernameMapping;
 
 
         internal YouTrackExtensionConfigFacade()
         {
-            _branchPrefix = "yt_";
+            BranchPrefix = "yt_";
             _hostUri = new Uri("http://issues.domain.com");
-            _userID = "";
-            _password = "";
-            _showIssueStateInTitle = false;
-            _closedIssueStates = "Completed";
-            _usernameMapping = "";
+            UserID = "";
+            Password = "";
+            ShowIssueStateInBranchTitle = false;
+            IgnoreIssueStateForBranchTitle = "Completed";
+            UsernameMapping = "";
 
-            _defaultInit = true;
+            IsDefaultInit = true;
             _log.Debug("YouTrackExtensionConfigFacade: empty ctor called");
         }
 
@@ -44,69 +37,48 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
         {
             _config = pConfig;
 
-            _branchPrefix = getValidParameterValue(ConfigParameterNames.BranchPrefix);
+            BranchPrefix = getValidParameterValue(ConfigParameterNames.BranchPrefix);
             var hostValue = getValidParameterValue(ConfigParameterNames.Host);
             if (!Uri.TryCreate(hostValue, UriKind.Absolute, out _hostUri))
                 throw new ApplicationException(string.Format("Unable to parse host URL '{0}'.", hostValue));
 
-            _userID = getValidParameterValue(ConfigParameterNames.UserID);
-            _password = getValidParameterValue(ConfigParameterNames.Password);
-            _showIssueStateInTitle = bool.Parse(getValidParameterValue(ConfigParameterNames.ShowIssueStateInBranchTitle, "false"));
-            _closedIssueStates = getValidParameterValue(ConfigParameterNames.ClosedIssueStates, "Completed");
-            _usernameMapping = getValidParameterValue(ConfigParameterNames.UsernameMapping);
+            UserID = getValidParameterValue(ConfigParameterNames.UserID);
+            Password = getValidParameterValue(ConfigParameterNames.Password);
+            ShowIssueStateInBranchTitle = bool.Parse(getValidParameterValue(ConfigParameterNames.ShowIssueStateInBranchTitle, "false"));
+            IgnoreIssueStateForBranchTitle = getValidParameterValue(ConfigParameterNames.ClosedIssueStates, "Completed");
+            UsernameMapping = getValidParameterValue(ConfigParameterNames.UsernameMapping);
 
-            _defaultInit = false;
+            IsDefaultInit = false;
             _log.Debug("YouTrackExtensionConfigFacade: ctor called");
         }
 
-        public string BranchPrefix
-        {
-            get { return _branchPrefix; }
-        }
+        public string BranchPrefix { get; private set; }
 
         public Uri Host
         {
             get { return _hostUri; }
         }
 
-        public string UsernameMapping
-        {
-            get { return _usernameMapping; }
-        }
+        public string UsernameMapping { get; private set; }
 
-        public string UserID
-        {
-            get { return _userID; }
-        }
+        public string UserID { get; private set; }
 
-        public string Password
-        {
-            get { return _password; }
-        }
+        public string Password { get; private set; }
 
         public bool UseSSL
         {
             get { return _hostUri.Scheme == "https"; }
         }
 
-        public bool ShowIssueStateInBranchTitle
-        {
-            get { return _showIssueStateInTitle; }
-        }
+        public bool ShowIssueStateInBranchTitle { get; private set; }
 
-        internal bool IsDefaultInit
-        {
-            get { return _defaultInit; }
-        }
+        internal bool IsDefaultInit { get; private set; }
 
         /// <summary>
         /// Issue state(s) to not display in branch title when ShowIssueStateInBranchTitle = true.
         /// </summary>
         /// <remarks>Use commas to separate multiple states.</remarks>
-        public string IgnoreIssueStateForBranchTitle
-        {
-            get { return _closedIssueStates; }
-        }
+        public string IgnoreIssueStateForBranchTitle { get; private set; }
 
         public ExtensionWorkingMode WorkingMode
         {
@@ -185,7 +157,7 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
             return parameters;
         }
 
-        internal string GetDecryptedPassword()
+        public string GetDecryptedPassword()
         {
             if (_config == null)
                 throw new ApplicationException("The configuration has not yet been initialized!");
