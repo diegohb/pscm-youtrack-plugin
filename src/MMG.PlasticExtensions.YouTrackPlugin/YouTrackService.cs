@@ -1,7 +1,7 @@
 // *************************************************
 // MMG.PlasticExtensions.YouTrackPlugin.YouTrackService.cs
-// Last Modified: 01/07/2016 6:25 PM
-// Modified By: Bustamante, Diego (bustamd1)
+// Last Modified: 03/17/2016 9:21 AM
+// Modified By: Green, Brett (greenb1)
 // *************************************************
 
 namespace MMG.PlasticExtensions.YouTrackPlugin
@@ -23,10 +23,10 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
         private static readonly ILog _log = LogManager.GetLogger("extensions");
         private readonly Connection _ytConnection;
         private readonly IssueManagement _ytIssues;
-        private readonly YouTrackExtensionConfigFacade _config;
+        private readonly IYouTrackExtensionConfigFacade _config;
         private int _authRetryCount = 0;
 
-        public YouTrackService(YouTrackExtensionConfigFacade pConfig)
+        public YouTrackService(IYouTrackExtensionConfigFacade pConfig)
         {
             _config = pConfig;
             _ytConnection = new Connection(_config.Host.DnsSafeHost, _config.Host.Port, _config.UseSSL);
@@ -74,7 +74,7 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
             var result = pTaskIDs.Select(pTaskID => GetPlasticTask(pTaskID)).AsParallel();
             return result;
         }
-        
+
         public IEnumerable<PlasticTask> GetUnresolvedPlasticTasks(string pAssignee = "", int pMaxCount = 1000)
         {
             ensureAuthenticated();
@@ -89,7 +89,7 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
                     ("#unresolved #{{This month}}{0} order by: updated desc",
                         string.IsNullOrWhiteSpace(assignee) ? string.Empty : string.Format(" for: {0}", assignee));
                 var issues = _ytIssues.GetIssuesBySearch(searchString, pMaxCount).ToList();
-                if(!issues.Any())
+                if (!issues.Any())
                     return new List<PlasticTask>();
 
                 var tasks = issues.Select(pIssue => hydratePlasticTaskFromIssue(pIssue));
@@ -215,7 +215,6 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
             }
         }
 
-
         #region Support Methods
 
         /// <summary>
@@ -233,7 +232,8 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
             try
             {
                 var usernameMappings = _config.UsernameMapping.Split(';')
-                    .Select(pMapping => new KeyValuePair<string, string>(pMapping.Split(':')[0], pMapping.Split(':')[1])).ToDictionary(p => p.Key, p => p.Value);
+                    .Select(pMapping => new KeyValuePair<string, string>(pMapping.Split(':')[0], pMapping.Split(':')[1]))
+                    .ToDictionary(p => p.Key, p => p.Value);
                 var youtrackIssueUsername = usernameMappings[youtrackAuthUsername];
 
                 return string.IsNullOrEmpty(youtrackIssueUsername) ? youtrackAuthUsername : youtrackIssueUsername;
@@ -245,7 +245,7 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
             }
         }
 
-        private PlasticTask hydratePlasticTaskFromIssue(Issue pIssue)
+        public PlasticTask hydratePlasticTaskFromIssue(Issue pIssue)
         {
             if (pIssue == null)
                 throw new ArgumentNullException("pIssue");
@@ -262,8 +262,8 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
 
             if (fields.ContainsKey("assignee"))
             {
-                var rawArray = (ExpandoObject[])fields["assignee"];
-                var rawValue = (IDictionary<string, object>)rawArray[0];
+                var rawArray = (ExpandoObject[]) fields["assignee"];
+                var rawValue = (IDictionary<string, object>) rawArray[0];
                 //TODO: can be reimplemented once a setting is created to allow user to choose username or display name. 
                 // if user displayName, will need to also implement API call to YT for user info.
                 //var fullname = rawValue["fullName"].ToString(); 
@@ -277,7 +277,7 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
 
             if (fields.ContainsKey("description"))
                 result.Description = fields["description"] as string;
-            
+
             result.CanBeLinked = true;
             return result;
         }
@@ -315,7 +315,7 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
                 : string.Format("{0} [{1}]", pIssueSummary, pIssueState);
         }
 
-        private static void validateConfig(YouTrackExtensionConfigFacade pConfig)
+        private static void validateConfig(IYouTrackExtensionConfigFacade pConfig)
         {
             if (pConfig.Host.Host.Equals("issues.domain.com", StringComparison.InvariantCultureIgnoreCase))
                 return;
