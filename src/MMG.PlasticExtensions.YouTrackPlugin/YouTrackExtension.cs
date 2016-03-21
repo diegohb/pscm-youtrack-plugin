@@ -1,7 +1,7 @@
 // *************************************************
 // MMG.PlasticExtensions.YouTrackPlugin.YouTrackExtension.cs
-// Last Modified: 12/20/2015 5:06 PM
-// Modified By: Bustamante, Diego (bustamd1)
+// Last Modified: 03/17/2016 10:31 AM
+// Modified By: Green, Brett (greenb1)
 // *************************************************
 
 namespace MMG.PlasticExtensions.YouTrackPlugin
@@ -31,7 +31,7 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
                 _log.ErrorFormat("YouTrackExtension: {0}\n\t{1}", ex.Message, ex.StackTrace);
             }
         }
-   
+
         #region IPlasticIssueTrackerExtension implementation
 
         public string GetExtensionName()
@@ -88,13 +88,13 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
 
         public Dictionary<string, PlasticTask> GetTasksForBranches(List<string> pFullBranchNames)
         {
-            var ticketIDs = pFullBranchNames.Select(getBranchName)
-                .Where(pBranchName => pBranchName.StartsWith(_config.BranchPrefix))
-                .Select(getTicketIDFromTaskBranchName);
-            var plasticTasks = _ytService.GetPlasticTasks(ticketIDs.ToArray());
-
-            var result = plasticTasks.ToDictionary(pTask => pTask.Id, pTask => pTask);
-            return result;
+            var data = pFullBranchNames.Select
+                (x => new
+                {
+                    FullBranchName = x,
+                    Task = _ytService.GetPlasticTask(getTicketIDFromTaskBranchName(getBranchName(x)))
+                }).AsParallel();
+            return data.ToDictionary(x => x.FullBranchName, x => x.Task);
         }
 
         public void OpenTaskExternally(string pTaskId)
@@ -123,7 +123,6 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
             var plasticTasks = _ytService.GetUnresolvedPlasticTasks(pAssignee).ToList();
             _log.DebugFormat("YouTrackExtension: Loaded {0} YouTrack unresolved plastic tasks.", plasticTasks.Count);
             return plasticTasks;
-
         }
 
         public void MarkTaskAsOpen(string pTaskId, string pAssignee)
@@ -141,7 +140,6 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
 
         #endregion
 
-
         #region Support Methods
 
         private string getBranchName(string pFullBranchName)
@@ -151,8 +149,8 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
             if (lastSeparatorIndex < 0)
                 return pFullBranchName;
 
-            return lastSeparatorIndex == pFullBranchName.Length - 1 
-                ? string.Empty 
+            return lastSeparatorIndex == pFullBranchName.Length - 1
+                ? string.Empty
                 : pFullBranchName.Substring(lastSeparatorIndex + 1);
         }
 
