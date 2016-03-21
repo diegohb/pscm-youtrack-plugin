@@ -1,7 +1,7 @@
 // *************************************************
 // MMG.PlasticExtensions.YouTrackPlugin.YouTrackService.cs
-// Last Modified: 01/07/2016 6:25 PM
-// Modified By: Bustamante, Diego (bustamd1)
+// Last Modified: 03/21/2016 3:34 PM
+// Modified By: Green, Brett (greenb1)
 // *************************************************
 
 namespace MMG.PlasticExtensions.YouTrackPlugin
@@ -74,7 +74,7 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
             var result = pTaskIDs.Select(pTaskID => GetPlasticTask(pTaskID)).AsParallel();
             return result;
         }
-        
+
         public IEnumerable<PlasticTask> GetUnresolvedPlasticTasks(string pAssignee = "", int pMaxCount = 1000)
         {
             ensureAuthenticated();
@@ -89,7 +89,7 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
                     ("#unresolved #{{This month}}{0} order by: updated desc",
                         string.IsNullOrWhiteSpace(assignee) ? string.Empty : string.Format(" for: {0}", assignee));
                 var issues = _ytIssues.GetIssuesBySearch(searchString, pMaxCount).ToList();
-                if(!issues.Any())
+                if (!issues.Any())
                     return new List<PlasticTask>();
 
                 var tasks = issues.Select(pIssue => hydratePlasticTaskFromIssue(pIssue));
@@ -188,6 +188,22 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
             }
         }
 
+        public void AddCommentToIssue(string pIssueID, string comment)
+        {
+            ensureAuthenticated();
+
+            if (!_ytIssues.CheckIfIssueExists(pIssueID)) return;
+
+            try
+            {
+                _ytIssues.ApplyCommand(pIssueID, "comment", comment, false);
+            }
+            catch (Exception ex)
+            {
+                _log.Error("Unable to add comment to issue '{0}'", ex);
+            }
+        }
+
         public void AssignIssue(string pIssueID, string pAssignee, bool pAddComment = true)
         {
             ensureAuthenticated();
@@ -215,7 +231,6 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
             }
         }
 
-
         #region Support Methods
 
         /// <summary>
@@ -233,7 +248,8 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
             try
             {
                 var usernameMappings = _config.UsernameMapping.Split(';')
-                    .Select(pMapping => new KeyValuePair<string, string>(pMapping.Split(':')[0], pMapping.Split(':')[1])).ToDictionary(p => p.Key, p => p.Value);
+                    .Select(pMapping => new KeyValuePair<string, string>(pMapping.Split(':')[0], pMapping.Split(':')[1]))
+                    .ToDictionary(p => p.Key, p => p.Value);
                 var youtrackIssueUsername = usernameMappings[youtrackAuthUsername];
 
                 return string.IsNullOrEmpty(youtrackIssueUsername) ? youtrackAuthUsername : youtrackIssueUsername;
@@ -262,8 +278,8 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
 
             if (fields.ContainsKey("assignee"))
             {
-                var rawArray = (ExpandoObject[])fields["assignee"];
-                var rawValue = (IDictionary<string, object>)rawArray[0];
+                var rawArray = (ExpandoObject[]) fields["assignee"];
+                var rawValue = (IDictionary<string, object>) rawArray[0];
                 //TODO: can be reimplemented once a setting is created to allow user to choose username or display name. 
                 // if user displayName, will need to also implement API call to YT for user info.
                 //var fullname = rawValue["fullName"].ToString(); 
@@ -277,7 +293,7 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
 
             if (fields.ContainsKey("description"))
                 result.Description = fields["description"] as string;
-            
+
             result.CanBeLinked = true;
             return result;
         }

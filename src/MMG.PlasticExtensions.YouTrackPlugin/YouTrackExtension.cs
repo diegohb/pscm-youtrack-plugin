@@ -1,6 +1,6 @@
 // *************************************************
 // MMG.PlasticExtensions.YouTrackPlugin.YouTrackExtension.cs
-// Last Modified: 03/17/2016 10:31 AM
+// Last Modified: 03/21/2016 3:31 PM
 // Modified By: Green, Brett (greenb1)
 // *************************************************
 
@@ -69,7 +69,10 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
 
         public void LogCheckinResult(PlasticChangeset pChangeset, List<PlasticTask> pTasks)
         {
-            //TODO: Implement
+            foreach (var task in pTasks)
+            {
+                _ytService.AddCommentToIssue(task.Id, pChangeset.Comment);
+            }
         }
 
         public void UpdateLinkedTasksToChangeset(PlasticChangeset pChangeset, List<string> pTasks)
