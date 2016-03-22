@@ -1,7 +1,7 @@
 ﻿// *************************************************
 // MMG.PlasticExtensions.YouTrackPlugin.YouTrackExtensionConfigFacade.cs
-// Last Modified: 01/08/2016 8:12 AM
-// Modified By: Bustamante, Diego (bustamd1)
+// Last Modified: 03/22/2016 10:12 AM
+// Modified By: Green, Brett (greenb1)
 // *************************************************
 
 namespace MMG.PlasticExtensions.YouTrackPlugin
@@ -21,6 +21,7 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
         private readonly string _userID;
         private readonly string _password;
         private readonly bool _showIssueStateInTitle;
+        private readonly bool _postCommentsToTickets;
         private readonly string _closedIssueStates;
         private readonly bool _defaultInit;
         private readonly string _usernameMapping;
@@ -52,6 +53,7 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
             _userID = getValidParameterValue(ConfigParameterNames.UserID);
             _password = getValidParameterValue(ConfigParameterNames.Password);
             _showIssueStateInTitle = bool.Parse(getValidParameterValue(ConfigParameterNames.ShowIssueStateInBranchTitle, "false"));
+            _postCommentsToTickets = bool.Parse(getValidParameterValue(ConfigParameterNames.PostCommentsToTickets, "false"));
             _closedIssueStates = getValidParameterValue(ConfigParameterNames.ClosedIssueStates, "Completed");
             _usernameMapping = getValidParameterValue(ConfigParameterNames.UsernameMapping);
 
@@ -93,6 +95,12 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
         {
             get { return _showIssueStateInTitle; }
         }
+
+        public bool PostCommentsToTickets
+        {
+            get { return _postCommentsToTickets; }
+        }
+
 
         internal bool IsDefaultInit
         {
@@ -170,6 +178,14 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
                 {
                     Name = ConfigParameterNames.ShowIssueStateInBranchTitle,
                     Value = ShowIssueStateInBranchTitle.ToString(),
+                    Type = IssueTrackerConfigurationParameterType.Boolean,
+                    IsGlobal = false
+                });
+            parameters.Add
+                (new IssueTrackerConfigurationParameter
+                {
+                    Name = ConfigParameterNames.PostCommentsToTickets,
+                    Value = PostCommentsToTickets.ToString(),
                     Type = IssueTrackerConfigurationParameterType.Boolean,
                     IsGlobal = false
                 });
