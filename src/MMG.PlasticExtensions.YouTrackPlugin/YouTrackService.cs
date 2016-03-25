@@ -137,7 +137,7 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
             catch (Exception ex)
             {
                 _log.Error(string.Format("YouTrackService: Failed to authenticate with YouTrack server '{0}'.", _config.Host.DnsSafeHost), ex);
-                throw;
+                return;
             }
         }
 
