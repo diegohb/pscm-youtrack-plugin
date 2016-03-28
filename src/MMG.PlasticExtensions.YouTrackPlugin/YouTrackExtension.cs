@@ -1,6 +1,6 @@
 // *************************************************
 // MMG.PlasticExtensions.YouTrackPlugin.YouTrackExtension.cs
-// Last Modified: 03/22/2016 10:17 AM
+// Last Modified: 03/28/2016 1:46 PM
 // Modified By: Green, Brett (greenb1)
 // *************************************************
 
@@ -17,9 +17,9 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
     {
         private static readonly ILog _log = LogManager.GetLogger("extensions");
         private readonly YouTrackService _ytService;
-        private readonly YouTrackExtensionConfigFacade _config;
+        private readonly IYouTrackExtensionConfigFacade _config;
 
-        public YouTrackExtension(YouTrackExtensionConfigFacade pConfig)
+        public YouTrackExtension(IYouTrackExtensionConfigFacade pConfig)
         {
             try
             {
@@ -101,7 +101,8 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
                     FullBranchName = x,
                     Task = _ytService.GetPlasticTask(getTicketIDFromTaskBranchName(getBranchName(x)))
                 }).AsParallel();
-            return data.ToDictionary(x => x.FullBranchName, x => x.Task);
+            var result = data.ToDictionary(x => x.FullBranchName, x => x.Task);
+            return result;
         }
 
         public void OpenTaskExternally(string pTaskId)

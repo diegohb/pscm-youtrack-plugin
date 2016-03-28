@@ -23,10 +23,10 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
         private static readonly ILog _log = LogManager.GetLogger("extensions");
         private readonly Connection _ytConnection;
         private readonly IssueManagement _ytIssues;
-        private readonly YouTrackExtensionConfigFacade _config;
+        private readonly IYouTrackExtensionConfigFacade _config;
         private int _authRetryCount = 0;
 
-        public YouTrackService(YouTrackExtensionConfigFacade pConfig)
+        public YouTrackService(IYouTrackExtensionConfigFacade pConfig)
         {
             _config = pConfig;
             _ytConnection = new Connection(_config.Host.DnsSafeHost, _config.Host.Port, _config.UseSSL);
@@ -137,7 +137,7 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
             catch (Exception ex)
             {
                 _log.Error(string.Format("YouTrackService: Failed to authenticate with YouTrack server '{0}'.", _config.Host.DnsSafeHost), ex);
-                throw;
+                return;
             }
         }
 
@@ -261,7 +261,7 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
             }
         }
 
-        private PlasticTask hydratePlasticTaskFromIssue(Issue pIssue)
+        public PlasticTask hydratePlasticTaskFromIssue(Issue pIssue)
         {
             if (pIssue == null)
                 throw new ArgumentNullException("pIssue");
@@ -331,7 +331,7 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
                 : string.Format("{0} [{1}]", pIssueSummary, pIssueState);
         }
 
-        private static void validateConfig(YouTrackExtensionConfigFacade pConfig)
+        private static void validateConfig(IYouTrackExtensionConfigFacade pConfig)
         {
             if (pConfig.Host.Host.Equals("issues.domain.com", StringComparison.InvariantCultureIgnoreCase))
                 return;
