@@ -1,6 +1,6 @@
 // *************************************************
 // MMG.PlasticExtensions.YouTrackPlugin.YouTrackService.cs
-// Last Modified: 03/17/2016 9:21 AM
+// Last Modified: 03/21/2016 3:34 PM
 // Modified By: Green, Brett (greenb1)
 // *************************************************
 
@@ -185,6 +185,22 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
             {
                 _log.Error("Unable to mark issue '{0}' in-progress.", ex);
                 throw new ApplicationException("Error occurred marking issue in-progress.", ex);
+            }
+        }
+
+        public void AddCommentToIssue(string pIssueID, string comment)
+        {
+            ensureAuthenticated();
+
+            if (!_ytIssues.CheckIfIssueExists(pIssueID)) return;
+
+            try
+            {
+                _ytIssues.ApplyCommand(pIssueID, "comment", comment, false);
+            }
+            catch (Exception ex)
+            {
+                _log.Error("Unable to add comment to issue '{0}'", ex);
             }
         }
 

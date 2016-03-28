@@ -1,6 +1,6 @@
 // *************************************************
 // MMG.PlasticExtensions.YouTrackPlugin.IYouTrackExtensionConfigFacade.cs
-// Last Modified: 03/17/2016 9:22 AM
+// Last Modified: 03/28/2016 1:57 PM
 // Modified By: Green, Brett (greenb1)
 // *************************************************
 
@@ -19,6 +19,7 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
         string Password { get; }
         bool UseSSL { get; }
         bool ShowIssueStateInBranchTitle { get; }
+        bool PostCommentsToTickets { get; }
 
         /// <summary>
         /// Issue state(s) to not display in branch title when ShowIssueStateInBranchTitle = true.

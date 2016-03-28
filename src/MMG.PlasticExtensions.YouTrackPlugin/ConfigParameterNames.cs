@@ -1,7 +1,7 @@
 ﻿// *************************************************
 // MMG.PlasticExtensions.YouTrackPlugin.ConfigParameterNames.cs
-// Last Modified: 01/07/2016 4:43 PM
-// Modified By: Bustamante, Diego (bustamd1)
+// Last Modified: 03/22/2016 10:11 AM
+// Modified By: Green, Brett (greenb1)
 // *************************************************
 
 namespace MMG.PlasticExtensions.YouTrackPlugin
@@ -14,6 +14,7 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
         public const string Host = "Host";
         public const string UsernameMapping = "Username Mapping";
         public const string ShowIssueStateInBranchTitle = "Show issues state in branch title";
+        public const string PostCommentsToTickets = "Add checkin comments to ticket(s)";
         public const string ClosedIssueStates = "Issue states considered closed";
     }
 }

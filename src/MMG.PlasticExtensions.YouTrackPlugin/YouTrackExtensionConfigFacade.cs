@@ -1,6 +1,6 @@
 ﻿// *************************************************
 // MMG.PlasticExtensions.YouTrackPlugin.YouTrackExtensionConfigFacade.cs
-// Last Modified: 03/17/2016 11:02 AM
+// Last Modified: 03/28/2016 1:57 PM
 // Modified By: Green, Brett (greenb1)
 // *************************************************
 
@@ -17,6 +17,13 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
         private static readonly ILog _log = LogManager.GetLogger("extensions");
         private readonly IssueTrackerConfiguration _config;
         private readonly Uri _hostUri;
+        private readonly string _branchPrefix;
+        private readonly string _userID;
+        private readonly string _password;
+        private readonly bool _showIssueStateInTitle;
+        private readonly bool _postCommentsToTickets;
+        private readonly string _closedIssueStates;
+        private readonly string _usernameMapping;
 
 
         internal YouTrackExtensionConfigFacade()
@@ -29,7 +36,6 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
             IgnoreIssueStateForBranchTitle = "Completed";
             UsernameMapping = "";
 
-            IsDefaultInit = true;
             _log.Debug("YouTrackExtensionConfigFacade: empty ctor called");
         }
 
@@ -45,10 +51,10 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
             UserID = getValidParameterValue(ConfigParameterNames.UserID);
             Password = getValidParameterValue(ConfigParameterNames.Password);
             ShowIssueStateInBranchTitle = bool.Parse(getValidParameterValue(ConfigParameterNames.ShowIssueStateInBranchTitle, "false"));
+            PostCommentsToTickets = bool.Parse(getValidParameterValue(ConfigParameterNames.PostCommentsToTickets, "true"));
             IgnoreIssueStateForBranchTitle = getValidParameterValue(ConfigParameterNames.ClosedIssueStates, "Completed");
             UsernameMapping = getValidParameterValue(ConfigParameterNames.UsernameMapping);
 
-            IsDefaultInit = false;
             _log.Debug("YouTrackExtensionConfigFacade: ctor called");
         }
 
@@ -72,7 +78,7 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
 
         public bool ShowIssueStateInBranchTitle { get; private set; }
 
-        internal bool IsDefaultInit { get; private set; }
+        public bool PostCommentsToTickets { get; private set; }
 
         /// <summary>
         /// Issue state(s) to not display in branch title when ShowIssueStateInBranchTitle = true.
@@ -144,6 +150,14 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
                     Value = ShowIssueStateInBranchTitle.ToString(),
                     Type = IssueTrackerConfigurationParameterType.Boolean,
                     IsGlobal = false
+                });
+            parameters.Add
+                (new IssueTrackerConfigurationParameter
+                {
+                    Name = ConfigParameterNames.PostCommentsToTickets,
+                    Value = PostCommentsToTickets.ToString(),
+                    Type = IssueTrackerConfigurationParameterType.Boolean,
+                    IsGlobal = true
                 });
             parameters.Add
                 (new IssueTrackerConfigurationParameter
