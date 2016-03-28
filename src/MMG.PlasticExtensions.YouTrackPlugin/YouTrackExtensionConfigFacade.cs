@@ -1,6 +1,6 @@
 ﻿// *************************************************
 // MMG.PlasticExtensions.YouTrackPlugin.YouTrackExtensionConfigFacade.cs
-// Last Modified: 03/22/2016 10:12 AM
+// Last Modified: 03/28/2016 1:18 PM
 // Modified By: Green, Brett (greenb1)
 // *************************************************
 
@@ -53,7 +53,7 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
             _userID = getValidParameterValue(ConfigParameterNames.UserID);
             _password = getValidParameterValue(ConfigParameterNames.Password);
             _showIssueStateInTitle = bool.Parse(getValidParameterValue(ConfigParameterNames.ShowIssueStateInBranchTitle, "false"));
-            _postCommentsToTickets = bool.Parse(getValidParameterValue(ConfigParameterNames.PostCommentsToTickets, "false"));
+            _postCommentsToTickets = bool.Parse(getValidParameterValue(ConfigParameterNames.PostCommentsToTickets, "true"));
             _closedIssueStates = getValidParameterValue(ConfigParameterNames.ClosedIssueStates, "Completed");
             _usernameMapping = getValidParameterValue(ConfigParameterNames.UsernameMapping);
 
@@ -187,7 +187,7 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
                     Name = ConfigParameterNames.PostCommentsToTickets,
                     Value = PostCommentsToTickets.ToString(),
                     Type = IssueTrackerConfigurationParameterType.Boolean,
-                    IsGlobal = false
+                    IsGlobal = true
                 });
             parameters.Add
                 (new IssueTrackerConfigurationParameter
