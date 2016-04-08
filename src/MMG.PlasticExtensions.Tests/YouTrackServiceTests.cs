@@ -179,7 +179,7 @@ namespace MMG.PlasticExtensions.Tests
         {
             var host = "https://scc.mmgct.com/";
             var repository = "MMG.Common";
-            var branch = "yt_TEST-60";
+            var branch = "/yt_TEST-60";
             long changeSetId = 969;
             var comment = "This is my test comment";
             var nl = Environment.NewLine;
@@ -193,6 +193,7 @@ namespace MMG.PlasticExtensions.Tests
 
             Assert.AreEqual(expectedComment, generatedComment);
         }
+
 
         private static Mock<IYouTrackExtensionConfigFacade> GetConfigFacade(string pUri)
         {
