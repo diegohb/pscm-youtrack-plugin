@@ -174,6 +174,26 @@ namespace MMG.PlasticExtensions.Tests
             Assert.AreEqual("Issue Description", task.Description);
         }
 
+        [Test]
+        public void TestCommentFormatting()
+        {
+            var host = "https://scc.mmgct.com/";
+            var repository = "MMG.Common";
+            var branch = "yt_TEST-60";
+            long changeSetId = 969;
+            var comment = "This is my test comment";
+            var nl = Environment.NewLine;
+
+            var generatedComment = YouTrackService.FormatComment(host, repository, branch, changeSetId, comment);
+
+            var expectedComment = "{color:darkgreen}*CODE COMMIT #969*{color}" + nl;
+            expectedComment += "    MMG.Common/yt_TEST-60/969" + nl;
+            expectedComment += "    https://scc.mmgct.com/MMG.Common/ViewChanges?changeset=969" + nl;
+            expectedComment += "    This is my test comment";
+
+            Assert.AreEqual(expectedComment, generatedComment);
+        }
+
         private static Mock<IYouTrackExtensionConfigFacade> GetConfigFacade(string pUri)
         {
             var facade = new Mock<IYouTrackExtensionConfigFacade>();
