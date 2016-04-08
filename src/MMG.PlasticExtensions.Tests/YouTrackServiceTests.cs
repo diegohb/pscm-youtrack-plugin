@@ -177,7 +177,7 @@ namespace MMG.PlasticExtensions.Tests
         [Test]
         public void TestCommentFormatting()
         {
-            var host = "https://scc.mmgct.com/";
+            var host = "scc.mmgct.int/";
             var repository = "MMG.Common";
             var branch = "/yt_TEST-60";
             long changeSetId = 969;
@@ -188,12 +188,31 @@ namespace MMG.PlasticExtensions.Tests
 
             var expectedComment = "{color:darkgreen}*CODE COMMIT #969*{color}" + nl;
             expectedComment += "    MMG.Common/yt_TEST-60/969" + nl;
-            expectedComment += "    https://scc.mmgct.com/MMG.Common/ViewChanges?changeset=969" + nl;
-            expectedComment += "    This is my test comment";
+            expectedComment += "    http://scc.mmgct.int/MMG.Common/ViewChanges?changeset=969" + nl + nl;
+            expectedComment += "This is my test comment";
 
             Assert.AreEqual(expectedComment, generatedComment);
         }
 
+        [Test]
+        public void TestCommentFormatting_StripPort()
+        {
+            var host = "scc.mmgct.int:8080/";
+            var repository = "MMG.Common";
+            var branch = "/yt_TEST-60";
+            long changeSetId = 969;
+            var comment = "This is my test comment";
+            var nl = Environment.NewLine;
+
+            var generatedComment = YouTrackService.FormatComment(host, repository, branch, changeSetId, comment);
+
+            var expectedComment = "{color:darkgreen}*CODE COMMIT #969*{color}" + nl;
+            expectedComment += "    MMG.Common/yt_TEST-60/969" + nl;
+            expectedComment += "    http://scc.mmgct.int/MMG.Common/ViewChanges?changeset=969" + nl + nl;
+            expectedComment += "This is my test comment";
+
+            Assert.AreEqual(expectedComment, generatedComment);
+        }
 
         private static Mock<IYouTrackExtensionConfigFacade> GetConfigFacade(string pUri)
         {
