@@ -193,9 +193,13 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
             var nl = Environment.NewLine;
             var mdComment = String.Format("{{color:darkgreen}}*CODE COMMIT #{0}*{{color}}", pChangeSetId);
             var path = String.Format("    {0}{1}/{2}", pRepository, pBranch, pChangeSetId);
-            var server = new UriBuilder(pHost);
-            server.Port = -1;
-            pHost = server.Uri.AbsoluteUri;
+            if (!pHost.Contains("http://"))
+            {
+                pHost = "http://" + pHost;
+            }
+            var server = new Uri(pHost);
+
+            pHost = server.GetComponents(UriComponents.AbsoluteUri & ~UriComponents.Port, UriFormat.UriEscaped);
             if (pHost[pHost.Length - 1] == '/')
             {
                 pHost = pHost.Remove(pHost.Length - 1, 1);
