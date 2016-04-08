@@ -193,12 +193,15 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
             var nl = Environment.NewLine;
             var mdComment = String.Format("{{color:darkgreen}}*CODE COMMIT #{0}*{{color}}", pChangeSetId);
             var path = String.Format("    {0}{1}/{2}", pRepository, pBranch, pChangeSetId);
+            var server = new UriBuilder(pHost);
+            server.Port = -1;
+            pHost = server.Uri.AbsoluteUri;
             if (pHost[pHost.Length - 1] == '/')
             {
                 pHost = pHost.Remove(pHost.Length - 1, 1);
             }
 
-            var url = String.Format("    http://{0}/{1}/ViewChanges?changeset={2}", pHost, pRepository, pChangeSetId);
+            var url = String.Format("    {0}/{1}/ViewChanges?changeset={2}", pHost, pRepository, pChangeSetId);
             return String.Format("{0}{1}{2}{3}{4}{5}    {6}", mdComment, nl, path, nl, url, nl, pComment);
         }
 
