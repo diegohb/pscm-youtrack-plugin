@@ -206,7 +206,7 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
             }
 
             var url = String.Format("    {0}/{1}/ViewChanges?changeset={2}", pHost, pRepository, pChangeSetId);
-            return String.Format("{0}{1}{2}{3}{4}{5}    {6}", mdComment, nl, path, nl, url, nl, pComment);
+            return String.Format("{0}{1}{2}{3}{4}{5}{6}", mdComment, nl, path, nl, url, nl + nl, pComment);
         }
 
         public void AddCommentToIssue
