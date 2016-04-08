@@ -188,7 +188,22 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
             }
         }
 
-        public void AddCommentToIssue(string pIssueID, string comment)
+        public static string FormatComment(string pHost, string pRepository, string pBranch, long pChangeSetId, string pComment)
+        {
+            var nl = Environment.NewLine;
+            var mdComment = String.Format("{{color:darkgreen}}*CODE COMMIT #{0}*{{color}}", pChangeSetId);
+            var path = String.Format("    {0}{1}/{2}", pRepository, pBranch, pChangeSetId);
+            if (pHost[pHost.Length - 1] == '/')
+            {
+                pHost = pHost.Remove(pHost.Length - 1, 1);
+            }
+
+            var url = String.Format("    http://{0}/{1}/ViewChanges?changeset={2}", pHost, pRepository, pChangeSetId);
+            return String.Format("{0}{1}{2}{3}{4}{5}    {6}", mdComment, nl, path, nl, url, nl, pComment);
+        }
+
+        public void AddCommentToIssue
+            (string pIssueID, string pRepositoryServer, string pRepository, string pBranch, long pChangeSetId, string pComment)
         {
             ensureAuthenticated();
 
@@ -196,7 +211,8 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
 
             try
             {
-                _ytIssues.ApplyCommand(pIssueID, "comment", comment, false);
+                var completeComment = FormatComment(pRepositoryServer, pRepository, pBranch, pChangeSetId, pComment);
+                _ytIssues.ApplyCommand(pIssueID, "comment", completeComment, false);
             }
             catch (Exception ex)
             {
