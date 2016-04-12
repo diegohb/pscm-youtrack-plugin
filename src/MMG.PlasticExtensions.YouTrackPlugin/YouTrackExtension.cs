@@ -139,12 +139,26 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
             try
             {
                 _ytService.EnsureIssueInProgress(pTaskId);
+            }
+            catch (Exception e)
+            {
+                _log.Error(string.Format("Failed to set issue '{0}' to in-progress.", pTaskId), e);
+            }
+            try
+            {
                 _ytService.AssignIssue(pTaskId, pAssignee, false);
+            }
+            catch (Exception e)
+            {
+                _log.Error(string.Format("Failed to assign issue '{0}' to user.", pTaskId), e);
+            }
+            try
+            {
                 _ytService.AddCommentForBranchCreation(pTaskId);
             }
             catch (Exception e)
             {
-                _log.Error(string.Format("Failed to set issue '{0}' open and assigned.", pTaskId), e);
+                _log.Error(string.Format("Failed to add branch creation comment to issue '{0}'.", pTaskId), e);
             }
         }
 
