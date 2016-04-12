@@ -186,7 +186,7 @@ namespace MMG.PlasticExtensions.Tests
 
             var generatedComment = YouTrackService.FormatComment(host, repository, branch, changeSetId, comment);
 
-            var expectedComment = "{color:darkgreen}*CODE COMMIT #969*{color}" + nl;
+            var expectedComment = "{color:darkgreen}*PSCM - CODE COMMIT #969*{color}" + nl;
             expectedComment += "    Test.Repository/yt_TEST-60/969" + nl;
             expectedComment += "    http://acme.website.int/Test.Repository/ViewChanges?changeset=969" + nl + nl;
             expectedComment += "This is my test comment";
@@ -206,7 +206,7 @@ namespace MMG.PlasticExtensions.Tests
 
             var generatedComment = YouTrackService.FormatComment(host, repository, branch, changeSetId, comment);
 
-            var expectedComment = "{color:darkgreen}*CODE COMMIT #969*{color}" + nl;
+            var expectedComment = "{color:darkgreen}*PSCM - CODE COMMIT #969*{color}" + nl;
             expectedComment += "    Test.Repository/yt_TEST-60/969" + nl;
             expectedComment += "    http://acme.website.int/Test.Repository/ViewChanges?changeset=969" + nl + nl;
             expectedComment += "This is my test comment";
