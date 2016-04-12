@@ -177,8 +177,8 @@ namespace MMG.PlasticExtensions.Tests
         [Test]
         public void TestCommentFormatting()
         {
-            var host = "scc.mmgct.int/";
-            var repository = "MMG.Common";
+            var host = "acme.website.int/";
+            var repository = "Test.Repository";
             var branch = "/yt_TEST-60";
             long changeSetId = 969;
             var comment = "This is my test comment";
@@ -187,8 +187,8 @@ namespace MMG.PlasticExtensions.Tests
             var generatedComment = YouTrackService.FormatComment(host, repository, branch, changeSetId, comment);
 
             var expectedComment = "{color:darkgreen}*CODE COMMIT #969*{color}" + nl;
-            expectedComment += "    MMG.Common/yt_TEST-60/969" + nl;
-            expectedComment += "    http://scc.mmgct.int/MMG.Common/ViewChanges?changeset=969" + nl + nl;
+            expectedComment += "    Test.Repository/yt_TEST-60/969" + nl;
+            expectedComment += "    http://acme.website.int/Test.Repository/ViewChanges?changeset=969" + nl + nl;
             expectedComment += "This is my test comment";
 
             Assert.AreEqual(expectedComment, generatedComment);
@@ -197,8 +197,8 @@ namespace MMG.PlasticExtensions.Tests
         [Test]
         public void TestCommentFormatting_StripPort()
         {
-            var host = "scc.mmgct.int:8080/";
-            var repository = "MMG.Common";
+            var host = "acme.website.int:5656/";
+            var repository = "Test.Repository";
             var branch = "/yt_TEST-60";
             long changeSetId = 969;
             var comment = "This is my test comment";
@@ -207,8 +207,8 @@ namespace MMG.PlasticExtensions.Tests
             var generatedComment = YouTrackService.FormatComment(host, repository, branch, changeSetId, comment);
 
             var expectedComment = "{color:darkgreen}*CODE COMMIT #969*{color}" + nl;
-            expectedComment += "    MMG.Common/yt_TEST-60/969" + nl;
-            expectedComment += "    http://scc.mmgct.int/MMG.Common/ViewChanges?changeset=969" + nl + nl;
+            expectedComment += "    Test.Repository/yt_TEST-60/969" + nl;
+            expectedComment += "    http://acme.website.int/Test.Repository/ViewChanges?changeset=969" + nl + nl;
             expectedComment += "This is my test comment";
 
             Assert.AreEqual(expectedComment, generatedComment);
