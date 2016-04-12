@@ -75,7 +75,6 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
             }
             foreach (var task in pTasks)
             {
-                var link = pChangeset.Repository + "/" + pChangeset.Branch + "?changeset=" + pChangeset.Id;
                 _ytService.AddCommentToIssue
                     (task.Id, pChangeset.RepositoryServer, pChangeset.Repository, pChangeset.Branch, pChangeset.Id, pChangeset.Comment);
             }
