@@ -165,6 +165,11 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
             }
         }
 
+        public static string GetBranchCreationMessage()
+        {
+            return "{color:darkgreen}*PSCM - BRANCH CREATED*{color}";
+        }
+
         public void EnsureIssueInProgress(string pIssueID)
         {
             ensureAuthenticated();
@@ -176,8 +181,7 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
                 dynamic issue = _ytIssues.GetIssue(pIssueID);
                 if (issue.State.ToString() != "In Progress")
                     _ytIssues.ApplyCommand
-                        (pIssueID, "State: In Progress",
-                            string.Format("User '{0}' has created a branch for this task.", GetAuthenticatedUser().Username));
+                        (pIssueID, "State: In Progress", GetBranchCreationMessage());
                 else
                     _log.InfoFormat("Issue '{0}' already marked in-progress.", pIssueID);
             }
@@ -188,7 +192,29 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
             }
         }
 
-        public void AddCommentToIssue(string pIssueID, string comment)
+        public static string FormatComment(string pHost, string pRepository, string pBranch, long pChangeSetId, string pComment)
+        {
+            var nl = Environment.NewLine;
+            var mdComment = String.Format("{{color:darkgreen}}*PSCM - CODE COMMIT #{0}*{{color}}", pChangeSetId);
+            var path = String.Format("    {0}{1}/{2}", pRepository, pBranch, pChangeSetId);
+            if (!pHost.Contains("http://"))
+            {
+                pHost = "http://" + pHost;
+            }
+            var server = new Uri(pHost);
+
+            pHost = server.GetComponents(UriComponents.AbsoluteUri & ~UriComponents.Port, UriFormat.UriEscaped);
+            if (pHost[pHost.Length - 1] == '/')
+            {
+                pHost = pHost.Remove(pHost.Length - 1, 1);
+            }
+
+            var url = String.Format("    {0}/{1}/ViewChanges?changeset={2}", pHost, pRepository, pChangeSetId);
+            return String.Format("{0}{1}{2}{3}{4}{5}{6}", mdComment, nl, path, nl, url, nl + nl, pComment);
+        }
+
+        public void AddCommentToIssue
+            (string pIssueID, string pRepositoryServer, string pRepository, string pBranch, long pChangeSetId, string pComment)
         {
             ensureAuthenticated();
 
@@ -196,7 +222,8 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
 
             try
             {
-                _ytIssues.ApplyCommand(pIssueID, "comment", comment, false);
+                var completeComment = FormatComment(pRepositoryServer, pRepository, pBranch, pChangeSetId, pComment);
+                _ytIssues.ApplyCommand(pIssueID, "comment", completeComment, false);
             }
             catch (Exception ex)
             {

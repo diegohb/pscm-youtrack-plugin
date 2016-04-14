@@ -16,10 +16,11 @@ namespace MMG.PlasticExtensions.Tests
     using YouTrackPlugin;
     using YouTrackSharp.Issues;
 
-    [TestFixture, Ignore("These aren't real unit tests and must be run manually after configuring app.config values.")]
+    [TestFixture]
     public class YouTrackServiceTests
     {
         [Test]
+        [Ignore("These aren't real unit tests and must be run manually after configuring app.config values.")]
         public void GetAuthenticatedUser_ShouldReturnUserWithEmail()
         {
             var svc = new YouTrackService(getTestConfig());
@@ -33,6 +34,7 @@ namespace MMG.PlasticExtensions.Tests
         }
 
         [Test]
+        [Ignore("These aren't real unit tests and must be run manually after configuring app.config values.")]
         public void GetPlasticTask_ShouldReturnLinkedTask()
         {
             var svc = new YouTrackService(getTestConfig());
@@ -44,6 +46,7 @@ namespace MMG.PlasticExtensions.Tests
         }
 
         [Test]
+        [Ignore("These aren't real unit tests and must be run manually after configuring app.config values.")]
         public void BeginWorkOnIssue_ShouldUpdateTicketToInProgress()
         {
             var config = getTestConfig();
@@ -56,6 +59,7 @@ namespace MMG.PlasticExtensions.Tests
         }
 
         [Test]
+        [Ignore("These aren't real unit tests and must be run manually after configuring app.config values.")]
         public void AssignIssue_ShouldUpdateTicketToAssigned()
         {
             var config = getTestConfig();
@@ -68,6 +72,7 @@ namespace MMG.PlasticExtensions.Tests
         }
 
         [Test]
+        [Ignore("These aren't real unit tests and must be run manually after configuring app.config values.")]
         public void GetUnresolvedIssues_ShouldReturnTicketsUnresolved()
         {
             var config = getTestConfig();
@@ -79,6 +84,7 @@ namespace MMG.PlasticExtensions.Tests
         }
 
         [Test]
+        [Ignore("These aren't real unit tests and must be run manually after configuring app.config values.")]
         public void GetUnresolvedIssuesByAssignee_ShouldReturnTicketsForAssignee()
         {
             var config = getTestConfig();
@@ -172,6 +178,53 @@ namespace MMG.PlasticExtensions.Tests
             Assert.AreEqual("In Progress", task.Status);
             Assert.AreEqual("jdoe", task.Owner);
             Assert.AreEqual("Issue Description", task.Description);
+        }
+
+        [Test]
+        public void TestCommentFormatting()
+        {
+            var host = "acme.website.int/";
+            var repository = "Test.Repository";
+            var branch = "/yt_TEST-60";
+            long changeSetId = 969;
+            var comment = "This is my test comment";
+            var nl = Environment.NewLine;
+
+            var generatedComment = YouTrackService.FormatComment(host, repository, branch, changeSetId, comment);
+
+            var expectedComment = "{color:darkgreen}*PSCM - CODE COMMIT #969*{color}" + nl;
+            expectedComment += "    Test.Repository/yt_TEST-60/969" + nl;
+            expectedComment += "    http://acme.website.int/Test.Repository/ViewChanges?changeset=969" + nl + nl;
+            expectedComment += "This is my test comment";
+
+            Assert.AreEqual(expectedComment, generatedComment);
+        }
+
+        [Test]
+        public void TestCommentFormatting_StripPort()
+        {
+            var host = "acme.website.int:5656/";
+            var repository = "Test.Repository";
+            var branch = "/yt_TEST-60";
+            long changeSetId = 969;
+            var comment = "This is my test comment";
+            var nl = Environment.NewLine;
+
+            var generatedComment = YouTrackService.FormatComment(host, repository, branch, changeSetId, comment);
+
+            var expectedComment = "{color:darkgreen}*PSCM - CODE COMMIT #969*{color}" + nl;
+            expectedComment += "    Test.Repository/yt_TEST-60/969" + nl;
+            expectedComment += "    http://acme.website.int/Test.Repository/ViewChanges?changeset=969" + nl + nl;
+            expectedComment += "This is my test comment";
+
+            Assert.AreEqual(expectedComment, generatedComment);
+        }
+
+        [Test]
+        public void TestMarkTaskAsOpen_Comment()
+        {
+            var msg = "{color:darkgreen}*PSCM - BRANCH CREATED*{color}";
+            Assert.AreEqual(msg, YouTrackService.GetBranchCreationMessage());
         }
 
         private static Mock<IYouTrackExtensionConfigFacade> GetConfigFacade(string pUri)
