@@ -167,7 +167,7 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
 
         public static string GetBranchCreationMessage()
         {
-            return "{{color:darkgreen}}*PSCM - BRANCH CREATED*{{color}}";
+            return "{color:darkgreen}*PSCM - BRANCH CREATED*{color}";
         }
 
         public void EnsureIssueInProgress(string pIssueID)
