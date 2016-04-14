@@ -191,7 +191,7 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
         public static string FormatComment(string pHost, string pRepository, string pBranch, long pChangeSetId, string pComment)
         {
             var nl = Environment.NewLine;
-            var mdComment = String.Format("{{color:darkgreen}}*CODE COMMIT #{0}*{{color}}", pChangeSetId);
+            var mdComment = String.Format("{{color:darkgreen}}*PSCM - CODE COMMIT #{0}*{{color}}", pChangeSetId);
             var path = String.Format("    {0}{1}/{2}", pRepository, pBranch, pChangeSetId);
             if (!pHost.Contains("http://"))
             {
