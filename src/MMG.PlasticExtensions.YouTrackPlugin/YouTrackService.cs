@@ -21,7 +21,7 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
     public class YouTrackService
     {
         private static readonly ILog _log = LogManager.GetLogger("extensions");
-        private readonly Connection _ytConnection;
+        private readonly IConnection _ytConnection;
         private readonly IssueManagement _ytIssues;
         private readonly IYouTrackExtensionConfigFacade _config;
         private int _authRetryCount = 0;
