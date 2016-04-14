@@ -221,7 +221,11 @@ namespace MMG.PlasticExtensions.Tests
         }
 
         [Test]
-        public void TestMarkTaskAsOpenComment() {}
+        public void TestMarkTaskAsOpen_Comment()
+        {
+            var msg = "{{color:darkgreen}}*PSCM - BRANCH CREATED*{{color}}";
+            Assert.AreEqual(msg, YouTrackService.GetBranchCreationMessage());
+        }
 
         private static Mock<IYouTrackExtensionConfigFacade> GetConfigFacade(string pUri)
         {
