@@ -21,7 +21,7 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
     public class YouTrackService
     {
         private static readonly ILog _log = LogManager.GetLogger("extensions");
-        private readonly IConnection _ytConnection;
+        private readonly Connection _ytConnection;
         private readonly IssueManagement _ytIssues;
         private readonly IYouTrackExtensionConfigFacade _config;
         private int _authRetryCount = 0;
@@ -165,6 +165,11 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
             }
         }
 
+        public static string GetBranchCreationMessage()
+        {
+            return "{{color:darkgreen}}*PSCM - BRANCH CREATED*{{color}}";
+        }
+
         public void EnsureIssueInProgress(string pIssueID)
         {
             ensureAuthenticated();
@@ -176,7 +181,7 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
                 dynamic issue = _ytIssues.GetIssue(pIssueID);
                 if (issue.State.ToString() != "In Progress")
                     _ytIssues.ApplyCommand
-                        (pIssueID, "State: In Progress", "{{color:darkgreen}}*PSCM - BRANCH CREATED*{{color}}");
+                        (pIssueID, "State: In Progress", GetBranchCreationMessage());
                 else
                     _log.InfoFormat("Issue '{0}' already marked in-progress.", pIssueID);
             }
