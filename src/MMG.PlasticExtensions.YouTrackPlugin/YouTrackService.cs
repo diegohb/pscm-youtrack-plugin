@@ -176,8 +176,7 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
                 dynamic issue = _ytIssues.GetIssue(pIssueID);
                 if (issue.State.ToString() != "In Progress")
                     _ytIssues.ApplyCommand
-                        (pIssueID, "State: In Progress",
-                            string.Format("User '{0}' has created a branch for this task.", GetAuthenticatedUser().Username));
+                        (pIssueID, "State: In Progress", "{{color:darkgreen}}*PSCM - BRANCH CREATED*{{color}}");
                 else
                     _log.InfoFormat("Issue '{0}' already marked in-progress.", pIssueID);
             }

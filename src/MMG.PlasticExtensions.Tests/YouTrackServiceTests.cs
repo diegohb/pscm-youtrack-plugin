@@ -16,10 +16,11 @@ namespace MMG.PlasticExtensions.Tests
     using YouTrackPlugin;
     using YouTrackSharp.Issues;
 
-    [TestFixture, Ignore("These aren't real unit tests and must be run manually after configuring app.config values.")]
+    [TestFixture]
     public class YouTrackServiceTests
     {
         [Test]
+        [Ignore("These aren't real unit tests and must be run manually after configuring app.config values.")]
         public void GetAuthenticatedUser_ShouldReturnUserWithEmail()
         {
             var svc = new YouTrackService(getTestConfig());
@@ -33,6 +34,7 @@ namespace MMG.PlasticExtensions.Tests
         }
 
         [Test]
+        [Ignore("These aren't real unit tests and must be run manually after configuring app.config values.")]
         public void GetPlasticTask_ShouldReturnLinkedTask()
         {
             var svc = new YouTrackService(getTestConfig());
@@ -44,6 +46,7 @@ namespace MMG.PlasticExtensions.Tests
         }
 
         [Test]
+        [Ignore("These aren't real unit tests and must be run manually after configuring app.config values.")]
         public void BeginWorkOnIssue_ShouldUpdateTicketToInProgress()
         {
             var config = getTestConfig();
@@ -56,6 +59,7 @@ namespace MMG.PlasticExtensions.Tests
         }
 
         [Test]
+        [Ignore("These aren't real unit tests and must be run manually after configuring app.config values.")]
         public void AssignIssue_ShouldUpdateTicketToAssigned()
         {
             var config = getTestConfig();
@@ -68,6 +72,7 @@ namespace MMG.PlasticExtensions.Tests
         }
 
         [Test]
+        [Ignore("These aren't real unit tests and must be run manually after configuring app.config values.")]
         public void GetUnresolvedIssues_ShouldReturnTicketsUnresolved()
         {
             var config = getTestConfig();
@@ -79,6 +84,7 @@ namespace MMG.PlasticExtensions.Tests
         }
 
         [Test]
+        [Ignore("These aren't real unit tests and must be run manually after configuring app.config values.")]
         public void GetUnresolvedIssuesByAssignee_ShouldReturnTicketsForAssignee()
         {
             var config = getTestConfig();
@@ -213,6 +219,9 @@ namespace MMG.PlasticExtensions.Tests
 
             Assert.AreEqual(expectedComment, generatedComment);
         }
+
+        [Test]
+        public void TestMarkTaskAsOpenComment() {}
 
         private static Mock<IYouTrackExtensionConfigFacade> GetConfigFacade(string pUri)
         {
