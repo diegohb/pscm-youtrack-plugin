@@ -24,6 +24,7 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
         private readonly bool _postCommentsToTickets;
         private readonly string _closedIssueStates;
         private readonly string _usernameMapping;
+        private readonly Uri _webGuiUrl;
 
 
         internal YouTrackExtensionConfigFacade()
@@ -35,6 +36,7 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
             ShowIssueStateInBranchTitle = false;
             IgnoreIssueStateForBranchTitle = "Completed";
             UsernameMapping = "";
+            WebGuiUrl = new Uri("http://plastic-gui.domain.com");
 
             _log.Debug("YouTrackExtensionConfigFacade: empty ctor called");
         }
@@ -54,6 +56,7 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
             PostCommentsToTickets = bool.Parse(getValidParameterValue(ConfigParameterNames.PostCommentsToTickets, "true"));
             IgnoreIssueStateForBranchTitle = getValidParameterValue(ConfigParameterNames.ClosedIssueStates, "Completed");
             UsernameMapping = getValidParameterValue(ConfigParameterNames.UsernameMapping);
+            WebGuiUrl = new Uri(getValidParameterValue(ConfigParameterNames.WebGuiUrl));
 
             _log.Debug("YouTrackExtensionConfigFacade: ctor called");
         }
@@ -70,6 +73,8 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
         public string UserID { get; private set; }
 
         public string Password { get; private set; }
+
+        public Uri WebGuiUrl { get; private set; }
 
         public bool UseSSL
         {
@@ -167,6 +172,15 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
                     Type = IssueTrackerConfigurationParameterType.Text,
                     IsGlobal = false
                 });
+            parameters.Add
+                (new IssueTrackerConfigurationParameter
+                {
+                    Name = ConfigParameterNames.WebGuiUrl,
+                    Value = WebGuiUrl.ToString(),
+                    Type = IssueTrackerConfigurationParameterType.Text,
+                    IsGlobal = true
+                }
+                );
 
             return parameters;
         }
