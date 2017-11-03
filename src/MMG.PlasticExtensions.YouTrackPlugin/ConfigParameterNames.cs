@@ -16,5 +16,6 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
         public const string ShowIssueStateInBranchTitle = "Show issues state in branch title";
         public const string PostCommentsToTickets = "Add checkin comments to ticket(s)";
         public const string ClosedIssueStates = "Issue states considered closed";
+        public const string WebGuiUrl = "Plastic Web GUI URL";
     }
 }
