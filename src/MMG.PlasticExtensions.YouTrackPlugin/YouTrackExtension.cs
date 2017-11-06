@@ -76,7 +76,7 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
             foreach (var task in pTasks)
             {
                 _ytService.AddCommentToIssue
-                    (task.Id, pChangeset.RepositoryServer, pChangeset.Repository, pChangeset.Branch, pChangeset.Id, pChangeset.Comment);
+                    (task.Id, pChangeset.RepositoryServer, _config.PlasticWebGUI_RootURL ?? pChangeset.Repository, pChangeset.Branch, pChangeset.Id, pChangeset.Comment);
             }
         }
 
