@@ -17,6 +17,7 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
         private static readonly ILog _log = LogManager.GetLogger("extensions");
         private readonly IssueTrackerConfiguration _config;
         private readonly Uri _hostUri;
+        private readonly string _webGUI_RootURL;
         private readonly string _branchPrefix;
         private readonly string _userID;
         private readonly string _password;
@@ -31,6 +32,7 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
         {
             BranchPrefix = "yt_";
             _hostUri = new Uri("http://issues.domain.com");
+            _webGUI_RootURL = "http://plasticwebgui.domain.com";
             UserID = "";
             Password = "";
             ShowIssueStateInBranchTitle = false;
@@ -49,6 +51,11 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
             var hostValue = getValidParameterValue(ConfigParameterNames.Host);
             if (!Uri.TryCreate(hostValue, UriKind.Absolute, out _hostUri))
                 throw new ApplicationException(string.Format("Unable to parse host URL '{0}'.", hostValue));
+            Uri webGuiURI;
+            var webGuiRootURL = getValidParameterValue(ConfigParameterNames.Host);
+            if (!Uri.TryCreate(webGuiRootURL, UriKind.Absolute, out webGuiURI))
+                throw new ApplicationException(string.Format("Unable to parse Plastic WebGUI URL '{0}'.", webGuiRootURL));
+            PlasticWebGUI_RootURL = webGuiURI.ToString();
 
             UserID = getValidParameterValue(ConfigParameterNames.UserID);
             Password = getValidParameterValue(ConfigParameterNames.Password);
@@ -67,6 +74,8 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
         {
             get { return _hostUri; }
         }
+
+        public string PlasticWebGUI_RootURL { get; private set; }
 
         public string UsernameMapping { get; private set; }
 
@@ -122,6 +131,14 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
                     Name = ConfigParameterNames.Host,
                     Value = Host.ToString(),
                     Type = IssueTrackerConfigurationParameterType.Host,
+                    IsGlobal = true
+                });
+            parameters.Add
+                (new IssueTrackerConfigurationParameter
+                {
+                    Name = ConfigParameterNames.PlasticWebGUI_RootURL,
+                    Value = PlasticWebGUI_RootURL,
+                    Type = IssueTrackerConfigurationParameterType.Text,
                     IsGlobal = true
                 });
             parameters.Add
