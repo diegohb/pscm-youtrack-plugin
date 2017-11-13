@@ -79,9 +79,6 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
                     (task.Id, pChangeset.RepositoryServer, pChangeset.Repository, 
                      _config.PlasticWebGUI_RootURL ?? pChangeset.RepositoryServer, 
                      pChangeset.Branch, pChangeset.Id, pChangeset.Comment, pChangeset.Guid);
-                    (task.Id, pChangeset.RepositoryServer, pChangeset.Repository, 
-                     _config.PlasticWebGUI_RootURL ?? pChangeset.RepositoryServer, 
-                     pChangeset.Branch, pChangeset.Id, pChangeset.Comment);
             }
         }
 

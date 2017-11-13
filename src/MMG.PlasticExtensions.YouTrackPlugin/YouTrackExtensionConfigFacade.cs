@@ -38,7 +38,7 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
             ShowIssueStateInBranchTitle = false;
             IgnoreIssueStateForBranchTitle = "Completed";
             UsernameMapping = "";
-            WebGuiUrl = new Uri("http://plastic-gui.domain.com");
+            //WebGuiUrl = new Uri("http://plastic-gui.domain.com");
 
             _log.Debug("YouTrackExtensionConfigFacade: empty ctor called");
         }
@@ -52,7 +52,7 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
             if (!Uri.TryCreate(hostValue, UriKind.Absolute, out _hostUri))
                 throw new ApplicationException(string.Format("Unable to parse host URL '{0}'.", hostValue));
             Uri webGuiURI;
-            var webGuiRootURL = getValidParameterValue(ConfigParameterNames.Host);
+            var webGuiRootURL = getValidParameterValue(ConfigParameterNames.PlasticWebGUI_RootURL);
             if (!Uri.TryCreate(webGuiRootURL, UriKind.Absolute, out webGuiURI))
                 throw new ApplicationException(string.Format("Unable to parse Plastic WebGUI URL '{0}'.", webGuiRootURL));
             PlasticWebGUI_RootURL = webGuiURI.ToString();
@@ -63,7 +63,6 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
             PostCommentsToTickets = bool.Parse(getValidParameterValue(ConfigParameterNames.PostCommentsToTickets, "true"));
             IgnoreIssueStateForBranchTitle = getValidParameterValue(ConfigParameterNames.ClosedIssueStates, "Completed");
             UsernameMapping = getValidParameterValue(ConfigParameterNames.UsernameMapping);
-            WebGuiUrl = new Uri(getValidParameterValue(ConfigParameterNames.WebGuiUrl));
 
             _log.Debug("YouTrackExtensionConfigFacade: ctor called");
         }
@@ -189,15 +188,7 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
                     Type = IssueTrackerConfigurationParameterType.Text,
                     IsGlobal = false
                 });
-            parameters.Add
-                (new IssueTrackerConfigurationParameter
-                {
-                    Name = ConfigParameterNames.WebGuiUrl,
-                    Value = WebGuiUrl.ToString(),
-                    Type = IssueTrackerConfigurationParameterType.Text,
-                    IsGlobal = true
-                }
-                );
+
 
             return parameters;
         }

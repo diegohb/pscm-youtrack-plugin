@@ -4,6 +4,8 @@
 // Modified By: Green, Brett (greenb1)
 // *************************************************
 
+using System.Text;
+
 namespace MMG.PlasticExtensions.YouTrackPlugin
 {
     using System;
@@ -192,25 +194,38 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
             }
         }
 
-        public static string FormatComment(string pHost, string pRepository, string pWebGui, string pBranch, long pChangeSetId, string pComment, Guid pChangeSetGuid)
+        public static string FormatComment(string pHost, string pRepository, string pWebGui, string pBranch,
+            long pChangeSetId, string pComment, Guid pChangeSetGuid)
         {
             var nl = Environment.NewLine;
             var mdComment = $"{{color:darkgreen}}*PSCM - CODE COMMIT #{pChangeSetId}*{{color}}";
-            if (!pHost.Contains("http://"))
-            {
-                pHost = "http://" + pHost;
-            }
-            var server = new Uri(pHost);
+
+            var changeSetUriBuilder = new UriBuilder(pWebGui);
+            if (string.IsNullOrEmpty(changeSetUriBuilder.Scheme) ||
+                (!changeSetUriBuilder.Scheme.Equals("https", StringComparison.CurrentCultureIgnoreCase) &&
+                 !changeSetUriBuilder.Scheme.Equals("http", StringComparison.CurrentCultureIgnoreCase)))
+                changeSetUriBuilder.Scheme = "http";
 
             changeSetUriBuilder.Path = $"{pRepository}/ViewChanges";
             changeSetUriBuilder.Query = $"changeset={pChangeSetGuid}";
 
+            var hostUrl = new Uri(pHost);
+            var hostName = hostUrl.Host.Equals("localhost", StringComparison.CurrentCultureIgnoreCase)
+                ? Environment.MachineName
+                : hostUrl.Host;
+
             var tildes = "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~";
 
-            return
-                $"{pComment}{nl}{nl}{tildes}{nl}{mdComment}{nl}{{monospace}}Repo:      {pRepository}{nl}Branch:    {pBranch}{nl}Changeset: {pChangeSetId}{nl}GUID:      {pChangeSetGuid}{nl}{changeSetUriBuilder}{{monospace}}";
+            var commentBuilder = new StringBuilder();
+            commentBuilder.Append($"{pComment}{nl}{nl}{tildes}{nl}{mdComment}{nl}{{monospace}}");
+            commentBuilder.Append($"Repo:      {pRepository}{nl}");
+            commentBuilder.Append($"Branch:    {pBranch}{nl}");
+            commentBuilder.Append($"Changeset: {pChangeSetId}{nl}");
+            commentBuilder.Append($"Machine:   {hostName}{nl}");
+            commentBuilder.Append($"GUID:      [{pChangeSetGuid}|{changeSetUriBuilder}]{nl}");
+            commentBuilder.Append($"{{monospace}}");
 
-            //return $"{pComment}{nl}{nl}{mdComment}{nl}{path}{nl}{changeSetUriBuilder}";
+            return commentBuilder.ToString();
         }
 
         public void AddCommentToIssue
