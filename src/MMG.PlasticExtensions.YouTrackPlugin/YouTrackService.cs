@@ -192,29 +192,29 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
             }
         }
 
-        public static string FormatComment(string pHost, string pRepository, string pBranch, long pChangeSetId, string pComment)
+        public static string FormatComment(string pHost, string pRepository, string pWebGui, string pBranch, long pChangeSetId, string pComment, Guid pChangeSetGuid)
         {
             var nl = Environment.NewLine;
-            var mdComment = String.Format("{{color:darkgreen}}*PSCM - CODE COMMIT #{0}*{{color}}", pChangeSetId);
-            var path = String.Format("    {0}{1}/{2}", pRepository, pBranch, pChangeSetId);
+            var mdComment = $"{{color:darkgreen}}*PSCM - CODE COMMIT #{pChangeSetId}*{{color}}";
             if (!pHost.Contains("http://"))
             {
                 pHost = "http://" + pHost;
             }
             var server = new Uri(pHost);
 
-            pHost = server.GetComponents(UriComponents.AbsoluteUri & ~UriComponents.Port, UriFormat.UriEscaped);
-            if (pHost[pHost.Length - 1] == '/')
-            {
-                pHost = pHost.Remove(pHost.Length - 1, 1);
-            }
+            changeSetUriBuilder.Path = $"{pRepository}/ViewChanges";
+            changeSetUriBuilder.Query = $"changeset={pChangeSetGuid}";
 
-            var url = String.Format("    {0}/{1}/ViewChanges?changeset={2}", pHost, pRepository, pChangeSetId);
-            return String.Format("{0}{1}{2}{3}{4}{5}{6}", mdComment, nl, path, nl, url, nl + nl, pComment);
+            var tildes = "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~";
+
+            return
+                $"{pComment}{nl}{nl}{tildes}{nl}{mdComment}{nl}{{monospace}}Repo:      {pRepository}{nl}Branch:    {pBranch}{nl}Changeset: {pChangeSetId}{nl}GUID:      {pChangeSetGuid}{nl}{changeSetUriBuilder}{{monospace}}";
+
+            //return $"{pComment}{nl}{nl}{mdComment}{nl}{path}{nl}{changeSetUriBuilder}";
         }
 
         public void AddCommentToIssue
-            (string pIssueID, string pRepositoryServer, string pRepository, string pBranch, long pChangeSetId, string pComment)
+            (string pIssueID, string pRepositoryServer, string pRepository, string pWebGui, string pBranch, long pChangeSetId, string pComment, Guid pChangeSetGuid)
         {
             ensureAuthenticated();
 
@@ -222,7 +222,7 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
 
             try
             {
-                var completeComment = FormatComment(pRepositoryServer, pRepository, pBranch, pChangeSetId, pComment);
+                var completeComment = FormatComment(pRepositoryServer, pRepository, pWebGui, pBranch, pChangeSetId, pComment, pChangeSetGuid);
                 _ytIssues.ApplyCommand(pIssueID, "comment", completeComment, false);
             }
             catch (Exception ex)

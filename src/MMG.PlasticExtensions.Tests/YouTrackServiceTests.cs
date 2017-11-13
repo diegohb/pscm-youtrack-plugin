@@ -189,8 +189,9 @@ namespace MMG.PlasticExtensions.Tests
             long changeSetId = 969;
             var comment = "This is my test comment";
             var nl = Environment.NewLine;
+            var guid = Guid.NewGuid();
 
-            var generatedComment = YouTrackService.FormatComment(host, repository, branch, changeSetId, comment);
+            var generatedComment = YouTrackService.FormatComment(host, repository, host, branch, changeSetId, comment, guid);
 
             var expectedComment = "{color:darkgreen}*PSCM - CODE COMMIT #969*{color}" + nl;
             expectedComment += "    Test.Repository/yt_TEST-60/969" + nl;
@@ -209,8 +210,9 @@ namespace MMG.PlasticExtensions.Tests
             long changeSetId = 969;
             var comment = "This is my test comment";
             var nl = Environment.NewLine;
+            var guid = Guid.NewGuid();
 
-            var generatedComment = YouTrackService.FormatComment(host, repository, branch, changeSetId, comment);
+            var generatedComment = YouTrackService.FormatComment(host, repository, host, branch, changeSetId, comment, guid);
 
             var expectedComment = "{color:darkgreen}*PSCM - CODE COMMIT #969*{color}" + nl;
             expectedComment += "    Test.Repository/yt_TEST-60/969" + nl;

@@ -14,6 +14,7 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
     {
         string BranchPrefix { get; }
         Uri Host { get; }
+        string PlasticWebGUI_RootURL { get; }
         string UsernameMapping { get; }
         string UserID { get; }
         string Password { get; }
