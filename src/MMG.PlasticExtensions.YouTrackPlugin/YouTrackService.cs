@@ -217,13 +217,12 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
             var tildes = "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~";
 
             var commentBuilder = new StringBuilder();
-            commentBuilder.Append($"{pComment}{nl}{nl}{tildes}{nl}{mdComment}{nl}{{monospace}}");
-            commentBuilder.Append($"Repo:      {pRepository}{nl}");
-            commentBuilder.Append($"Branch:    {pBranch}{nl}");
-            commentBuilder.Append($"Changeset: {pChangeSetId}{nl}");
-            commentBuilder.Append($"Machine:   {hostName}{nl}");
-            commentBuilder.Append($"GUID:      [{pChangeSetGuid}|{changeSetUriBuilder}]{nl}");
-            commentBuilder.Append($"{{monospace}}");
+            commentBuilder.Append($"{pComment}{nl}{nl}");
+            commentBuilder.Append($"{tildes}{nl}");
+            commentBuilder.Append($"[{mdComment}|{changeSetUriBuilder}]{nl}");
+            //commentBuilder.Append($"{{monospace}}");
+            commentBuilder.Append($"{pChangeSetGuid}@{pBranch}@{pRepository}@{hostName}");
+            //commentBuilder.Append($"{{monospace}}");
 
             return commentBuilder.ToString();
         }
