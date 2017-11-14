@@ -211,7 +211,7 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
 
             var hostName = pHost.StartsWith("localhost", StringComparison.CurrentCultureIgnoreCase) ||
                            pHost.StartsWith("127.0.0.", StringComparison.CurrentCultureIgnoreCase)
-                ? Environment.MachineName
+                ? Environment.MachineName + (pHost.Contains(":") ? pHost.Substring(pHost.IndexOf(":")) : "")
                 : pHost;
 
             var tildes = "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~";
@@ -221,7 +221,7 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
             commentBuilder.Append($"{tildes}{nl}");
             commentBuilder.Append($"[{mdComment}|{changeSetUriBuilder}]{nl}");
             //commentBuilder.Append($"{{monospace}}");
-            commentBuilder.Append($"{pChangeSetGuid}@{pBranch}@{pRepository}@{hostName}");
+            commentBuilder.Append($"{pChangeSetGuid}@{pBranch}@{pRepository}@*{hostName}*");
             //commentBuilder.Append($"{{monospace}}");
 
             return commentBuilder.ToString();
