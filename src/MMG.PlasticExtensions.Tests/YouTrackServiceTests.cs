@@ -15,6 +15,7 @@ namespace MMG.PlasticExtensions.Tests
     using NUnit.Framework;
     using YouTrackPlugin;
     using YouTrackSharp.Issues;
+    using System.Text;
 
     [TestFixture]
     public class YouTrackServiceTests
@@ -183,28 +184,8 @@ namespace MMG.PlasticExtensions.Tests
         [Test]
         public void TestCommentFormatting()
         {
-            var host = "acme.website.int/";
-            var repository = "Test.Repository";
-            var branch = "/yt_TEST-60";
-            long changeSetId = 969;
-            var comment = "This is my test comment";
-            var nl = Environment.NewLine;
-            var guid = Guid.NewGuid();
-
-            var generatedComment = "foo";//YouTrackService.FormatComment(host, repository, host, branch, changeSetId, comment, guid);
-
-            var expectedComment = "{color:darkgreen}*PSCM - CODE COMMIT #969*{color}" + nl;
-            expectedComment += "    Test.Repository/yt_TEST-60/969" + nl;
-            expectedComment += "    http://acme.website.int/Test.Repository/ViewChanges?changeset=969" + nl + nl;
-            expectedComment += "This is my test comment";
-
-            Assert.AreEqual(expectedComment, generatedComment);
-        }
-
-        [Test]
-        public void TestCommentFormatting_StripPort()
-        {
             var host = "acme.website.int:5656/";
+            var webGui = new Uri($"https://{host}");
             var repository = "Test.Repository";
             var branch = "/yt_TEST-60";
             long changeSetId = 969;
@@ -212,12 +193,35 @@ namespace MMG.PlasticExtensions.Tests
             var nl = Environment.NewLine;
             var guid = Guid.NewGuid();
 
-            var generatedComment = "foo";//YouTrackService.FormatComment(host, repository, host, branch, changeSetId, comment, guid);
+            var generatedComment = YouTrackService.FormatComment(host, repository, webGui, branch, changeSetId, comment, guid);
 
-            var expectedComment = "{color:darkgreen}*PSCM - CODE COMMIT #969*{color}" + nl;
-            expectedComment += "    Test.Repository/yt_TEST-60/969" + nl;
-            expectedComment += "    http://acme.website.int/Test.Repository/ViewChanges?changeset=969" + nl + nl;
-            expectedComment += "This is my test comment";
+            var mdComment = $"{{color:darkgreen}}*PSCM - CODE COMMIT #{changeSetId}*{{color}}";
+
+            var changeSetUriBuilder = new UriBuilder(webGui);
+            if (string.IsNullOrEmpty(changeSetUriBuilder.Scheme) ||
+                (!changeSetUriBuilder.Scheme.Equals("https", StringComparison.CurrentCultureIgnoreCase) &&
+                 !changeSetUriBuilder.Scheme.Equals("http", StringComparison.CurrentCultureIgnoreCase)))
+                changeSetUriBuilder.Scheme = "http";
+
+            changeSetUriBuilder.Path = $"{repository}/ViewChanges";
+            changeSetUriBuilder.Query = $"changeset={guid}";
+
+            var hostName = host.StartsWith("localhost", StringComparison.CurrentCultureIgnoreCase) ||
+                           host.StartsWith("127.0.0.", StringComparison.CurrentCultureIgnoreCase)
+                ? Environment.MachineName + (host.Contains(":") ? host.Substring(host.IndexOf(":")) : "")
+                : host;
+
+            var tildes = "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~";
+
+            var commentBuilder = new StringBuilder();
+            commentBuilder.Append($"{comment}{nl}{nl}");
+            commentBuilder.Append($"{tildes}{nl}");
+            commentBuilder.Append($"[{mdComment}|{changeSetUriBuilder}]{nl}");
+            //commentBuilder.Append($"{{monospace}}");
+            commentBuilder.Append($"{guid}@{branch}@{repository}@{hostName}");
+            //commentBuilder.Append($"{{monospace}}");
+
+            var expectedComment = commentBuilder.ToString();
 
             Assert.AreEqual(expectedComment, generatedComment);
         }
