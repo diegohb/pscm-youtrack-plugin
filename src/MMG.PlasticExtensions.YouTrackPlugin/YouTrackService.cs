@@ -209,10 +209,10 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
             changeSetUriBuilder.Path = $"{pRepository}/ViewChanges";
             changeSetUriBuilder.Query = $"changeset={pChangeSetGuid}";
 
-            var hostUrl = new Uri(pHost);
-            var hostName = hostUrl.Host.Equals("localhost", StringComparison.CurrentCultureIgnoreCase)
+            var hostName = pHost.StartsWith("localhost", StringComparison.CurrentCultureIgnoreCase) ||
+                           pHost.StartsWith("127.0.0.", StringComparison.CurrentCultureIgnoreCase)
                 ? Environment.MachineName
-                : hostUrl.Host;
+                : pHost;
 
             var tildes = "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~";
 
