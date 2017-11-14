@@ -221,7 +221,7 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
             commentBuilder.Append($"{tildes}{nl}");
             commentBuilder.Append($"[{mdComment}|{changeSetUriBuilder}]{nl}");
             //commentBuilder.Append($"{{monospace}}");
-            commentBuilder.Append($"{pChangeSetGuid}@{pBranch}@{pRepository}@*{hostName}*");
+            commentBuilder.Append($"{pChangeSetGuid}@{pBranch}@{pRepository}@{hostName}");
             //commentBuilder.Append($"{{monospace}}");
 
             return commentBuilder.ToString();

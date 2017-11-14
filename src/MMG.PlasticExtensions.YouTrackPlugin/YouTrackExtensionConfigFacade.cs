@@ -54,14 +54,18 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
             Uri webGuiURI;
             var webGuiRootURL = getValidParameterValue(ConfigParameterNames.PlasticWebGUI_RootURL);
             if (!Uri.TryCreate(webGuiRootURL, UriKind.Absolute, out webGuiURI))
-                throw new ApplicationException(string.Format("Unable to parse Plastic WebGUI URL '{0}'.", webGuiRootURL));
+                throw new ApplicationException(
+                    string.Format("Unable to parse Plastic WebGUI URL '{0}'.", webGuiRootURL));
             PlasticWebGUI_RootURL = webGuiURI.ToString();
 
             UserID = getValidParameterValue(ConfigParameterNames.UserID);
             Password = getValidParameterValue(ConfigParameterNames.Password);
-            ShowIssueStateInBranchTitle = bool.Parse(getValidParameterValue(ConfigParameterNames.ShowIssueStateInBranchTitle, "false"));
-            PostCommentsToTickets = bool.Parse(getValidParameterValue(ConfigParameterNames.PostCommentsToTickets, "true"));
-            IgnoreIssueStateForBranchTitle = getValidParameterValue(ConfigParameterNames.ClosedIssueStates, "Completed");
+            ShowIssueStateInBranchTitle =
+                bool.Parse(getValidParameterValue(ConfigParameterNames.ShowIssueStateInBranchTitle, "false"));
+            PostCommentsToTickets =
+                bool.Parse(getValidParameterValue(ConfigParameterNames.PostCommentsToTickets, "true"));
+            IgnoreIssueStateForBranchTitle =
+                getValidParameterValue(ConfigParameterNames.ClosedIssueStates, "Completed");
             UsernameMapping = getValidParameterValue(ConfigParameterNames.UsernameMapping);
 
             _log.Debug("YouTrackExtensionConfigFacade: ctor called");
