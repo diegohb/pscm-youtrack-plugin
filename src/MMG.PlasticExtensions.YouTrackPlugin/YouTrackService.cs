@@ -140,7 +140,7 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
             {
                 _log.Error(string.Format("YouTrackService: Failed to authenticate with YouTrack server '{0}'.", _config.HostUri.DnsSafeHost), ex);
                 return;
-            }
+            }//a
         }
 
         public void ClearAuthentication()
