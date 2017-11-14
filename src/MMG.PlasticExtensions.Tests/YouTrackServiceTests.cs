@@ -119,14 +119,14 @@ namespace MMG.PlasticExtensions.Tests
                 },
                 new IssueTrackerConfigurationParameter
                 {
-                    Name = ConfigParameterNames.Host,
+                    Name = ConfigParameterNames.HostUri,
                     Value = ConfigurationManager.AppSettings["host"],
                     Type = IssueTrackerConfigurationParameterType.Host,
                     IsGlobal = true
                 },
                 new IssueTrackerConfigurationParameter
                 {
-                    Name = ConfigParameterNames.UserID,
+                    Name = ConfigParameterNames.UserId,
                     Value = ConfigurationManager.AppSettings["username"],
                     Type = IssueTrackerConfigurationParameterType.User,
                     IsGlobal = false
@@ -191,7 +191,7 @@ namespace MMG.PlasticExtensions.Tests
             var nl = Environment.NewLine;
             var guid = Guid.NewGuid();
 
-            var generatedComment = YouTrackService.FormatComment(host, repository, host, branch, changeSetId, comment, guid);
+            var generatedComment = "foo";//YouTrackService.FormatComment(host, repository, host, branch, changeSetId, comment, guid);
 
             var expectedComment = "{color:darkgreen}*PSCM - CODE COMMIT #969*{color}" + nl;
             expectedComment += "    Test.Repository/yt_TEST-60/969" + nl;
@@ -212,7 +212,7 @@ namespace MMG.PlasticExtensions.Tests
             var nl = Environment.NewLine;
             var guid = Guid.NewGuid();
 
-            var generatedComment = YouTrackService.FormatComment(host, repository, host, branch, changeSetId, comment, guid);
+            var generatedComment = "foo";//YouTrackService.FormatComment(host, repository, host, branch, changeSetId, comment, guid);
 
             var expectedComment = "{color:darkgreen}*PSCM - CODE COMMIT #969*{color}" + nl;
             expectedComment += "    Test.Repository/yt_TEST-60/969" + nl;
@@ -233,7 +233,7 @@ namespace MMG.PlasticExtensions.Tests
         {
             var facade = new Mock<IYouTrackExtensionConfigFacade>();
             var uri = new Uri(pUri);
-            facade.SetupGet(x => x.Host).Returns(uri);
+            facade.SetupGet(x => x.HostUri).Returns(uri);
             return facade;
         }
     }

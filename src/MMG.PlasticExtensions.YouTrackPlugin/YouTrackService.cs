@@ -31,7 +31,7 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
         public YouTrackService(IYouTrackExtensionConfigFacade pConfig)
         {
             _config = pConfig;
-            _ytConnection = new Connection(_config.Host.DnsSafeHost, _config.Host.Port, _config.UseSSL);
+            _ytConnection = new Connection(_config.HostUri.DnsSafeHost, _config.HostUri.Port, _config.UseSsl);
             _ytIssues = new IssueManagement(_ytConnection);
             _log.Debug("YouTrackService: ctor called");
         }
@@ -106,7 +106,7 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
 
         public string GetIssueWebUrl(string pIssueID)
         {
-            return new Uri(_config.Host, string.Format("/issue/{0}", pIssueID)).ToString();
+            return new Uri(_config.HostUri, string.Format("/issue/{0}", pIssueID)).ToString();
         }
 
         public YoutrackUser GetAuthenticatedUser()
@@ -130,7 +130,7 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
             validateConfig(_config);
 
             _authRetryCount++;
-            var creds = new NetworkCredential(_config.UserID, _config.GetDecryptedPassword());
+            var creds = new NetworkCredential(_config.UserId, _config.GetDecryptedPassword());
 
             try
             {
@@ -138,7 +138,7 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
             }
             catch (Exception ex)
             {
-                _log.Error(string.Format("YouTrackService: Failed to authenticate with YouTrack server '{0}'.", _config.Host.DnsSafeHost), ex);
+                _log.Error(string.Format("YouTrackService: Failed to authenticate with YouTrack server '{0}'.", _config.HostUri.DnsSafeHost), ex);
                 return;
             }
         }
@@ -156,13 +156,13 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
 
             try
             {
-                var testConnection = new Connection(pConfig.Host.DnsSafeHost, pConfig.Host.Port, pConfig.UseSSL);
-                testConnection.Authenticate(pConfig.UserID, pConfig.GetDecryptedPassword());
+                var testConnection = new Connection(pConfig.HostUri.DnsSafeHost, pConfig.HostUri.Port, pConfig.UseSsl);
+                testConnection.Authenticate(pConfig.UserId, pConfig.GetDecryptedPassword());
                 testConnection.Logout();
             }
             catch (Exception e)
             {
-                _log.Warn(string.Format("Failed to verify configuration against host '{0}'.", pConfig.Host), e);
+                _log.Warn(string.Format("Failed to verify configuration against host '{0}'.", pConfig.HostUri), e);
                 throw new ApplicationException(string.Format("Failed to authenticate against the host. Message: {0}", e.Message), e);
             }
         }
@@ -194,7 +194,7 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
             }
         }
 
-        public static string FormatComment(string pHost, string pRepository, string pWebGui, string pBranch,
+        public static string FormatComment(string pHost, string pRepository, Uri pWebGui, string pBranch,
             long pChangeSetId, string pComment, Guid pChangeSetGuid)
         {
             var nl = Environment.NewLine;
@@ -228,7 +228,7 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
         }
 
         public void AddCommentToIssue
-            (string pIssueID, string pRepositoryServer, string pRepository, string pWebGui, string pBranch, long pChangeSetId, string pComment, Guid pChangeSetGuid)
+            (string pIssueID, string pRepositoryServer, string pRepository, Uri pWebGui, string pBranch, long pChangeSetId, string pComment, Guid pChangeSetGuid)
         {
             ensureAuthenticated();
 
@@ -277,7 +277,7 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
         /// <summary>
         /// This method will take the mapping setting and allow mapping different authentication methods' usernames to issue username. 
         /// </summary>
-        /// <param name="pAssignee">The username specified for configuration value UserID</param>
+        /// <param name="pAssignee">The username specified for configuration value UserId</param>
         /// <returns>the username to pass to youtrack to filter for issues assignee.</returns>
         private string applyUserMapping(string pAssignee)
         {
@@ -374,18 +374,18 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
 
         private static void validateConfig(IYouTrackExtensionConfigFacade pConfig)
         {
-            if (pConfig.Host.Host.Equals("issues.domain.com", StringComparison.InvariantCultureIgnoreCase))
+            if (pConfig.HostUri.Host.Equals("issues.domain.com", StringComparison.InvariantCultureIgnoreCase))
                 return;
 
             /*//validate URL
-            var testConnection = new Connection(pConfig.Host.DnsSafeHost, pConfig.Host.Port, pConfig.UseSSL);
+            var testConnection = new Connection(pConfig.HostUri.DnsSafeHost, pConfig.HostUri.Port, pConfig.UseSsl);
             testConnection.Head("/rest/user/login");*/
 
-            if (pConfig.Host == null)
-                throw new ApplicationException(string.Format("YouTrack setting '{0}' cannot be null or empty!", ConfigParameterNames.Host));
+            if (pConfig.HostUri == null)
+                throw new ApplicationException(string.Format("YouTrack setting '{0}' cannot be null or empty!", ConfigParameterNames.HostUri));
 
             throwErrorIfRequiredStringSettingIsMissing(pConfig.BranchPrefix, ConfigParameterNames.BranchPrefix);
-            throwErrorIfRequiredStringSettingIsMissing(pConfig.UserID, ConfigParameterNames.UserID);
+            throwErrorIfRequiredStringSettingIsMissing(pConfig.UserId, ConfigParameterNames.UserId);
             throwErrorIfRequiredStringSettingIsMissing(pConfig.Password, ConfigParameterNames.Password);
         }
 
