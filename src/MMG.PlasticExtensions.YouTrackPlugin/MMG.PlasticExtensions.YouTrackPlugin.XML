@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>MMG.PlasticExtensions.YouTrackPlugin</name>
+    </assembly>
+    <members>
+        <member name="P:MMG.PlasticExtensions.YouTrackPlugin.IYouTrackExtensionConfigFacade.IgnoreIssueStateForBranchTitle">
+            <summary>
+            Issue state(s) to not display in branch title when ShowIssueStateInBranchTitle = true.
+            </summary>
+            <remarks>Use commas to separate multiple states.</remarks>
+        </member>
+        <member name="M:MMG.PlasticExtensions.YouTrackPlugin.YouTrackService.applyUserMapping(System.String)">
+            <summary>
+            This method will take the mapping setting and allow mapping different authentication methods' usernames to issue username. 
+            </summary>
+            <param name="pAssignee">The username specified for configuration value UserId</param>
+            <returns>the username to pass to youtrack to filter for issues assignee.</returns>
+        </member>
+    </members>
+</doc>

@@ -42,13 +42,13 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
         public void Connect()
         {
             _ytService.Authenticate();
-            _log.InfoFormat("Connected successfully to host '{0}'.", _config.Host);
+            _log.InfoFormat("Connected successfully to host '{0}'.", _config.HostUri);
         }
 
         public void Disconnect()
         {
             _ytService.ClearAuthentication();
-            _log.DebugFormat("Disconnected successfully from host '{0}'.", _config.Host);
+            _log.DebugFormat("Disconnected successfully from host '{0}'.", _config.HostUri);
         }
 
         public bool TestConnection(IssueTrackerConfiguration pConfiguration)
@@ -76,7 +76,9 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
             foreach (var task in pTasks)
             {
                 _ytService.AddCommentToIssue
-                    (task.Id, pChangeset.RepositoryServer, pChangeset.Repository, pChangeset.Branch, pChangeset.Id, pChangeset.Comment);
+                (task.Id, pChangeset.RepositoryServer, pChangeset.Repository,
+                    _config.WebGuiRootUrl ?? new Uri($"http://{pChangeset.RepositoryServer}"),
+                    pChangeset.Branch, pChangeset.Id, pChangeset.Comment, pChangeset.Guid);
             }
         }
 

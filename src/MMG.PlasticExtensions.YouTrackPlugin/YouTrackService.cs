@@ -4,6 +4,8 @@
 // Modified By: Green, Brett (greenb1)
 // *************************************************
 
+using System.Text;
+
 namespace MMG.PlasticExtensions.YouTrackPlugin
 {
     using System;
@@ -29,7 +31,7 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
         public YouTrackService(IYouTrackExtensionConfigFacade pConfig)
         {
             _config = pConfig;
-            _ytConnection = new Connection(_config.Host.DnsSafeHost, _config.Host.Port, _config.UseSSL);
+            _ytConnection = new Connection(_config.HostUri.DnsSafeHost, _config.HostUri.Port, _config.UseSsl);
             _ytIssues = new IssueManagement(_ytConnection);
             _log.Debug("YouTrackService: ctor called");
         }
@@ -104,7 +106,7 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
 
         public string GetIssueWebUrl(string pIssueID)
         {
-            return new Uri(_config.Host, string.Format("/issue/{0}", pIssueID)).ToString();
+            return new Uri(_config.HostUri, string.Format("/issue/{0}", pIssueID)).ToString();
         }
 
         public YoutrackUser GetAuthenticatedUser()
@@ -128,7 +130,7 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
             validateConfig(_config);
 
             _authRetryCount++;
-            var creds = new NetworkCredential(_config.UserID, _config.GetDecryptedPassword());
+            var creds = new NetworkCredential(_config.UserId, _config.GetDecryptedPassword());
 
             try
             {
@@ -136,7 +138,7 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
             }
             catch (Exception ex)
             {
-                _log.Error(string.Format("YouTrackService: Failed to authenticate with YouTrack server '{0}'.", _config.Host.DnsSafeHost), ex);
+                _log.Error(string.Format("YouTrackService: Failed to authenticate with YouTrack server '{0}'.", _config.HostUri.DnsSafeHost), ex);
                 return;
             }
         }
@@ -154,13 +156,13 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
 
             try
             {
-                var testConnection = new Connection(pConfig.Host.DnsSafeHost, pConfig.Host.Port, pConfig.UseSSL);
-                testConnection.Authenticate(pConfig.UserID, pConfig.GetDecryptedPassword());
+                var testConnection = new Connection(pConfig.HostUri.DnsSafeHost, pConfig.HostUri.Port, pConfig.UseSsl);
+                testConnection.Authenticate(pConfig.UserId, pConfig.GetDecryptedPassword());
                 testConnection.Logout();
             }
             catch (Exception e)
             {
-                _log.Warn(string.Format("Failed to verify configuration against host '{0}'.", pConfig.Host), e);
+                _log.Warn(string.Format("Failed to verify configuration against host '{0}'.", pConfig.HostUri), e);
                 throw new ApplicationException(string.Format("Failed to authenticate against the host. Message: {0}", e.Message), e);
             }
         }
@@ -192,29 +194,41 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
             }
         }
 
-        public static string FormatComment(string pHost, string pRepository, string pBranch, long pChangeSetId, string pComment)
+        public static string FormatComment(string pHost, string pRepository, Uri pWebGui, string pBranch,
+            long pChangeSetId, string pComment, Guid pChangeSetGuid)
         {
             var nl = Environment.NewLine;
-            var mdComment = String.Format("{{color:darkgreen}}*PSCM - CODE COMMIT #{0}*{{color}}", pChangeSetId);
-            var path = String.Format("    {0}{1}/{2}", pRepository, pBranch, pChangeSetId);
-            if (!pHost.Contains("http://"))
-            {
-                pHost = "http://" + pHost;
-            }
-            var server = new Uri(pHost);
+            var mdComment = $"{{color:darkgreen}}*PSCM - CODE COMMIT #{pChangeSetId}*{{color}}";
 
-            pHost = server.GetComponents(UriComponents.AbsoluteUri & ~UriComponents.Port, UriFormat.UriEscaped);
-            if (pHost[pHost.Length - 1] == '/')
-            {
-                pHost = pHost.Remove(pHost.Length - 1, 1);
-            }
+            var changeSetUriBuilder = new UriBuilder(pWebGui);
+            if (string.IsNullOrEmpty(changeSetUriBuilder.Scheme) ||
+                (!changeSetUriBuilder.Scheme.Equals("https", StringComparison.CurrentCultureIgnoreCase) &&
+                 !changeSetUriBuilder.Scheme.Equals("http", StringComparison.CurrentCultureIgnoreCase)))
+                changeSetUriBuilder.Scheme = "http";
 
-            var url = String.Format("    {0}/{1}/ViewChanges?changeset={2}", pHost, pRepository, pChangeSetId);
-            return String.Format("{0}{1}{2}{3}{4}{5}{6}", mdComment, nl, path, nl, url, nl + nl, pComment);
+            changeSetUriBuilder.Path = $"{pRepository}/ViewChanges";
+            changeSetUriBuilder.Query = $"changeset={pChangeSetGuid}";
+
+            var hostName = pHost.StartsWith("localhost", StringComparison.CurrentCultureIgnoreCase) ||
+                           pHost.StartsWith("127.0.0.", StringComparison.CurrentCultureIgnoreCase)
+                ? Environment.MachineName + (pHost.Contains(":") ? pHost.Substring(pHost.IndexOf(":")) : "")
+                : pHost;
+
+            var tildes = "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~";
+
+            var commentBuilder = new StringBuilder();
+            commentBuilder.Append($"{pComment}{nl}{nl}");
+            commentBuilder.Append($"{tildes}{nl}");
+            commentBuilder.Append($"[{mdComment}|{changeSetUriBuilder}]{nl}");
+            //commentBuilder.Append($"{{monospace}}");
+            commentBuilder.Append($"{pChangeSetGuid}@{pBranch}@{pRepository}@{hostName}");
+            //commentBuilder.Append($"{{monospace}}");
+
+            return commentBuilder.ToString();
         }
 
         public void AddCommentToIssue
-            (string pIssueID, string pRepositoryServer, string pRepository, string pBranch, long pChangeSetId, string pComment)
+            (string pIssueID, string pRepositoryServer, string pRepository, Uri pWebGui, string pBranch, long pChangeSetId, string pComment, Guid pChangeSetGuid)
         {
             ensureAuthenticated();
 
@@ -222,7 +236,7 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
 
             try
             {
-                var completeComment = FormatComment(pRepositoryServer, pRepository, pBranch, pChangeSetId, pComment);
+                var completeComment = FormatComment(pRepositoryServer, pRepository, pWebGui, pBranch, pChangeSetId, pComment, pChangeSetGuid);
                 _ytIssues.ApplyCommand(pIssueID, "comment", completeComment, false);
             }
             catch (Exception ex)
@@ -263,7 +277,7 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
         /// <summary>
         /// This method will take the mapping setting and allow mapping different authentication methods' usernames to issue username. 
         /// </summary>
-        /// <param name="pAssignee">The username specified for configuration value UserID</param>
+        /// <param name="pAssignee">The username specified for configuration value UserId</param>
         /// <returns>the username to pass to youtrack to filter for issues assignee.</returns>
         private string applyUserMapping(string pAssignee)
         {
@@ -360,18 +374,18 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
 
         private static void validateConfig(IYouTrackExtensionConfigFacade pConfig)
         {
-            if (pConfig.Host.Host.Equals("issues.domain.com", StringComparison.InvariantCultureIgnoreCase))
+            if (pConfig.HostUri.Host.Equals("issues.domain.com", StringComparison.InvariantCultureIgnoreCase))
                 return;
 
             /*//validate URL
-            var testConnection = new Connection(pConfig.Host.DnsSafeHost, pConfig.Host.Port, pConfig.UseSSL);
+            var testConnection = new Connection(pConfig.HostUri.DnsSafeHost, pConfig.HostUri.Port, pConfig.UseSsl);
             testConnection.Head("/rest/user/login");*/
 
-            if (pConfig.Host == null)
-                throw new ApplicationException(string.Format("YouTrack setting '{0}' cannot be null or empty!", ConfigParameterNames.Host));
+            if (pConfig.HostUri == null)
+                throw new ApplicationException(string.Format("YouTrack setting '{0}' cannot be null or empty!", ConfigParameterNames.HostUri));
 
             throwErrorIfRequiredStringSettingIsMissing(pConfig.BranchPrefix, ConfigParameterNames.BranchPrefix);
-            throwErrorIfRequiredStringSettingIsMissing(pConfig.UserID, ConfigParameterNames.UserID);
+            throwErrorIfRequiredStringSettingIsMissing(pConfig.UserId, ConfigParameterNames.UserId);
             throwErrorIfRequiredStringSettingIsMissing(pConfig.Password, ConfigParameterNames.Password);
         }
 

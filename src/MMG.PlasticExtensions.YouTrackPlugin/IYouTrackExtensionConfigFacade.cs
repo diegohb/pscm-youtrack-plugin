@@ -13,11 +13,12 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
     public interface IYouTrackExtensionConfigFacade
     {
         string BranchPrefix { get; }
-        Uri Host { get; }
+        Uri HostUri { get; }
+        Uri WebGuiRootUrl { get; }
         string UsernameMapping { get; }
-        string UserID { get; }
+        string UserId { get; }
         string Password { get; }
-        bool UseSSL { get; }
+        bool UseSsl { get; }
         bool ShowIssueStateInBranchTitle { get; }
         bool PostCommentsToTickets { get; }
 

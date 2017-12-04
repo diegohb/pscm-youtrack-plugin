@@ -1,179 +1,168 @@
-﻿// *************************************************
-// MMG.PlasticExtensions.YouTrackPlugin.YouTrackExtensionConfigFacade.cs
-// Last Modified: 03/28/2016 1:57 PM
-// Modified By: Green, Brett (greenb1)
-// *************************************************
+﻿using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Linq;
+using System.Text;
+using Codice.Client.IssueTracker;
+using Codice.Utils;
+using log4net;
 
 namespace MMG.PlasticExtensions.YouTrackPlugin
 {
-    using System;
-    using System.Collections.Generic;
-    using Codice.Client.IssueTracker;
-    using Codice.Utils;
-    using log4net;
-
     public class YouTrackExtensionConfigFacade : IYouTrackExtensionConfigFacade
     {
         private static readonly ILog _log = LogManager.GetLogger("extensions");
-        private readonly IssueTrackerConfiguration _config;
-        private readonly Uri _hostUri;
-        private readonly string _branchPrefix;
-        private readonly string _userID;
-        private readonly string _password;
-        private readonly bool _showIssueStateInTitle;
-        private readonly bool _postCommentsToTickets;
-        private readonly string _closedIssueStates;
-        private readonly string _usernameMapping;
+        public virtual IssueTrackerConfiguration Config { get; private set; }
 
+        #region config values
+        public virtual Uri HostUri { get; private set; }
+        public virtual Uri WebGuiRootUrl { get; private set; }
+        public virtual string BranchPrefix { get; private set; }
+        public virtual string UserId { get; private set; }
+        public virtual string Password { get; private set; }
+        public virtual bool ShowIssueStateInBranchTitle { get; private set; }
+        public virtual bool PostCommentsToTickets { get; private set; }
+        public virtual string IgnoreIssueStateForBranchTitle { get; private set; }
+        public virtual string UsernameMapping { get; private set; }
+        public virtual bool UseSsl => HostUri.Scheme.Equals("https", StringComparison.CurrentCultureIgnoreCase);
+        public virtual ExtensionWorkingMode WorkingMode { get; private set; }
+        #endregion
 
         internal YouTrackExtensionConfigFacade()
         {
+            _log.Debug("YouTrackExtensionConfigFacade: empty ctor called");
+            LoadDefaultValues();
+            _log.Debug("YouTrackExtensionConfigFacade: empty ctor completed");
+        }
+
+        public YouTrackExtensionConfigFacade(IssueTrackerConfiguration pConfig) : this()
+        {
+            _log.Debug("YouTrackExtensionConfigFacade: configured ctor called");
+            Config = pConfig;
+            BranchPrefix = GetValidParameterValue(Config, ConfigParameterNames.BranchPrefix, pDefaultValue: BranchPrefix);
+            HostUri = GetValidParameterValue(Config, ConfigParameterNames.HostUri, pDefaultValue: HostUri, converter: new UriTypeConverter());
+            UserId = GetValidParameterValue(Config, ConfigParameterNames.UserId, pDefaultValue: UserId);
+            Password = GetValidParameterValue(Config, ConfigParameterNames.Password, pDefaultValue: Password);
+            ShowIssueStateInBranchTitle = GetValidParameterValue(Config, ConfigParameterNames.ShowIssueStateInBranchTitle, pDefaultValue: ShowIssueStateInBranchTitle);
+            PostCommentsToTickets = GetValidParameterValue(Config, ConfigParameterNames.PostCommentsToTickets, pDefaultValue: PostCommentsToTickets);
+            IgnoreIssueStateForBranchTitle = GetValidParameterValue(Config, ConfigParameterNames.ClosedIssueStates, pDefaultValue: IgnoreIssueStateForBranchTitle);
+            UsernameMapping = GetValidParameterValue(Config, ConfigParameterNames.UsernameMapping, pDefaultValue: UsernameMapping);
+            WebGuiRootUrl = GetValidParameterValue(Config, ConfigParameterNames.WebGuiRootUrl, pDefaultValue: WebGuiRootUrl, converter: new UriTypeConverter());
+            WorkingMode = GetValidParameterValue(Config, nameof(ExtensionWorkingMode), pDefaultValue: ExtensionWorkingMode.TaskOnBranch);
+            _log.Debug("YouTrackExtensionConfigFacade: configured ctor completed");
+        }
+
+        private void LoadDefaultValues()
+        {
+            _log.Debug("YouTrackExtensionConfigFacade: loading default values...");
             BranchPrefix = "yt_";
-            _hostUri = new Uri("http://issues.domain.com");
-            UserID = "";
+            HostUri = new Uri("http://issues.domain.com");
+            UserId = "";
             Password = "";
             ShowIssueStateInBranchTitle = false;
+            PostCommentsToTickets = true;
             IgnoreIssueStateForBranchTitle = "Completed";
             UsernameMapping = "";
-
-            _log.Debug("YouTrackExtensionConfigFacade: empty ctor called");
+            WebGuiRootUrl = new Uri("http://plastic-gui.domain.com");
+            WorkingMode = ExtensionWorkingMode.TaskOnBranch;
         }
 
-        public YouTrackExtensionConfigFacade(IssueTrackerConfiguration pConfig)
-        {
-            _config = pConfig;
-
-            BranchPrefix = getValidParameterValue(ConfigParameterNames.BranchPrefix);
-            var hostValue = getValidParameterValue(ConfigParameterNames.Host);
-            if (!Uri.TryCreate(hostValue, UriKind.Absolute, out _hostUri))
-                throw new ApplicationException(string.Format("Unable to parse host URL '{0}'.", hostValue));
-
-            UserID = getValidParameterValue(ConfigParameterNames.UserID);
-            Password = getValidParameterValue(ConfigParameterNames.Password);
-            ShowIssueStateInBranchTitle = bool.Parse(getValidParameterValue(ConfigParameterNames.ShowIssueStateInBranchTitle, "false"));
-            PostCommentsToTickets = bool.Parse(getValidParameterValue(ConfigParameterNames.PostCommentsToTickets, "true"));
-            IgnoreIssueStateForBranchTitle = getValidParameterValue(ConfigParameterNames.ClosedIssueStates, "Completed");
-            UsernameMapping = getValidParameterValue(ConfigParameterNames.UsernameMapping);
-
-            _log.Debug("YouTrackExtensionConfigFacade: ctor called");
-        }
-
-        public string BranchPrefix { get; private set; }
-
-        public Uri Host
-        {
-            get { return _hostUri; }
-        }
-
-        public string UsernameMapping { get; private set; }
-
-        public string UserID { get; private set; }
-
-        public string Password { get; private set; }
-
-        public bool UseSSL
-        {
-            get { return _hostUri.Scheme == "https"; }
-        }
-
-        public bool ShowIssueStateInBranchTitle { get; private set; }
-
-        public bool PostCommentsToTickets { get; private set; }
-
-        /// <summary>
-        /// Issue state(s) to not display in branch title when ShowIssueStateInBranchTitle = true.
-        /// </summary>
-        /// <remarks>Use commas to separate multiple states.</remarks>
-        public string IgnoreIssueStateForBranchTitle { get; private set; }
-
-        public ExtensionWorkingMode WorkingMode
-        {
-            get
+        public List<IssueTrackerConfigurationParameter> GetYouTrackParameters() =>
+            new List<IssueTrackerConfigurationParameter>
             {
-                if (_config == null)
-                    return ExtensionWorkingMode.TaskOnBranch;
-
-                return _config.WorkingMode == ExtensionWorkingMode.None
-                    ? ExtensionWorkingMode.TaskOnBranch
-                    : _config.WorkingMode;
-            }
-        }
-
-        public List<IssueTrackerConfigurationParameter> GetYouTrackParameters()
-        {
-            var parameters = new List<IssueTrackerConfigurationParameter>();
-
-            parameters.Add
-                (new IssueTrackerConfigurationParameter
+                new IssueTrackerConfigurationParameter
                 {
                     Name = ConfigParameterNames.BranchPrefix,
                     Value = BranchPrefix,
                     Type = IssueTrackerConfigurationParameterType.BranchPrefix,
                     IsGlobal = true
-                });
-            parameters.Add
-                (new IssueTrackerConfigurationParameter
+                },
+                new IssueTrackerConfigurationParameter
                 {
-                    Name = ConfigParameterNames.Host,
-                    Value = Host.ToString(),
+                    Name = ConfigParameterNames.HostUri,
+                    Value = HostUri.ToString(),
                     Type = IssueTrackerConfigurationParameterType.Host,
                     IsGlobal = true
-                });
-            parameters.Add
-                (new IssueTrackerConfigurationParameter
+                },
+                new IssueTrackerConfigurationParameter
                 {
-                    Name = ConfigParameterNames.UserID,
-                    Value = UserID,
+                    Name = ConfigParameterNames.WebGuiRootUrl,
+                    Value = WebGuiRootUrl.ToString(),
+                    Type = IssueTrackerConfigurationParameterType.Text,
+                    IsGlobal = true
+                },
+                new IssueTrackerConfigurationParameter
+                {
+                    Name = ConfigParameterNames.UserId,
+                    Value = UserId,
                     Type = IssueTrackerConfigurationParameterType.User,
                     IsGlobal = false
-                });
-            parameters.Add
-                (new IssueTrackerConfigurationParameter
+                },
+                new IssueTrackerConfigurationParameter
                 {
                     Name = ConfigParameterNames.UsernameMapping,
                     Value = UsernameMapping,
                     Type = IssueTrackerConfigurationParameterType.Text,
                     IsGlobal = true
-                });
-            parameters.Add
-                (new IssueTrackerConfigurationParameter
+                },
+                new IssueTrackerConfigurationParameter
                 {
                     Name = ConfigParameterNames.Password,
                     Value = Password,
                     Type = IssueTrackerConfigurationParameterType.Password,
                     IsGlobal = false
-                });
-            parameters.Add
-                (new IssueTrackerConfigurationParameter
+                },
+                new IssueTrackerConfigurationParameter
                 {
                     Name = ConfigParameterNames.ShowIssueStateInBranchTitle,
                     Value = ShowIssueStateInBranchTitle.ToString(),
                     Type = IssueTrackerConfigurationParameterType.Boolean,
                     IsGlobal = false
-                });
-            parameters.Add
-                (new IssueTrackerConfigurationParameter
+                },
+                new IssueTrackerConfigurationParameter
                 {
                     Name = ConfigParameterNames.PostCommentsToTickets,
                     Value = PostCommentsToTickets.ToString(),
                     Type = IssueTrackerConfigurationParameterType.Boolean,
                     IsGlobal = true
-                });
-            parameters.Add
-                (new IssueTrackerConfigurationParameter
+                },
+                new IssueTrackerConfigurationParameter
                 {
                     Name = ConfigParameterNames.ClosedIssueStates,
                     Value = IgnoreIssueStateForBranchTitle,
                     Type = IssueTrackerConfigurationParameterType.Text,
                     IsGlobal = false
-                });
+                }
+            };
 
-            return parameters;
+        protected static T GetValidParameterValue<T>(IssueTrackerConfiguration pConfig, string pParamName, TypeConverter converter = null, T pDefaultValue = default(T))
+        {
+            if (pConfig == null)
+                throw new ApplicationException("The configuration parameter cannot be null!");
+
+            if (string.IsNullOrEmpty(pParamName))
+                throw new ApplicationException("The parameter name cannot be null or empty!");
+
+            var configValue = pConfig.GetValue(pParamName);
+
+            try
+            {
+                return string.IsNullOrEmpty(configValue)
+                    ? pDefaultValue
+                    : converter != null
+                        ? (T)converter.ConvertFromString(configValue)
+                        : (T)Convert.ChangeType(configValue, typeof(T));
+            }
+            catch (Exception e)
+            {
+                _log.Error(e.Message);
+                return pDefaultValue;
+            }
         }
 
         public string GetDecryptedPassword()
         {
-            if (_config == null)
+            if (Config == null)
                 throw new ApplicationException("The configuration has not yet been initialized!");
 
             if (string.IsNullOrEmpty(Password))
@@ -181,18 +170,6 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
 
             var decryptedPassword = CryptoServices.GetDecryptedPassword(Password);
             return decryptedPassword;
-        }
-
-        private string getValidParameterValue(string pParamName, string pDefaultValue = "")
-        {
-            if (_config == null)
-                throw new ApplicationException("The configuration has not yet been initialized!");
-
-            var configValue = _config.GetValue(pParamName);
-
-            return string.IsNullOrEmpty(configValue)
-                ? pDefaultValue
-                : configValue;
         }
     }
 }
