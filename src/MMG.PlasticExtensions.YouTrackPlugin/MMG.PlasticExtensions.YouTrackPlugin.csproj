@@ -42,7 +42,8 @@
       <HintPath>..\..\lib\EasyHttp.1.6.29.0\lib\net40\EasyHttp.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="issuetrackerinterface">
+    <Reference Include="issuetrackerinterface, Version=3.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\lib\pscm\issuetrackerinterface.dll</HintPath>
     </Reference>
     <Reference Include="JsonFx, Version=2.0.1209.2802, Culture=neutral, PublicKeyToken=315052dd637f8a52, processorArchitecture=MSIL">
@@ -57,7 +58,8 @@
     <Reference Include="System.Data" />
     <Reference Include="System.Web" />
     <Reference Include="System.Xml" />
-    <Reference Include="utils">
+    <Reference Include="utils, Version=6.0.16.1765, Culture=neutral, PublicKeyToken=a107c9c6e34c8876, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\lib\pscm\utils.dll</HintPath>
     </Reference>
     <Reference Include="YouTrackSharp, Version=2.0.30.0, Culture=neutral, processorArchitecture=MSIL">
