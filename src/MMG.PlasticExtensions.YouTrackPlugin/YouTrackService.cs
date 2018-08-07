@@ -66,7 +66,7 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
             return result;
         }
 
-        public IEnumerable<PlasticTask> GetUnresolvedPlasticTasks(string pAssignee = "", int pMaxCount = 1000)
+        public IEnumerable<PlasticTask> GetUnresolvedPlasticTasks(string pAssignee = "", int pMaxCount = 500)
         {
             ensureAuthenticated();
 
@@ -77,7 +77,7 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
 
                 var assignee = applyUserMapping(pAssignee);
                 var searchString = string.Format
-                    ("#unresolved #{{This month}}{0} order by: updated desc",
+                    ("#unresolved {0} order by: updated desc",
                         string.IsNullOrWhiteSpace(assignee) ? string.Empty : string.Format(" for: {0}", assignee));
                 var issues = _ytIssues.GetIssues(searchString, take: pMaxCount).Result.ToList();
                 if (!issues.Any())
