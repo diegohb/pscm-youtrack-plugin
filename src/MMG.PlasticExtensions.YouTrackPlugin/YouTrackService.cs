@@ -24,7 +24,6 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
         private readonly Connection _ytConnection;
         private readonly IssuesService _ytIssues;
         private readonly IYouTrackExtensionConfigFacade _config;
-        private int _authRetryCount = 0;
 
         public YouTrackService(IYouTrackExtensionConfigFacade pConfig)
         {
@@ -123,22 +122,12 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
         {
             validateConfig(_config);
 
-            _authRetryCount++;
-            
-            try
-            {
-                _ytConnection.CreateUserManagementService().GetUser(_config.UserId).Wait(1000);
-            }
-            catch (Exception ex)
-            {
-                _log.Error(string.Format("YouTrackService: Failed to authenticate with YouTrack server '{0}'.", _config.HostUri.DnsSafeHost), ex);
-                return;
-            }
+            //no active connection held.
         }
 
         public void ClearAuthentication()
         {
-            ensureAuthenticated();
+            //no active connection held.
         }
 
         public static void VerifyConfiguration(YouTrackExtensionConfigFacade pConfig)
@@ -167,11 +156,11 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
         {
             ensureAuthenticated();
 
-            if (!checkIssueExistenceAndLog(pIssueID)) return;
-
             try
             {
                 var issue = _ytIssues.GetIssue(pIssueID).Result;
+                if(issue == null)
+                    throw new NullReferenceException(string.Format("Unable to find issue by ID {0}.", pIssueID));
                 if (issue.GetField("State").AsString() != "In Progress")
                     _ytIssues.ApplyCommand
                         (pIssueID, "State: In Progress", GetBranchCreationMessage()).Wait(1000);
@@ -239,21 +228,21 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
         public void AssignIssue(string pIssueID, string pAssignee, bool pAddComment = true)
         {
             ensureAuthenticated();
-
-            if (!checkIssueExistenceAndLog(pIssueID)) return;
-
+            
             try
             {
                 var issue = _ytIssues.GetIssue(pIssueID).Result;
-                var currentAssignee = string.Empty;
+                if (issue == null)
+                    throw new NullReferenceException(string.Format("Unable to find issue by ID {0}.", pIssueID));
 
+                var currentAssignee = string.Empty;
                 if (doesPropertyExist(issue, "Assignee"))
                     currentAssignee = issue.GetField("Assignee").AsString();
 
                 if (!string.Equals(currentAssignee, pAssignee, StringComparison.InvariantCultureIgnoreCase))
                 {
                     var comment = string.Format("Assigned by PlasticSCM to user '{0}'.", pAssignee);
-                    _ytIssues.ApplyCommand(pIssueID, string.Format("for {0}", pAssignee), pAddComment ? comment : string.Empty);
+                    _ytIssues.ApplyCommand(pIssueID, string.Format("for {0}", pAssignee), pAddComment ? comment : string.Empty).Wait(1000);
                 }
             }
             catch (Exception ex)
@@ -322,14 +311,6 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
             return result;
         }
 
-        private bool checkIssueExistenceAndLog(string pTicketID)
-        {
-            if (_ytIssues.Exists(pTicketID).Result) return true;
-
-            _log.WarnFormat("Unable to start work on ticket '{0}' because it cannot be found.", pTicketID);
-            return false;
-        }
-
         private void ensureAuthenticated()
         {
             Authenticate();
@@ -375,9 +356,9 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
                 throw new ApplicationException(string.Format("YouTrack setting '{0}' cannot be null or empty!", pSettingName));
         }
 
-        private static bool doesPropertyExist(Issue pObject, string pPropertyName)
+        private static bool doesPropertyExist(Issue pIssue, string pPropertyName)
         {
-            return pObject.GetField(pPropertyName) != null;
+            return pIssue.GetField(pPropertyName) != null;
         }
 
         #endregion
