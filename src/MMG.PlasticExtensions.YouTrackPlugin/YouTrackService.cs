@@ -4,35 +4,33 @@
 // Modified By: Green, Brett (greenb1)
 // *************************************************
 
+using System.Security;
 using System.Text;
+using YouTrackSharp;
 
 namespace MMG.PlasticExtensions.YouTrackPlugin
 {
     using System;
     using System.Collections;
     using System.Collections.Generic;
-    using System.Dynamic;
     using System.Linq;
-    using System.Net;
     using Codice.Client.IssueTracker;
     using log4net;
     using Models;
-    using YouTrackSharp.Infrastructure;
     using YouTrackSharp.Issues;
 
     public class YouTrackService
     {
         private static readonly ILog _log = LogManager.GetLogger("extensions");
         private readonly Connection _ytConnection;
-        private readonly IssueManagement _ytIssues;
+        private readonly IssuesService _ytIssues;
         private readonly IYouTrackExtensionConfigFacade _config;
-        private int _authRetryCount = 0;
 
         public YouTrackService(IYouTrackExtensionConfigFacade pConfig)
         {
             _config = pConfig;
-            _ytConnection = new Connection(_config.HostUri.DnsSafeHost, _config.HostUri.Port, _config.UseSsl);
-            _ytIssues = new IssueManagement(_ytConnection);
+            _ytConnection = getServiceConnection((YouTrackExtensionConfigFacade) pConfig);
+            _ytIssues = _ytConnection.CreateIssuesService();
             _log.Debug("YouTrackService: ctor called");
         }
 
@@ -46,25 +44,16 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
 
             try
             {
-                var issue = _ytIssues.GetIssue(pTaskID);
+                var issue = _ytIssues.GetIssue(pTaskID).Result;
                 if (issue != null)
                     return hydratePlasticTaskFromIssue(issue);
             }
             catch (Exception ex)
             {
-                /* if (exWeb.Message.Contains("Unauthorized.") && _authRetryCount < 3)
-                {
-                    _log.WarnFormat
-                        ("YouTrackService: Failed to fetch youtrack issue '{0}' due to authentication error. Will retry after authentication again. Details: {1}",
-                            pTaskID, exWeb);
-                    authenticate();
-                    return GetPlasticTaskFromTaskID(pTaskID);
-                }*/
-
                 _log.Warn(string.Format("YouTrackService: Failed to fetch youtrack issue '{0}' due to error.", pTaskID), ex);
             }
 
-            return new PlasticTask {Id = pTaskID, CanBeLinked = false};
+            return new PlasticTask { Id = pTaskID, CanBeLinked = false };
         }
 
         public IEnumerable<PlasticTask> GetPlasticTasks(string[] pTaskIDs)
@@ -90,7 +79,7 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
                 var searchString = string.Format
                     ("#unresolved #{{This month}}{0} order by: updated desc",
                         string.IsNullOrWhiteSpace(assignee) ? string.Empty : string.Format(" for: {0}", assignee));
-                var issues = _ytIssues.GetIssuesBySearch(searchString, pMaxCount).ToList();
+                var issues = _ytIssues.GetIssues(searchString, take: pMaxCount).Result.ToList();
                 if (!issues.Any())
                     return new List<PlasticTask>();
 
@@ -106,48 +95,30 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
 
         public string GetIssueWebUrl(string pIssueID)
         {
-            return new Uri(_config.HostUri, string.Format("/issue/{0}", pIssueID)).ToString();
+            return _config.HostUri.Segments.Length > 1
+                ? string.Format("{0}/issue/{1}", _config.HostUri.ToString().TrimEnd('/'), pIssueID)
+                : new Uri(_config.HostUri, string.Format("/issue/{0}", pIssueID)).ToString();
         }
 
         public YoutrackUser GetAuthenticatedUser()
         {
-            if (!_ytConnection.IsAuthenticated)
-                throw new ApplicationException("Not authenticated!");
+            ensureAuthenticated();
 
-            var authUser = _ytConnection.GetCurrentAuthenticatedUser();
+            var authUser = _ytConnection.CreateUserManagementService().GetUser(_config.UserId).Result;
             var user = new YoutrackUser(authUser.Username, authUser.FullName, authUser.Email);
             return user;
         }
 
         public void Authenticate()
         {
-            if (_ytConnection.IsAuthenticated)
-            {
-                _log.DebugFormat("YouTrackService: Authenticate() was called but already authenticated.");
-                return;
-            }
-
             validateConfig(_config);
 
-            _authRetryCount++;
-            var creds = new NetworkCredential(_config.UserId, _config.GetDecryptedPassword());
-
-            try
-            {
-                _ytConnection.Authenticate(creds);
-            }
-            catch (Exception ex)
-            {
-                _log.Error(string.Format("YouTrackService: Failed to authenticate with YouTrack server '{0}'.", _config.HostUri.DnsSafeHost), ex);
-                return;
-            }
+            //no active connection held.
         }
 
         public void ClearAuthentication()
         {
-            ensureAuthenticated();
-
-            _ytConnection.Logout();
+            //no active connection held.
         }
 
         public static void VerifyConfiguration(YouTrackExtensionConfigFacade pConfig)
@@ -156,9 +127,8 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
 
             try
             {
-                var testConnection = new Connection(pConfig.HostUri.DnsSafeHost, pConfig.HostUri.Port, pConfig.UseSsl);
-                testConnection.Authenticate(pConfig.UserId, pConfig.GetDecryptedPassword());
-                testConnection.Logout();
+                var testConnection = getServiceConnection(pConfig);
+                testConnection.CreateUserManagementService().GetUser(pConfig.UserId).Wait(1000);
             }
             catch (Exception e)
             {
@@ -172,18 +142,17 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
             return "{color:darkgreen}*PSCM - BRANCH CREATED*{color}";
         }
 
-        public void EnsureIssueInProgress(string pIssueID)
+        public async void EnsureIssueInProgress(string pIssueID)
         {
             ensureAuthenticated();
 
-            if (!checkIssueExistenceAndLog(pIssueID)) return;
-
             try
             {
-                dynamic issue = _ytIssues.GetIssue(pIssueID);
-                if (issue.State.ToString() != "In Progress")
-                    _ytIssues.ApplyCommand
-                        (pIssueID, "State: In Progress", GetBranchCreationMessage());
+                var issue = await _ytIssues.GetIssue(pIssueID);
+                if (issue == null)
+                    throw new NullReferenceException(string.Format("Unable to find issue by ID {0}.", pIssueID));
+                if (issue.GetField("State").AsString() != "In Progress")
+                    await _ytIssues.ApplyCommand(pIssueID, "State: In Progress", GetBranchCreationMessage());
                 else
                     _log.InfoFormat("Issue '{0}' already marked in-progress.", pIssueID);
             }
@@ -227,17 +196,17 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
             return commentBuilder.ToString();
         }
 
-        public void AddCommentToIssue
+        public async void AddCommentToIssue
             (string pIssueID, string pRepositoryServer, string pRepository, Uri pWebGui, string pBranch, long pChangeSetId, string pComment, Guid pChangeSetGuid)
         {
             ensureAuthenticated();
 
-            if (!_ytIssues.CheckIfIssueExists(pIssueID)) return;
+            if (await _ytIssues.Exists(pIssueID) == false) return;
 
             try
             {
                 var completeComment = FormatComment(pRepositoryServer, pRepository, pWebGui, pBranch, pChangeSetId, pComment, pChangeSetGuid);
-                _ytIssues.ApplyCommand(pIssueID, "comment", completeComment, false);
+                _ytIssues.ApplyCommand(pIssueID, "comment", completeComment, false).Wait(1000);
             }
             catch (Exception ex)
             {
@@ -245,24 +214,25 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
             }
         }
 
-        public void AssignIssue(string pIssueID, string pAssignee, bool pAddComment = true)
+        public async void AssignIssue(string pIssueID, string pAssignee, bool pAddComment = true)
         {
             ensureAuthenticated();
 
-            if (!checkIssueExistenceAndLog(pIssueID)) return;
-
             try
             {
-                dynamic issue = _ytIssues.GetIssue(pIssueID);
-                var currentAssignee = string.Empty;
+                var issue = await _ytIssues.GetIssue(pIssueID);
+                if (issue == null)
+                    throw new NullReferenceException(string.Format("Unable to find issue by ID {0}.", pIssueID));
 
+                var currentAssignee = string.Empty;
                 if (doesPropertyExist(issue, "Assignee"))
-                    currentAssignee = issue.Assignee.ToString();
+                    currentAssignee = getAssignee(issue).UserName;
 
                 if (!string.Equals(currentAssignee, pAssignee, StringComparison.InvariantCultureIgnoreCase))
                 {
                     var comment = string.Format("Assigned by PlasticSCM to user '{0}'.", pAssignee);
-                    _ytIssues.ApplyCommand(pIssueID, string.Format("for {0}", pAssignee), pAddComment ? comment : string.Empty);
+                    await _ytIssues.ApplyCommand(pIssueID, string.Format("for {0}", pAssignee),
+                        pAddComment ? comment : string.Empty);
                 }
             }
             catch (Exception ex)
@@ -273,6 +243,16 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
         }
 
         #region Support Methods
+
+
+        private static Connection getServiceConnection(YouTrackExtensionConfigFacade pConfig)
+        {
+            var password = pConfig.GetDecryptedPassword();
+            var serverUrl = pConfig.HostUri.ToString();
+            return password.StartsWith("perm:")
+                ? (Connection)new BearerTokenConnection(serverUrl, password)
+                : new UsernamePasswordConnection(serverUrl, pConfig.UserId, password);
+        }
 
         /// <summary>
         /// This method will take the mapping setting and allow mapping different authentication methods' usernames to issue username. 
@@ -307,51 +287,41 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
             if (pIssue == null)
                 throw new ArgumentNullException("pIssue");
 
-            var fields = pIssue.ToExpandoObject() as IDictionary<string, object>;
-
             var result = new PlasticTask();
-            result.Id = fields["id"].ToString();
-            var title = fields["summary"].ToString();
-            var rawState = fields["state"] as string[];
-            var state = rawState != null ? rawState[0] : fields["state"].ToString();
+            result.Id = pIssue.Id;
+            var title = pIssue.Summary;
+            var state = pIssue.GetField("state").Name;
             result.Title = getBranchTitle(state, title);
             result.Status = state;
 
-            if (fields.ContainsKey("assignee"))
+            try
             {
-                var rawArray = (ExpandoObject[]) fields["assignee"];
-                var rawValue = (IDictionary<string, object>) rawArray[0];
-                //TODO: can be reimplemented once a setting is created to allow user to choose username or display name. 
-                // if user displayName, will need to also implement API call to YT for user info.
-                //var fullname = rawValue["fullName"].ToString(); 
-                var issueUsername = rawValue["value"].ToString();
-                result.Owner = issueUsername;
+                result.Owner = getAssignee(pIssue).UserName;
             }
-            else if (fields.ContainsKey("assigneename"))
-                result.Owner = fields["assigneename"] as string;
-            else
+            catch (NullReferenceException)
+            {
                 result.Owner = "Unassigned";
+            }
 
-            if (fields.ContainsKey("description"))
-                result.Description = fields["description"] as string;
+            if (pIssue.GetField("description") != null)
+                result.Description = pIssue.GetField("description").AsString();
 
             result.CanBeLinked = true;
             return result;
         }
 
-        private bool checkIssueExistenceAndLog(string pTicketID)
+        private static Assignee getAssignee(Issue pIssue)
         {
-            if (_ytIssues.CheckIfIssueExists(pTicketID)) return true;
+            var field = pIssue.GetField("Assignee");
+            if (field == null)
+                throw new NullReferenceException("Ticket doesn't contain field 'Assignee' as expected.");
 
-            _log.WarnFormat("Unable to start work on ticket '{0}' because it cannot be found.", pTicketID);
-            return false;
+            var assignees = (List<Assignee>)field.Value;
+            return assignees[0];
         }
 
         private void ensureAuthenticated()
         {
-            if (_ytConnection.IsAuthenticated)
-                return;
-
             Authenticate();
         }
 
@@ -395,9 +365,9 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
                 throw new ApplicationException(string.Format("YouTrack setting '{0}' cannot be null or empty!", pSettingName));
         }
 
-        private static bool doesPropertyExist(dynamic pObject, string pPropertyName)
+        private static bool doesPropertyExist(Issue pIssue, string pPropertyName)
         {
-            return pObject.GetType().GetProperty(pPropertyName) != null;
+            return pIssue.GetField(pPropertyName) != null;
         }
 
         #endregion

@@ -4,6 +4,8 @@
 // Modified By: Green, Brett (greenb1)
 // *************************************************
 
+using System.Threading.Tasks;
+
 namespace MMG.PlasticExtensions.YouTrackPlugin
 {
     using System;
@@ -41,14 +43,12 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
 
         public void Connect()
         {
-            _ytService.Authenticate();
-            _log.InfoFormat("Connected successfully to host '{0}'.", _config.HostUri);
+            //no active connection held.
         }
 
         public void Disconnect()
         {
-            _ytService.ClearAuthentication();
-            _log.DebugFormat("Disconnected successfully from host '{0}'.", _config.HostUri);
+            //no active connection held.
         }
 
         public bool TestConnection(IssueTrackerConfiguration pConfiguration)
