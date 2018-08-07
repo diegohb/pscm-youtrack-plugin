@@ -50,19 +50,10 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
             }
             catch (Exception ex)
             {
-                /* if (exWeb.Message.Contains("Unauthorized.") && _authRetryCount < 3)
-                {
-                    _log.WarnFormat
-                        ("YouTrackService: Failed to fetch youtrack issue '{0}' due to authentication error. Will retry after authentication again. Details: {1}",
-                            pTaskID, exWeb);
-                    authenticate();
-                    return GetPlasticTaskFromTaskID(pTaskID);
-                }*/
-
                 _log.Warn(string.Format("YouTrackService: Failed to fetch youtrack issue '{0}' due to error.", pTaskID), ex);
             }
 
-            return new PlasticTask {Id = pTaskID, CanBeLinked = false};
+            return new PlasticTask { Id = pTaskID, CanBeLinked = false };
         }
 
         public IEnumerable<PlasticTask> GetPlasticTasks(string[] pTaskIDs)
@@ -159,7 +150,7 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
             try
             {
                 var issue = await _ytIssues.GetIssue(pIssueID);
-                if(issue == null)
+                if (issue == null)
                     throw new NullReferenceException(string.Format("Unable to find issue by ID {0}.", pIssueID));
                 if (issue.GetField("State").AsString() != "In Progress")
                     await _ytIssues.ApplyCommand(pIssueID, "State: In Progress", GetBranchCreationMessage());
@@ -227,7 +218,7 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
         public async void AssignIssue(string pIssueID, string pAssignee, bool pAddComment = true)
         {
             ensureAuthenticated();
-            
+
             try
             {
                 var issue = await _ytIssues.GetIssue(pIssueID);
@@ -236,7 +227,7 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
 
                 var currentAssignee = string.Empty;
                 if (doesPropertyExist(issue, "Assignee"))
-                    currentAssignee = issue.GetField("Assignee").AsString();
+                    currentAssignee = getAssignee(issue).UserName;
 
                 if (!string.Equals(currentAssignee, pAssignee, StringComparison.InvariantCultureIgnoreCase))
                 {
@@ -294,21 +285,30 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
             result.Title = getBranchTitle(state, title);
             result.Status = state;
 
-            if (pIssue.GetField("assignee") != null)
+            try
             {
-                var issueUsername = pIssue.GetField("assignee").AsString();
-                result.Owner = issueUsername;
+                result.Owner = getAssignee(pIssue).UserName;
             }
-            else if (pIssue.GetField("assigneename") != null)
-                result.Owner = pIssue.GetField("assigneename").AsString();
-            else
+            catch (NullReferenceException)
+            {
                 result.Owner = "Unassigned";
+            }
 
             if (pIssue.GetField("description") != null)
                 result.Description = pIssue.GetField("description").AsString();
 
             result.CanBeLinked = true;
             return result;
+        }
+
+        private static Assignee getAssignee(Issue pIssue)
+        {
+            var field = pIssue.GetField("Assignee");
+            if (field == null)
+                throw new NullReferenceException("Ticket doesn't contain field 'Assignee' as expected.");
+
+            var assignees = (List<Assignee>)field.Value;
+            return assignees[0];
         }
 
         private void ensureAuthenticated()
