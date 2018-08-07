@@ -4,6 +4,8 @@
 // Modified By: Green, Brett (greenb1)
 // *************************************************
 
+using System.Threading.Tasks;
+
 namespace MMG.PlasticExtensions.YouTrackPlugin
 {
     using System;
