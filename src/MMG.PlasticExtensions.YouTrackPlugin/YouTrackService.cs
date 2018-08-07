@@ -128,7 +128,7 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
             try
             {
                 var testConnection = getServiceConnection(pConfig);
-                testConnection.CreateUserManagementService().GetUser(pConfig.UserId).Wait(1000);
+                testConnection.CreateIssuesService().GetIssueCount().Wait(1000);
             }
             catch (Exception e)
             {
