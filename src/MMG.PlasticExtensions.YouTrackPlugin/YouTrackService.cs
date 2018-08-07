@@ -4,6 +4,7 @@
 // Modified By: Green, Brett (greenb1)
 // *************************************************
 
+using System.Security;
 using System.Text;
 using YouTrackSharp;
 
@@ -28,8 +29,7 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
         public YouTrackService(IYouTrackExtensionConfigFacade pConfig)
         {
             _config = pConfig;
-            _ytConnection = new UsernamePasswordConnection(_config.HostUri.ToString(), _config.UserId,
-                _config.GetDecryptedPassword());
+            _ytConnection = getServiceConnection((YouTrackExtensionConfigFacade) pConfig);
             _ytIssues = _ytConnection.CreateIssuesService();
             _log.Debug("YouTrackService: ctor called");
         }
@@ -127,8 +127,7 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
 
             try
             {
-                var testConnection = new UsernamePasswordConnection(pConfig.HostUri.ToString(), pConfig.UserId,
-                    pConfig.GetDecryptedPassword());
+                var testConnection = getServiceConnection(pConfig);
                 testConnection.CreateUserManagementService().GetUser(pConfig.UserId).Wait(1000);
             }
             catch (Exception e)
@@ -244,6 +243,16 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
         }
 
         #region Support Methods
+
+
+        private static Connection getServiceConnection(YouTrackExtensionConfigFacade pConfig)
+        {
+            var password = pConfig.GetDecryptedPassword();
+            var serverUrl = pConfig.HostUri.ToString();
+            return password.StartsWith("perm:")
+                ? (Connection)new BearerTokenConnection(serverUrl, password)
+                : new UsernamePasswordConnection(serverUrl, pConfig.UserId, password);
+        }
 
         /// <summary>
         /// This method will take the mapping setting and allow mapping different authentication methods' usernames to issue username. 
