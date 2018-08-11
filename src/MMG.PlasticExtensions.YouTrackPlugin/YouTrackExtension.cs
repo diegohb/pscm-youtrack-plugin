@@ -66,7 +66,7 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
                 return false;
             }
         }
-
+        
         public void LogCheckinResult(PlasticChangeset pChangeset, List<PlasticTask> pTasks)
         {
             if (!_config.PostCommentsToTickets)
@@ -98,7 +98,9 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
 
         public Dictionary<string, PlasticTask> GetTasksForBranches(List<string> pFullBranchNames)
         {
-            var data = pFullBranchNames.Select
+            var data = pFullBranchNames
+                .Where(pBranch=> pBranch.Split('/').Last().StartsWith(this._config.BranchPrefix))
+                .Select
                 (x => new
                 {
                     FullBranchName = x,
