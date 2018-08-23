@@ -116,7 +116,8 @@
       <HintPath>..\..\lib\System.Xml.ReaderWriter.4.3.0\lib\net46\System.Xml.ReaderWriter.dll</HintPath>
     </Reference>
     <Reference Include="YouTrackSharp, Version=3.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\lib\YouTrackSharp.3.5.0\lib\netstandard1.3\YouTrackSharp.dll</HintPath>
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\Lib\YouTrackSharp.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
