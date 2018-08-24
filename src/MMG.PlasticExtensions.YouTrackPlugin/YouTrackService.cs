@@ -290,7 +290,7 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
             var result = new PlasticTask();
             result.Id = pIssue.Id;
             var title = pIssue.Summary;
-            var state = pIssue.GetField("state").Name;
+            var state = pIssue.GetField("state").AsCollection().First();
             result.Title = getBranchTitle(state, title);
             result.Status = state;
 
