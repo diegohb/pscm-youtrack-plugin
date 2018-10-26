@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2013
-VisualStudioVersion = 12.0.31101.0
+# Visual Studio 15
+VisualStudioVersion = 15.0.27703.2042
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MMG.PlasticExtensions.YouTrackPlugin", "MMG.PlasticExtensions.YouTrackPlugin\MMG.PlasticExtensions.YouTrackPlugin.csproj", "{B9AD489C-9657-4B06-86CB-2D148F0DCB65}"
 	GlobalSection(PlasticSccProperties) = preSolution
@@ -16,38 +16,45 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MMG.PlasticExtensions.Tests
 	EndGlobalSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{703B0CD8-4A8A-4FBA-8E72-01B2B4386D90}"
-	GlobalSection(PlasticSccProperties) = preSolution
-		ControlledByPlastic = True
-		SccProvider = Plastic SCM
-	EndGlobalSection
 	ProjectSection(SolutionItems) = preProject
 		.nuget\NuGet.Config = .nuget\NuGet.Config
 		.nuget\NuGet.targets = .nuget\NuGet.targets
 	EndProjectSection
-EndProject
-Global
-	GlobalSection(CodealikeProperties) = postSolution
-		SolutionGuid = c57218d6-c18d-48a2-8465-d9d762bad98b
-	EndGlobalSection
 	GlobalSection(PlasticSccProperties) = preSolution
 		ControlledByPlastic = True
 		SccProvider = Plastic SCM
 	EndGlobalSection
+EndProject
+Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
+		Debug-Plastic|Any CPU = Debug-Plastic|Any CPU
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{B9AD489C-9657-4B06-86CB-2D148F0DCB65}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{B9AD489C-9657-4B06-86CB-2D148F0DCB65}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B9AD489C-9657-4B06-86CB-2D148F0DCB65}.Debug-Plastic|Any CPU.ActiveCfg = Debug-Plastic|Any CPU
+		{B9AD489C-9657-4B06-86CB-2D148F0DCB65}.Debug-Plastic|Any CPU.Build.0 = Debug-Plastic|Any CPU
 		{B9AD489C-9657-4B06-86CB-2D148F0DCB65}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B9AD489C-9657-4B06-86CB-2D148F0DCB65}.Release|Any CPU.Build.0 = Release|Any CPU
 		{ADA50EA5-58D0-4D49-96F2-B12ACDAEB914}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{ADA50EA5-58D0-4D49-96F2-B12ACDAEB914}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{ADA50EA5-58D0-4D49-96F2-B12ACDAEB914}.Debug-Plastic|Any CPU.ActiveCfg = Release|Any CPU
 		{ADA50EA5-58D0-4D49-96F2-B12ACDAEB914}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{ADA50EA5-58D0-4D49-96F2-B12ACDAEB914}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {D4B18AC7-516C-427E-9C46-67821BCB019C}
+	EndGlobalSection
+	GlobalSection(PlasticSccProperties) = preSolution
+		ControlledByPlastic = True
+		SccProvider = Plastic SCM
+	EndGlobalSection
+	GlobalSection(CodealikeProperties) = postSolution
+		SolutionGuid = c57218d6-c18d-48a2-8465-d9d762bad98b
 	EndGlobalSection
 EndGlobal
