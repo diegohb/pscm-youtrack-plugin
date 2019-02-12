@@ -219,6 +219,7 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
 
             try
             {
+                var mappedAssignee = applyUserMapping(pAssignee);
                 var issue = await _ytIssues.GetIssue(pIssueID);
                 if (issue == null)
                     throw new NullReferenceException(string.Format("Unable to find issue by ID {0}.", pIssueID));
@@ -227,10 +228,10 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
                 if (doesPropertyExist(issue, "Assignee"))
                     currentAssignee = getAssignee(issue).UserName;
 
-                if (!string.Equals(currentAssignee, pAssignee, StringComparison.InvariantCultureIgnoreCase))
+                if (!string.Equals(currentAssignee, mappedAssignee, StringComparison.InvariantCultureIgnoreCase))
                 {
-                    var comment = string.Format("Assigned by PlasticSCM to user '{0}'.", pAssignee);
-                    await _ytIssues.ApplyCommand(pIssueID, string.Format("for {0}", pAssignee),
+                    var comment = $"Assigned by PlasticSCM to user '{mappedAssignee}'.";
+                    await _ytIssues.ApplyCommand(pIssueID, string.Format("for {0}", mappedAssignee),
                         pAddComment ? comment : string.Empty);
                 }
             }
