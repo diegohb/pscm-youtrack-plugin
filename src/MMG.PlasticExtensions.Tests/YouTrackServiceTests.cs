@@ -218,11 +218,11 @@ namespace MMG.PlasticExtensions.Tests
             commentBuilder.Append($"{tildes}{nl}");
             commentBuilder.Append($"[{mdComment}|{changeSetUriBuilder}]{nl}");
             //commentBuilder.Append($"{{monospace}}");
-            commentBuilder.Append($"{guid}@{branch}@{repository}@{hostName}");
+            commentBuilder.Append($"{guid} @ {branch} @ {repository} @ {hostName}");
             //commentBuilder.Append($"{{monospace}}");
 
             var expectedComment = commentBuilder.ToString();
-
+            Console.WriteLine(generatedComment);
             Assert.AreEqual(expectedComment, generatedComment);
         }
 
