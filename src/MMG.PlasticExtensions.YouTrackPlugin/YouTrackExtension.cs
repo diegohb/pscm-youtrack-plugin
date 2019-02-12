@@ -142,12 +142,20 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
         {
             try
             {
-                _ytService.EnsureIssueInProgress(pTaskId);
                 _ytService.AssignIssue(pTaskId, pAssignee, false);
             }
             catch (Exception e)
             {
-                _log.Error(string.Format("Failed to set issue '{0}' open and assigned.", pTaskId), e);
+                _log.Error(string.Format("Failed to assign issue.", pTaskId), e);
+            }
+
+            try
+            {
+                _ytService.EnsureIssueInProgress(pTaskId);
+            }
+            catch (Exception e)
+            {
+                _log.Error(string.Format("Failed to transition issue '{0}'.", pTaskId), e);
             }
         }
 
