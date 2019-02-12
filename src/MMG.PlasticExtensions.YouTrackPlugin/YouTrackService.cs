@@ -175,8 +175,7 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
                  !changeSetUriBuilder.Scheme.Equals("http", StringComparison.CurrentCultureIgnoreCase)))
                 changeSetUriBuilder.Scheme = "http";
 
-            changeSetUriBuilder.Path = $"{pRepository}/ViewChanges";
-            changeSetUriBuilder.Query = $"changeset={pChangeSetGuid}";
+            changeSetUriBuilder.Path = $"webui/repos/{pRepository}/diff/changeset/{pChangeSetGuid}";
 
             var hostName = pHost.StartsWith("localhost", StringComparison.CurrentCultureIgnoreCase) ||
                            pHost.StartsWith("127.0.0.", StringComparison.CurrentCultureIgnoreCase)
