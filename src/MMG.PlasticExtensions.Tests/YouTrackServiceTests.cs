@@ -203,8 +203,7 @@ namespace MMG.PlasticExtensions.Tests
                  !changeSetUriBuilder.Scheme.Equals("http", StringComparison.CurrentCultureIgnoreCase)))
                 changeSetUriBuilder.Scheme = "http";
 
-            changeSetUriBuilder.Path = $"{repository}/ViewChanges";
-            changeSetUriBuilder.Query = $"changeset={guid}";
+            changeSetUriBuilder.Path = $"webui/repos/{repository}/diff/changeset/{guid}";
 
             var hostName = host.StartsWith("localhost", StringComparison.CurrentCultureIgnoreCase) ||
                            host.StartsWith("127.0.0.", StringComparison.CurrentCultureIgnoreCase)
@@ -222,7 +221,7 @@ namespace MMG.PlasticExtensions.Tests
             //commentBuilder.Append($"{{monospace}}");
 
             var expectedComment = commentBuilder.ToString();
-            Console.WriteLine(generatedComment);
+            Console.WriteLine("\nActual:\n" + generatedComment);
             Assert.AreEqual(expectedComment, generatedComment);
         }
 
