@@ -85,7 +85,7 @@
                 new IssueTrackerConfigurationParameter
                 {
                     Name = ConfigParameterNames.WebGuiRootUrl,
-                    Value = base64Encode(WebGuiRootUrl.ToString()),
+                    Value = WebGuiRootUrl.ToString(),
                     Type = IssueTrackerConfigurationParameterType.Text,
                     IsGlobal = true
                 },
@@ -99,7 +99,7 @@
                 new IssueTrackerConfigurationParameter
                 {
                     Name = ConfigParameterNames.UsernameMapping,
-                    Value =  base64Encode(UsernameMapping),
+                    Value =  UsernameMapping,
                     Type = IssueTrackerConfigurationParameterType.Text,
                     IsGlobal = true
                 },
@@ -127,21 +127,21 @@
                 new IssueTrackerConfigurationParameter
                 {
                     Name = ConfigParameterNames.ClosedIssueStates,
-                    Value =  base64Encode(IgnoreIssueStateForBranchTitle),
+                    Value =  IgnoreIssueStateForBranchTitle,
                     Type = IssueTrackerConfigurationParameterType.Text,
                     IsGlobal = false
                 },
                 new IssueTrackerConfigurationParameter
                 {
                     Name = ConfigParameterNames.CreateBranchIssueQuery,
-                    Value =  base64Encode(CreateBranchIssueQuery),
+                    Value =  CreateBranchIssueQuery,
                     Type = IssueTrackerConfigurationParameterType.Text,
                     IsGlobal = true
                 },
                 new IssueTrackerConfigurationParameter
                 {
                     Name = ConfigParameterNames.CreateBranchTransitions,
-                    Value =  base64Encode(CreateBranchTransitions),
+                    Value =  CreateBranchTransitions,
                     Type = IssueTrackerConfigurationParameterType.Text,
                     IsGlobal = true
                 }
@@ -177,13 +177,13 @@
             if (string.IsNullOrEmpty(configValue))
                 return pDefaultValue;
 
-            if (pConfig[pParamName].Type == IssueTrackerConfigurationParameterType.Text)
+            /*if (pConfig[pParamName].Type == IssueTrackerConfigurationParameterType.Text)
             {
                 if(!isBase64(configValue))
                     throw new ApplicationException($"Expected setting '{pParamName}' encoded but was not.");
 
                 configValue = base64Decode(configValue);
-            }
+            }*/
 
             try
             {
