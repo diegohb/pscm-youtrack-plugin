@@ -51,8 +51,8 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
             UsernameMapping = GetValidParameterValue(Config, ConfigParameterNames.UsernameMapping, pDefaultValue: UsernameMapping);
             WebGuiRootUrl = GetValidParameterValue(Config, ConfigParameterNames.WebGuiRootUrl, pDefaultValue: WebGuiRootUrl, converter: new UriTypeConverter());
             WorkingMode = GetValidParameterValue(Config, nameof(ExtensionWorkingMode), pDefaultValue: ExtensionWorkingMode.TaskOnBranch);
-            CreateBranchIssueQuery = GetValidParameterValue(Config, nameof(CreateBranchIssueQuery), pDefaultValue: CreateBranchIssueQuery);
-            CreateBranchTransitions = GetValidParameterValue(Config, nameof(CreateBranchTransitions), pDefaultValue: CreateBranchTransitions);
+            CreateBranchIssueQuery = GetValidParameterValue(Config, ConfigParameterNames.CreateBranchIssueQuery, pDefaultValue: CreateBranchIssueQuery);
+            CreateBranchTransitions = GetValidParameterValue(Config, ConfigParameterNames.CreateBranchTransitions, pDefaultValue: CreateBranchTransitions);
             _log.Debug("YouTrackExtensionConfigFacade: configured ctor completed");
         }
 
@@ -165,7 +165,13 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
             if (string.IsNullOrEmpty(pParamName))
                 throw new ApplicationException("The parameter name cannot be null or empty!");
 
-            var configValue = pConfig.GetValue(pParamName);
+            string configValue = pConfig.GetValue(pParamName);
+
+            if (pParamName.Equals(ConfigParameterNames.CreateBranchIssueQuery) ||
+                pParamName.Equals(ConfigParameterNames.CreateBranchTransitions))
+            {
+                configValue = IsBase64(configValue) ? Base64Decode(configValue) : Base64Encode(configValue);
+            }
 
             try
             {
@@ -192,6 +198,42 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
 
             var decryptedPassword = CryptoServices.GetDecryptedPassword(Password);
             return decryptedPassword;
+        }
+
+        public static string Base64Encode(string plainText)
+        {
+            if (String.IsNullOrEmpty(plainText))
+                return String.Empty;
+
+            var plainTextBytes = System.Text.Encoding.UTF8.GetBytes(plainText);
+            return System.Convert.ToBase64String(plainTextBytes);
+        }
+
+        public static string Base64Decode(string base64EncodedData)
+        {
+            if (String.IsNullOrEmpty(base64EncodedData))
+                return String.Empty;
+            var base64EncodedBytes = System.Convert.FromBase64String(base64EncodedData);
+            return System.Text.Encoding.UTF8.GetString(base64EncodedBytes);
+        }
+
+        public static bool IsBase64(string base64String)
+        {
+            // Credit: oybek https://stackoverflow.com/users/794764/oybek
+            if (string.IsNullOrEmpty(base64String) || base64String.Length % 4 != 0
+                                                   || base64String.Contains(" ") || base64String.Contains("\t") || base64String.Contains("\r") || base64String.Contains("\n"))
+                return false;
+
+            try
+            {
+                Convert.FromBase64String(base64String);
+                return true;
+            }
+            catch (Exception exception)
+            {
+                // Handle the exception
+            }
+            return false;
         }
     }
 }
