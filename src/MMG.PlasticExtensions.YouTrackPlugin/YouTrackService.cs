@@ -290,7 +290,14 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
         private static Dictionary<string, string> convertStringListToKVPDictionary(string pCSVList)
         {
             var dictionary = pCSVList.Split(';')
-                .Select(pMapping => new KeyValuePair<string, string>(pMapping.Split(':')[0], pMapping.Split(':')[1]))
+                .Select(pMapping =>
+                {
+                    var strings = pMapping.Split(':');
+                    return new KeyValuePair<string, string>
+                    (strings[0], strings.Length > 2
+                        ? pMapping.Replace($"{strings[0]}:", string.Empty) //accounts for commands like "state:in progress"
+                        : strings[1]); //works for verbs in statemachine workflows
+                })
                 .ToDictionary(p => p.Key, p => p.Value);
             return dictionary;
         }
