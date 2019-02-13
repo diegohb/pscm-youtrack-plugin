@@ -149,6 +149,9 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
                 var issue = await _ytIssues.GetIssue(pIssueID);
                 if (issue == null)
                     throw new NullReferenceException(string.Format("Unable to find issue by ID {0}.", pIssueID));
+                
+                
+
                 if (issue.GetField("State").AsString() != "In Progress")
                     await _ytIssues.ApplyCommand(pIssueID, "State: In Progress", GetBranchCreationMessage());
                 else
@@ -262,21 +265,24 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
             if (string.IsNullOrEmpty(pAssignee))
                 return string.Empty;
 
-            var youtrackAuthUsername = pAssignee;
+            return getValueFromKVPStringList(_config.UsernameMapping, pAssignee);
+        }
 
+        private string getValueFromKVPStringList(string pCSVList, string pKeyName)
+        {
             try
             {
-                var usernameMappings = _config.UsernameMapping.Split(';')
+                var dictionary = pCSVList.Split(';')
                     .Select(pMapping => new KeyValuePair<string, string>(pMapping.Split(':')[0], pMapping.Split(':')[1]))
                     .ToDictionary(p => p.Key, p => p.Value);
-                var youtrackIssueUsername = usernameMappings[youtrackAuthUsername];
+                var value = dictionary[pKeyName];
 
-                return string.IsNullOrEmpty(youtrackIssueUsername) ? youtrackAuthUsername : youtrackIssueUsername;
+                return string.IsNullOrEmpty(value) ? pKeyName : value;
             }
             catch (Exception e)
             {
                 _log.Error("Error occurred trying to apply user mappings.", e);
-                return youtrackAuthUsername;
+                return pKeyName;
             }
         }
 

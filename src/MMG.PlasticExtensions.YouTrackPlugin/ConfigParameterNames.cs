@@ -17,6 +17,7 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
         public const string ShowIssueStateInBranchTitle = "Show issues state in branch title";
         public const string PostCommentsToTickets = "Add checkin comments to ticket(s)";
         public const string ClosedIssueStates = "Issue states considered closed";
-        public static string CreateBranchQueryForAll = "Create branch issue query";
+        public static string CreateBranchIssueQuery = "Create branch issue query";
+        public static string CreateBranchTransitions = "Create branch valid states";
     }
 }
