@@ -149,11 +149,14 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
                 var issue = await _ytIssues.GetIssue(pIssueID);
                 if (issue == null)
                     throw new NullReferenceException(string.Format("Unable to find issue by ID {0}.", pIssueID));
-                
-                
+                var issueCurrentState = issue.GetField("State").AsString();
 
-                if (issue.GetField("State").AsString() != "In Progress")
-                    await _ytIssues.ApplyCommand(pIssueID, "State: In Progress", GetBranchCreationMessage());
+                var stateTransitions = convertStringListToKVPDictionary(_config.CreateBranchTransitions);
+                if (stateTransitions.ContainsKey(issueCurrentState))
+                {
+                    var transitionCommand = stateTransitions[issueCurrentState];
+                    await _ytIssues.ApplyCommand(pIssueID, transitionCommand, GetBranchCreationMessage());
+                }
                 else
                     _log.InfoFormat("Issue '{0}' already marked in-progress.", pIssueID);
             }
@@ -272,9 +275,7 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
         {
             try
             {
-                var dictionary = pCSVList.Split(';')
-                    .Select(pMapping => new KeyValuePair<string, string>(pMapping.Split(':')[0], pMapping.Split(':')[1]))
-                    .ToDictionary(p => p.Key, p => p.Value);
+                var dictionary = convertStringListToKVPDictionary(pCSVList);
                 var value = dictionary[pKeyName];
 
                 return string.IsNullOrEmpty(value) ? pKeyName : value;
@@ -284,6 +285,14 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
                 _log.Error("Error occurred trying to apply user mappings.", e);
                 return pKeyName;
             }
+        }
+
+        private static Dictionary<string, string> convertStringListToKVPDictionary(string pCSVList)
+        {
+            var dictionary = pCSVList.Split(';')
+                .Select(pMapping => new KeyValuePair<string, string>(pMapping.Split(':')[0], pMapping.Split(':')[1]))
+                .ToDictionary(p => p.Key, p => p.Value);
+            return dictionary;
         }
 
         public PlasticTask hydratePlasticTaskFromIssue(Issue pIssue)

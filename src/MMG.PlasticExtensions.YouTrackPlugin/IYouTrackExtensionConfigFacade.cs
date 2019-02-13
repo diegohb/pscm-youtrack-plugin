@@ -29,9 +29,11 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
         string IgnoreIssueStateForBranchTitle { get; }
 
         string CreateBranchIssueQuery { get; }
+        
+        string CreateBranchTransitions { get; }
 
         ExtensionWorkingMode WorkingMode { get; }
-
+        
         List<IssueTrackerConfigurationParameter> GetYouTrackParameters();
 
         string GetDecryptedPassword();
