@@ -62,7 +62,7 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
 
         public string GetExtensionName()
         {
-            return "YouTrack Issues Viewer";
+            return "YouTrack";
         }
 
         public void Connect()

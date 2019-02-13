@@ -18,34 +18,27 @@
 
         #region Ctors
 
-        internal YouTrackExtensionConfigFacade()
-        {
-            _log.Debug("YouTrackExtensionConfigFacade: empty ctor called");
-            loadDefaultValues();
-            _log.Debug("YouTrackExtensionConfigFacade: empty ctor completed");
-        }
-
-        public YouTrackExtensionConfigFacade(IssueTrackerConfiguration pConfig) : this()
+        public YouTrackExtensionConfigFacade(IssueTrackerConfiguration pConfig)
         {
             _log.Debug("YouTrackExtensionConfigFacade: configured ctor called");
             Config = pConfig;
-            BranchPrefix = getValidParameterValue(Config, ConfigParameterNames.BranchPrefix, pDefaultValue: BranchPrefix);
-            HostUri = getValidParameterValue(Config, ConfigParameterNames.HostUri, pDefaultValue: HostUri, converter: new UriTypeConverter());
-            UserId = getValidParameterValue(Config, ConfigParameterNames.UserId, pDefaultValue: UserId);
-            Password = getValidParameterValue(Config, ConfigParameterNames.Password, pDefaultValue: Password);
+            BranchPrefix = getValidParameterValue(Config, ConfigParameterNames.BranchPrefix, pDefaultValue: "yt_");
+            HostUri = getValidParameterValue(Config, ConfigParameterNames.HostUri, pDefaultValue: new Uri("http://issues.domain.com"), converter: new UriTypeConverter());
+            UserId = getValidParameterValue(Config, ConfigParameterNames.UserId, pDefaultValue: "api");
+            Password = getValidParameterValue(Config, ConfigParameterNames.Password, pDefaultValue: string.Empty);
             ShowIssueStateInBranchTitle = getValidParameterValue
-                (Config, ConfigParameterNames.ShowIssueStateInBranchTitle, pDefaultValue: ShowIssueStateInBranchTitle);
-            PostCommentsToTickets = getValidParameterValue(Config, ConfigParameterNames.PostCommentsToTickets, pDefaultValue: PostCommentsToTickets);
+                (Config, ConfigParameterNames.ShowIssueStateInBranchTitle, pDefaultValue: true);
+            PostCommentsToTickets = getValidParameterValue(Config, ConfigParameterNames.PostCommentsToTickets, pDefaultValue: true);
             IgnoreIssueStateForBranchTitle = getValidParameterValue
                 (Config, ConfigParameterNames.ClosedIssueStates, pDefaultValue: IgnoreIssueStateForBranchTitle);
-            UsernameMapping = getValidParameterValue(Config, ConfigParameterNames.UsernameMapping, pDefaultValue: UsernameMapping);
+            UsernameMapping = getValidParameterValue(Config, ConfigParameterNames.UsernameMapping, pDefaultValue: "api:ytusername");
             WebGuiRootUrl = getValidParameterValue
-                (Config, ConfigParameterNames.WebGuiRootUrl, pDefaultValue: WebGuiRootUrl, converter: new UriTypeConverter());
+                (Config, ConfigParameterNames.WebGuiRootUrl, pDefaultValue: new Uri("http://plastic-gui.domain.com:7178/"), converter: new UriTypeConverter());
             WorkingMode = getValidParameterValue(Config, nameof(ExtensionWorkingMode), pDefaultValue: ExtensionWorkingMode.TaskOnBranch);
             CreateBranchIssueQuery = getValidParameterValue
-                (Config, ConfigParameterNames.CreateBranchIssueQuery, pDefaultValue: CreateBranchIssueQuery);
+                (Config, ConfigParameterNames.CreateBranchIssueQuery, pDefaultValue: "#unresolved order by: updated desc");
             CreateBranchTransitions = getValidParameterValue
-                (Config, ConfigParameterNames.CreateBranchTransitions, pDefaultValue: CreateBranchTransitions);
+                (Config, ConfigParameterNames.CreateBranchTransitions, pDefaultValue: "Submitted:Start Work;Planned:Start Work;Incomplete:Start Work");
             _log.Debug("YouTrackExtensionConfigFacade: configured ctor completed");
         }
 
@@ -53,7 +46,8 @@
 
         #region Properties
 
-        public virtual IssueTrackerConfiguration Config { get; private set; }
+        public virtual IssueTrackerConfiguration Config { get; 
+            private set; }
         public virtual Uri HostUri { get; private set; }
         public virtual Uri WebGuiRootUrl { get; private set; }
         public virtual string BranchPrefix { get; private set; }
@@ -166,12 +160,11 @@
             return decryptedPassword;
         }
         
-
         protected static T getValidParameterValue<T>
             (IssueTrackerConfiguration pConfig, string pParamName, TypeConverter converter = null, T pDefaultValue = default(T))
         {
             if (pConfig == null)
-                throw new ApplicationException("The configuration parameter cannot be null!");
+                return pDefaultValue;
 
             if (string.IsNullOrEmpty(pParamName))
                 throw new ApplicationException("The parameter name cannot be null or empty!");
@@ -235,23 +228,6 @@
             }
 
             return false;
-        }
-
-        private void loadDefaultValues()
-        {
-            _log.Debug("YouTrackExtensionConfigFacade: loading default values...");
-            BranchPrefix = "yt_";
-            HostUri = new Uri("http://issues.domain.com");
-            UserId = "";
-            Password = "";
-            ShowIssueStateInBranchTitle = false;
-            PostCommentsToTickets = true;
-            IgnoreIssueStateForBranchTitle = "Completed";
-            UsernameMapping = "";
-            WebGuiRootUrl = new Uri("http://plastic-gui.domain.com");
-            WorkingMode = ExtensionWorkingMode.TaskOnBranch;
-            CreateBranchIssueQuery = "#unresolved order by: updated desc";
-            CreateBranchTransitions = "Submitted:Start Work;Planned:Start Work;Incomplete:Start Work";
         }
 
         #endregion

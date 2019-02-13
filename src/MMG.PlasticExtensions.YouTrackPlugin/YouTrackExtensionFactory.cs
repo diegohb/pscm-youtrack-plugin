@@ -26,7 +26,7 @@
 
             var configFacade = pStoredConfiguration != null
                 ? new YouTrackExtensionConfigFacade(pStoredConfiguration)
-                : new YouTrackExtensionConfigFacade();
+                : new YouTrackExtensionConfigFacade(new IssueTrackerConfiguration());
 
             var workingMode = configFacade.WorkingMode;
             var parameters = configFacade.GetYouTrackParameters();
