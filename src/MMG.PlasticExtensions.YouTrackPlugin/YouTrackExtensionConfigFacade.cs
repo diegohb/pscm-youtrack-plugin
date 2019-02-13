@@ -23,6 +23,7 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
         public virtual bool ShowIssueStateInBranchTitle { get; private set; }
         public virtual bool PostCommentsToTickets { get; private set; }
         public virtual string IgnoreIssueStateForBranchTitle { get; private set; }
+        public virtual string CreateBranchIssueQuery { get; private set; }
         public virtual string UsernameMapping { get; private set; }
         public virtual bool UseSsl => HostUri.Scheme.Equals("https", StringComparison.CurrentCultureIgnoreCase);
         public virtual ExtensionWorkingMode WorkingMode { get; private set; }
@@ -49,6 +50,7 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
             UsernameMapping = GetValidParameterValue(Config, ConfigParameterNames.UsernameMapping, pDefaultValue: UsernameMapping);
             WebGuiRootUrl = GetValidParameterValue(Config, ConfigParameterNames.WebGuiRootUrl, pDefaultValue: WebGuiRootUrl, converter: new UriTypeConverter());
             WorkingMode = GetValidParameterValue(Config, nameof(ExtensionWorkingMode), pDefaultValue: ExtensionWorkingMode.TaskOnBranch);
+            CreateBranchIssueQuery = GetValidParameterValue(Config, nameof(CreateBranchIssueQuery), pDefaultValue: CreateBranchIssueQuery);
             _log.Debug("YouTrackExtensionConfigFacade: configured ctor completed");
         }
 
@@ -65,6 +67,7 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
             UsernameMapping = "";
             WebGuiRootUrl = new Uri("http://plastic-gui.domain.com");
             WorkingMode = ExtensionWorkingMode.TaskOnBranch;
+            CreateBranchIssueQuery = "#unresolved order by: updated desc";
         }
 
         public List<IssueTrackerConfigurationParameter> GetYouTrackParameters() =>
@@ -132,6 +135,13 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
                     Value = IgnoreIssueStateForBranchTitle,
                     Type = IssueTrackerConfigurationParameterType.Text,
                     IsGlobal = false
+                },
+                new IssueTrackerConfigurationParameter
+                {
+                    Name = ConfigParameterNames.CreateBranchQueryForAll,
+                    Value = CreateBranchIssueQuery,
+                    Type = IssueTrackerConfigurationParameterType.Text,
+                    IsGlobal = true
                 }
             };
 

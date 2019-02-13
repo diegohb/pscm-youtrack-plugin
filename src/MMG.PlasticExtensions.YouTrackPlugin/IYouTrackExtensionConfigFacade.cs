@@ -28,6 +28,8 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
         /// <remarks>Use commas to separate multiple states.</remarks>
         string IgnoreIssueStateForBranchTitle { get; }
 
+        string CreateBranchIssueQuery { get; }
+
         ExtensionWorkingMode WorkingMode { get; }
 
         List<IssueTrackerConfigurationParameter> GetYouTrackParameters();

@@ -72,13 +72,11 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
 
             try
             {
-                //TODO: search within project only.
-                //TODO: customize order by setting.
-
                 var assignee = applyUserMapping(pAssignee);
                 var searchString = string.Format
-                    ("#unresolved {0} order by: updated desc",
-                        string.IsNullOrWhiteSpace(assignee) ? string.Empty : string.Format(" for: {0}", assignee));
+                ("{0}{1}", string.IsNullOrWhiteSpace(assignee) ? string.Empty : string.Format("for: {0} ", assignee),
+                    _config.CreateBranchIssueQuery);
+
                 var issues = _ytIssues.GetIssues(searchString, take: pMaxCount).Result.ToList();
                 if (!issues.Any())
                     return new List<PlasticTask>();
