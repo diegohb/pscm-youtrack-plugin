@@ -1,20 +1,59 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Linq;
-using System.Text;
-using Codice.Client.IssueTracker;
-using Codice.Utils;
-using log4net;
-
-namespace MMG.PlasticExtensions.YouTrackPlugin
+﻿namespace MMG.PlasticExtensions.YouTrackPlugin
 {
+    #region
+
+    using System;
+    using System.Collections.Generic;
+    using System.ComponentModel;
+    using System.Text;
+    using Codice.Client.IssueTracker;
+    using Codice.Utils;
+    using log4net;
+
+    #endregion
+
     public class YouTrackExtensionConfigFacade : IYouTrackExtensionConfigFacade
     {
         private static readonly ILog _log = LogManager.GetLogger("extensions");
-        public virtual IssueTrackerConfiguration Config { get; private set; }
 
-        #region config values
+        #region Ctors
+
+        internal YouTrackExtensionConfigFacade()
+        {
+            _log.Debug("YouTrackExtensionConfigFacade: empty ctor called");
+            loadDefaultValues();
+            _log.Debug("YouTrackExtensionConfigFacade: empty ctor completed");
+        }
+
+        public YouTrackExtensionConfigFacade(IssueTrackerConfiguration pConfig) : this()
+        {
+            _log.Debug("YouTrackExtensionConfigFacade: configured ctor called");
+            Config = pConfig;
+            BranchPrefix = getValidParameterValue(Config, ConfigParameterNames.BranchPrefix, pDefaultValue: BranchPrefix);
+            HostUri = getValidParameterValue(Config, ConfigParameterNames.HostUri, pDefaultValue: HostUri, converter: new UriTypeConverter());
+            UserId = getValidParameterValue(Config, ConfigParameterNames.UserId, pDefaultValue: UserId);
+            Password = getValidParameterValue(Config, ConfigParameterNames.Password, pDefaultValue: Password);
+            ShowIssueStateInBranchTitle = getValidParameterValue
+                (Config, ConfigParameterNames.ShowIssueStateInBranchTitle, pDefaultValue: ShowIssueStateInBranchTitle);
+            PostCommentsToTickets = getValidParameterValue(Config, ConfigParameterNames.PostCommentsToTickets, pDefaultValue: PostCommentsToTickets);
+            IgnoreIssueStateForBranchTitle = getValidParameterValue
+                (Config, ConfigParameterNames.ClosedIssueStates, pDefaultValue: IgnoreIssueStateForBranchTitle);
+            UsernameMapping = getValidParameterValue(Config, ConfigParameterNames.UsernameMapping, pDefaultValue: UsernameMapping);
+            WebGuiRootUrl = getValidParameterValue
+                (Config, ConfigParameterNames.WebGuiRootUrl, pDefaultValue: WebGuiRootUrl, converter: new UriTypeConverter());
+            WorkingMode = getValidParameterValue(Config, nameof(ExtensionWorkingMode), pDefaultValue: ExtensionWorkingMode.TaskOnBranch);
+            CreateBranchIssueQuery = getValidParameterValue
+                (Config, ConfigParameterNames.CreateBranchIssueQuery, pDefaultValue: CreateBranchIssueQuery);
+            CreateBranchTransitions = getValidParameterValue
+                (Config, ConfigParameterNames.CreateBranchTransitions, pDefaultValue: CreateBranchTransitions);
+            _log.Debug("YouTrackExtensionConfigFacade: configured ctor completed");
+        }
+
+        #endregion
+
+        #region Properties
+
+        public virtual IssueTrackerConfiguration Config { get; private set; }
         public virtual Uri HostUri { get; private set; }
         public virtual Uri WebGuiRootUrl { get; private set; }
         public virtual string BranchPrefix { get; private set; }
@@ -28,53 +67,12 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
         public virtual string UsernameMapping { get; private set; }
         public virtual bool UseSsl => HostUri.Scheme.Equals("https", StringComparison.CurrentCultureIgnoreCase);
         public virtual ExtensionWorkingMode WorkingMode { get; private set; }
+
         #endregion
 
-        internal YouTrackExtensionConfigFacade()
+        public List<IssueTrackerConfigurationParameter> GetYouTrackParameters()
         {
-            _log.Debug("YouTrackExtensionConfigFacade: empty ctor called");
-            LoadDefaultValues();
-            _log.Debug("YouTrackExtensionConfigFacade: empty ctor completed");
-        }
-
-        public YouTrackExtensionConfigFacade(IssueTrackerConfiguration pConfig) : this()
-        {
-            _log.Debug("YouTrackExtensionConfigFacade: configured ctor called");
-            Config = pConfig;
-            BranchPrefix = GetValidParameterValue(Config, ConfigParameterNames.BranchPrefix, pDefaultValue: BranchPrefix);
-            HostUri = GetValidParameterValue(Config, ConfigParameterNames.HostUri, pDefaultValue: HostUri, converter: new UriTypeConverter());
-            UserId = GetValidParameterValue(Config, ConfigParameterNames.UserId, pDefaultValue: UserId);
-            Password = GetValidParameterValue(Config, ConfigParameterNames.Password, pDefaultValue: Password);
-            ShowIssueStateInBranchTitle = GetValidParameterValue(Config, ConfigParameterNames.ShowIssueStateInBranchTitle, pDefaultValue: ShowIssueStateInBranchTitle);
-            PostCommentsToTickets = GetValidParameterValue(Config, ConfigParameterNames.PostCommentsToTickets, pDefaultValue: PostCommentsToTickets);
-            IgnoreIssueStateForBranchTitle = GetValidParameterValue(Config, ConfigParameterNames.ClosedIssueStates, pDefaultValue: IgnoreIssueStateForBranchTitle);
-            UsernameMapping = GetValidParameterValue(Config, ConfigParameterNames.UsernameMapping, pDefaultValue: UsernameMapping);
-            WebGuiRootUrl = GetValidParameterValue(Config, ConfigParameterNames.WebGuiRootUrl, pDefaultValue: WebGuiRootUrl, converter: new UriTypeConverter());
-            WorkingMode = GetValidParameterValue(Config, nameof(ExtensionWorkingMode), pDefaultValue: ExtensionWorkingMode.TaskOnBranch);
-            CreateBranchIssueQuery = GetValidParameterValue(Config, ConfigParameterNames.CreateBranchIssueQuery, pDefaultValue: CreateBranchIssueQuery);
-            CreateBranchTransitions = GetValidParameterValue(Config, ConfigParameterNames.CreateBranchTransitions, pDefaultValue: CreateBranchTransitions);
-            _log.Debug("YouTrackExtensionConfigFacade: configured ctor completed");
-        }
-
-        private void LoadDefaultValues()
-        {
-            _log.Debug("YouTrackExtensionConfigFacade: loading default values...");
-            BranchPrefix = "yt_";
-            HostUri = new Uri("http://issues.domain.com");
-            UserId = "";
-            Password = "";
-            ShowIssueStateInBranchTitle = false;
-            PostCommentsToTickets = true;
-            IgnoreIssueStateForBranchTitle = "Completed";
-            UsernameMapping = "";
-            WebGuiRootUrl = new Uri("http://plastic-gui.domain.com");
-            WorkingMode = ExtensionWorkingMode.TaskOnBranch;
-            CreateBranchIssueQuery = "#unresolved order by: updated desc";
-            CreateBranchTransitions = "Submitted:Start Work;Planned:Start Work;Incomplete:Start Work";
-        }
-
-        public List<IssueTrackerConfigurationParameter> GetYouTrackParameters() =>
-            new List<IssueTrackerConfigurationParameter>
+            return new List<IssueTrackerConfigurationParameter>
             {
                 new IssueTrackerConfigurationParameter
                 {
@@ -154,38 +152,6 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
                     IsGlobal = true
                 }
             };
-
-        
-
-        protected static T GetValidParameterValue<T>(IssueTrackerConfiguration pConfig, string pParamName, TypeConverter converter = null, T pDefaultValue = default(T))
-        {
-            if (pConfig == null)
-                throw new ApplicationException("The configuration parameter cannot be null!");
-
-            if (string.IsNullOrEmpty(pParamName))
-                throw new ApplicationException("The parameter name cannot be null or empty!");
-
-            string configValue = pConfig.GetValue(pParamName);
-
-            if (pParamName.Equals(ConfigParameterNames.CreateBranchIssueQuery) ||
-                pParamName.Equals(ConfigParameterNames.CreateBranchTransitions))
-            {
-                configValue = IsBase64(configValue) ? Base64Decode(configValue) : Base64Encode(configValue);
-            }
-
-            try
-            {
-                return string.IsNullOrEmpty(configValue)
-                    ? pDefaultValue
-                    : converter != null
-                        ? (T)converter.ConvertFromString(configValue)
-                        : (T)Convert.ChangeType(configValue, typeof(T));
-            }
-            catch (Exception e)
-            {
-                _log.Error(e.Message);
-                return pDefaultValue;
-            }
         }
 
         public string GetDecryptedPassword()
@@ -199,41 +165,95 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
             var decryptedPassword = CryptoServices.GetDecryptedPassword(Password);
             return decryptedPassword;
         }
+        
 
-        public static string Base64Encode(string plainText)
+        protected static T getValidParameterValue<T>
+            (IssueTrackerConfiguration pConfig, string pParamName, TypeConverter converter = null, T pDefaultValue = default(T))
         {
-            if (String.IsNullOrEmpty(plainText))
-                return String.Empty;
+            if (pConfig == null)
+                throw new ApplicationException("The configuration parameter cannot be null!");
 
-            var plainTextBytes = System.Text.Encoding.UTF8.GetBytes(plainText);
-            return System.Convert.ToBase64String(plainTextBytes);
+            if (string.IsNullOrEmpty(pParamName))
+                throw new ApplicationException("The parameter name cannot be null or empty!");
+
+            string configValue = pConfig.GetValue(pParamName);
+
+            if (pParamName.Equals(ConfigParameterNames.CreateBranchIssueQuery) ||
+                pParamName.Equals(ConfigParameterNames.CreateBranchTransitions))
+                configValue = isBase64(configValue) ? base64Decode(configValue) : base64Encode(configValue);
+
+            try
+            {
+                return string.IsNullOrEmpty(configValue)
+                    ? pDefaultValue
+                    : converter != null
+                        ? (T) converter.ConvertFromString(configValue)
+                        : (T) Convert.ChangeType(configValue, typeof(T));
+            }
+            catch (Exception e)
+            {
+                _log.Error(e.Message);
+                return pDefaultValue;
+            }
         }
 
-        public static string Base64Decode(string base64EncodedData)
+        #region Support Methods
+
+        private static string base64Decode(string pBase64EncodedData)
         {
-            if (String.IsNullOrEmpty(base64EncodedData))
+            if (String.IsNullOrEmpty(pBase64EncodedData))
                 return String.Empty;
-            var base64EncodedBytes = System.Convert.FromBase64String(base64EncodedData);
-            return System.Text.Encoding.UTF8.GetString(base64EncodedBytes);
+            var base64EncodedBytes = Convert.FromBase64String(pBase64EncodedData);
+            return Encoding.UTF8.GetString(base64EncodedBytes);
         }
 
-        public static bool IsBase64(string base64String)
+        private static string base64Encode(string pPlainText)
+        {
+            if (String.IsNullOrEmpty(pPlainText))
+                return String.Empty;
+
+            var plainTextBytes = Encoding.UTF8.GetBytes(pPlainText);
+            return Convert.ToBase64String(plainTextBytes);
+        }
+
+        private static bool isBase64(string pBase64String)
         {
             // Credit: oybek https://stackoverflow.com/users/794764/oybek
-            if (string.IsNullOrEmpty(base64String) || base64String.Length % 4 != 0
-                                                   || base64String.Contains(" ") || base64String.Contains("\t") || base64String.Contains("\r") || base64String.Contains("\n"))
+            if (string.IsNullOrEmpty(pBase64String) || pBase64String.Length % 4 != 0
+                                                   || pBase64String.Contains(" ") || pBase64String.Contains("\t") || pBase64String.Contains
+                                                       ("\r") || pBase64String.Contains("\n"))
                 return false;
 
             try
             {
-                Convert.FromBase64String(base64String);
+                Convert.FromBase64String(pBase64String);
                 return true;
             }
             catch (Exception exception)
             {
                 // Handle the exception
             }
+
             return false;
         }
+
+        private void loadDefaultValues()
+        {
+            _log.Debug("YouTrackExtensionConfigFacade: loading default values...");
+            BranchPrefix = "yt_";
+            HostUri = new Uri("http://issues.domain.com");
+            UserId = "";
+            Password = "";
+            ShowIssueStateInBranchTitle = false;
+            PostCommentsToTickets = true;
+            IgnoreIssueStateForBranchTitle = "Completed";
+            UsernameMapping = "";
+            WebGuiRootUrl = new Uri("http://plastic-gui.domain.com");
+            WorkingMode = ExtensionWorkingMode.TaskOnBranch;
+            CreateBranchIssueQuery = "#unresolved order by: updated desc";
+            CreateBranchTransitions = "Submitted:Start Work;Planned:Start Work;Incomplete:Start Work";
+        }
+
+        #endregion
     }
 }
