@@ -15,6 +15,10 @@
     public class YouTrackExtensionConfigFacade : IYouTrackExtensionConfigFacade
     {
         private static readonly ILog _log = LogManager.GetLogger("extensions");
+        private readonly string _ignoreIssueStateForBranchTitle;
+        private readonly string _createBranchIssueQuery;
+        private readonly string _createBranchTransitions;
+        private readonly string _usernameMapping;
 
         #region Ctors
 
@@ -29,15 +33,15 @@
             ShowIssueStateInBranchTitle = getValidParameterValue
                 (Config, ConfigParameterNames.ShowIssueStateInBranchTitle, pDefaultValue: true);
             PostCommentsToTickets = getValidParameterValue(Config, ConfigParameterNames.PostCommentsToTickets, pDefaultValue: true);
-            IgnoreIssueStateForBranchTitle = getValidParameterValue
-                (Config, ConfigParameterNames.ClosedIssueStates, pDefaultValue: IgnoreIssueStateForBranchTitle);
-            UsernameMapping = getValidParameterValue(Config, ConfigParameterNames.UsernameMapping, pDefaultValue: "api:ytusername");
+            _ignoreIssueStateForBranchTitle = getValidParameterValue
+                (Config, ConfigParameterNames.ClosedIssueStates, pDefaultValue: "Completed");
+            _usernameMapping = getValidParameterValue(Config, ConfigParameterNames.UsernameMapping, pDefaultValue: "api:ytusername");
             WebGuiRootUrl = getValidParameterValue
                 (Config, ConfigParameterNames.WebGuiRootUrl, pDefaultValue: new Uri("http://plastic-gui.domain.com:7178/"), converter: new UriTypeConverter());
             WorkingMode = getValidParameterValue(Config, nameof(ExtensionWorkingMode), pDefaultValue: ExtensionWorkingMode.TaskOnBranch);
-            CreateBranchIssueQuery = getValidParameterValue
+            _createBranchIssueQuery = getValidParameterValue
                 (Config, ConfigParameterNames.CreateBranchIssueQuery, pDefaultValue: "#unresolved order by: updated desc");
-            CreateBranchTransitions = getValidParameterValue
+            _createBranchTransitions = getValidParameterValue
                 (Config, ConfigParameterNames.CreateBranchTransitions, pDefaultValue: "Submitted:Start Work;Planned:Start Work;Incomplete:Start Work");
             _log.Debug("YouTrackExtensionConfigFacade: configured ctor completed");
         }
@@ -55,11 +59,29 @@
         public virtual string Password { get; private set; }
         public virtual bool ShowIssueStateInBranchTitle { get; private set; }
         public virtual bool PostCommentsToTickets { get; private set; }
-        public virtual string IgnoreIssueStateForBranchTitle { get; private set; }
-        public virtual string CreateBranchIssueQuery { get; private set; }
-        public virtual string CreateBranchTransitions { get; private set; }
-        public virtual string UsernameMapping { get; private set; }
+
+        public virtual string IgnoreIssueStateForBranchTitle
+        {
+            get { return getInMemDecodedPropertyValue(ConfigParameterNames.ClosedIssueStates, _ignoreIssueStateForBranchTitle); }
+        }
+
+        public virtual string CreateBranchIssueQuery
+        {
+            get { return getInMemDecodedPropertyValue(ConfigParameterNames.CreateBranchIssueQuery,_createBranchIssueQuery); }
+        }
+
+        public virtual string CreateBranchTransitions
+        {
+            get { return getInMemDecodedPropertyValue(ConfigParameterNames.CreateBranchTransitions, _createBranchTransitions); }
+        }
+
+        public virtual string UsernameMapping
+        {
+            get { return getInMemDecodedPropertyValue(ConfigParameterNames.UsernameMapping, _usernameMapping); }
+        }
+
         public virtual bool UseSsl => HostUri.Scheme.Equals("https", StringComparison.CurrentCultureIgnoreCase);
+
         public virtual ExtensionWorkingMode WorkingMode { get; private set; }
 
         #endregion
@@ -99,7 +121,7 @@
                 new IssueTrackerConfigurationParameter
                 {
                     Name = ConfigParameterNames.UsernameMapping,
-                    Value =  UsernameMapping,
+                    Value =  base64Encode(UsernameMapping),
                     Type = IssueTrackerConfigurationParameterType.Text,
                     IsGlobal = true
                 },
@@ -127,21 +149,21 @@
                 new IssueTrackerConfigurationParameter
                 {
                     Name = ConfigParameterNames.ClosedIssueStates,
-                    Value =  IgnoreIssueStateForBranchTitle,
+                    Value =  base64Encode(IgnoreIssueStateForBranchTitle),
                     Type = IssueTrackerConfigurationParameterType.Text,
                     IsGlobal = false
                 },
                 new IssueTrackerConfigurationParameter
                 {
                     Name = ConfigParameterNames.CreateBranchIssueQuery,
-                    Value =  CreateBranchIssueQuery,
+                    Value =  base64Encode(CreateBranchIssueQuery),
                     Type = IssueTrackerConfigurationParameterType.Text,
                     IsGlobal = true
                 },
                 new IssueTrackerConfigurationParameter
                 {
                     Name = ConfigParameterNames.CreateBranchTransitions,
-                    Value =  CreateBranchTransitions,
+                    Value =  base64Encode(CreateBranchTransitions),
                     Type = IssueTrackerConfigurationParameterType.Text,
                     IsGlobal = true
                 }
@@ -159,7 +181,24 @@
             var decryptedPassword = CryptoServices.GetDecryptedPassword(Password);
             return decryptedPassword;
         }
-        
+
+        protected string getInMemDecodedPropertyValue(string pParamName, string pOriginalValue)
+        {
+            if (Config == null || Config.Parameters.Length == 0)
+                return pOriginalValue;
+
+            var configParam = Config[pParamName];
+            if (configParam.Type == IssueTrackerConfigurationParameterType.Text && isBase64(configParam.Value))
+            {
+                //NOTE: workaround for https://github.com/diegohb/pscm-youtrack-plugin/issues/6
+                var configValue = base64Decode(configParam.Value);
+                //_log.DebugFormat($"Value for setting '{pParamName}' encoded. Decoded to '{configValue}'.");
+                return configValue;
+            }
+
+            return pOriginalValue;
+        }
+
         protected static T getValidParameterValue<T>
             (IssueTrackerConfiguration pConfig, string pParamName, TypeConverter converter = null, T pDefaultValue = default(T))
         {
@@ -176,15 +215,7 @@
 
             if (string.IsNullOrEmpty(configValue))
                 return pDefaultValue;
-
-            /*if (pConfig[pParamName].Type == IssueTrackerConfigurationParameterType.Text)
-            {
-                if(!isBase64(configValue))
-                    throw new ApplicationException($"Expected setting '{pParamName}' encoded but was not.");
-
-                configValue = base64Decode(configValue);
-            }*/
-
+            
             try
             {
                 return converter != null
@@ -199,6 +230,8 @@
         }
 
         #region Support Methods
+        
+        //TODO: re-implement once factory interface exposes separate methods for loading/saving.
 
         private static string base64Decode(string pBase64EncodedData)
         {
