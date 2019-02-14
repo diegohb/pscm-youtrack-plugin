@@ -135,7 +135,6 @@
     <Compile Include="IYouTrackExtensionConfigFacade.cs" />
     <Compile Include="Models\YoutrackUser.cs" />
     <Compile Include="YouTrackExtension.cs" />
-    <Compile Include="oldYouTrackExtensionConfigFacade.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="YouTrackExtensionFactory.cs" />
     <Compile Include="YouTrackService.cs" />
