@@ -20,7 +20,7 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
         private static readonly ILog _log = LogManager.GetLogger("extensions");
         private readonly IYouTrackExtensionConfigFacade _config;
         private readonly Connection _ytConnection;
-        private readonly IssuesService _ytIssues;
+        private readonly IIssuesService _ytIssues;
 
         #region Ctors
 
@@ -351,9 +351,8 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
         {
             var password = pConfig.GetDecryptedPassword();
             var serverUrl = pConfig.HostUri.ToString();
-            return password.StartsWith("perm:")
-                ? (Connection) new BearerTokenConnection(serverUrl, password)
-                : new UsernamePasswordConnection(serverUrl, pConfig.UserId, password);
+            //TODO: must be an api (starts with "perm:")
+            return new BearerTokenConnection(serverUrl, password);
         }
 
         private string getValueFromKVPStringList(string pCSVList, string pKeyName)

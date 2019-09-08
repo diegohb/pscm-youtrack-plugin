@@ -1,51 +1,41 @@
 ﻿// *************************************************
 // MMG.PlasticExtensions.Tests.ConnectionTests.cs
-// Last Modified: 04/03/2013 9:24 PM
-// Modified By: Bustamante, Diego (bustamd1)
+// Last Modified: 09/08/2019 5:23 PM
+// Modified By: Diego Bustamante (dbustamante)
 // *************************************************
-
-using System;
-using System.Configuration;
-using System.Net;
-using System.Security;
-using System.Xml;
-using NUnit.Framework;
 
 namespace MMG.PlasticExtensions.Tests
 {
+    using System.Configuration;
+    using NUnit.Framework;
+    using YouTrackSharp;
+
     [TestFixture]
     public class ConnectionTests
     {
         [Test]
-        public void AuthenticateToYouTrack()
+        [Ignore("Run manually.")]
+        public async void YTSharp_VerifyTicketAccess()
         {
+            //arange
+            var ticketId = ConfigurationManager.AppSettings["test.issueKey"];
+            var fieldName = ConfigurationManager.AppSettings["test.fieldName"];
+            var expectedValue = ConfigurationManager.AppSettings["test.fieldValue"];
+
+            //act
             var baseHost = ConfigurationManager.AppSettings["host"];
             var authToken = ConfigurationManager.AppSettings["auth.token"];
-            using (var client = new WebClient())
-            {
-                client.Headers.Add("Authorization", $"Bearer {authToken}");
-                try
-                {
-                    var testIssueKey = ConfigurationManager.AppSettings["test.issueKey"];
-                    var issue = client.DownloadString($"{baseHost}/rest/issue/{testIssueKey}");
-                    Assert.IsNotEmpty(issue);
-                    var xmlDoc = new XmlDocument();
-                    xmlDoc.LoadXml(issue);
+            var connection = new BearerTokenConnection(baseHost, authToken);
+            var issueSvc = connection.CreateIssuesService();
+            var issue = await issueSvc.GetIssue(ticketId);
 
-                    var testFieldName = ConfigurationManager.AppSettings["test.fieldName"];
-                    var expectedValue = ConfigurationManager.AppSettings["test.fieldValue"];
-                    var actualFieldValue = xmlDoc.SelectSingleNode($"//field[@name='{testFieldName}']/value")?.InnerText;
-                    Console.WriteLine("{0}: {1}", testFieldName, actualFieldValue);
-                    Assert.AreEqual(expectedValue, actualFieldValue);
-                }
-                catch (WebException e)
-                {
-                    Assert.Fail(e.ToString());
-                }
-            }
+            //assert
+            Assert.IsNotNull(issue);
+            var actualValue = issue.GetField(fieldName).Value;
+            Assert.AreEqual(expectedValue, actualValue);
         }
 
         [Test]
-        public void GetIssues() {}
+        public void GetIssues() { }
     }
 }

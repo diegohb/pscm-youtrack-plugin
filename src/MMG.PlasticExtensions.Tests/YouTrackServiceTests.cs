@@ -135,7 +135,7 @@ namespace MMG.PlasticExtensions.Tests
                 new IssueTrackerConfigurationParameter
                 {
                     Name = ConfigParameterNames.Password,
-                    Value = ConfigurationManager.AppSettings["password"],
+                    Value = ConfigurationManager.AppSettings["auth.token"],
                     Type = IssueTrackerConfigurationParameterType.Password,
                     IsGlobal = false
                 },
