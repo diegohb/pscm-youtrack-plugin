@@ -1,3 +1,9 @@
+// *************************************************
+// MMG.PlasticExtensions.YouTrackPlugin.YouTrackService.cs
+// Last Modified: 09/09/2019 10:50 AM
+// Modified By: Diego Bustamante (dbustamante)
+// *************************************************
+
 namespace MMG.PlasticExtensions.YouTrackPlugin
 {
     #region
@@ -7,9 +13,11 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
     using System.Collections.Generic;
     using System.Linq;
     using System.Text;
+    using System.Threading.Tasks;
     using Codice.Client.IssueTracker;
     using log4net;
     using Models;
+    using Newtonsoft.Json.Linq;
     using YouTrackSharp;
     using YouTrackSharp.Issues;
 
@@ -101,9 +109,10 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
         public YoutrackUser GetAuthenticatedUser()
         {
             ensureAuthenticated();
-
-            var authUser = _ytConnection.CreateUserManagementService().GetUser(_config.UserId).Result;
-            var user = new YoutrackUser(authUser.Username, authUser.FullName, authUser.Email);
+            var http = _ytConnection.GetAuthenticatedHttpClient().Result;
+            var rsp = http.GetStringAsync("api/admin/users/me?fields=id,login,name,email").Result;
+            dynamic rspObj = JObject.Parse(rsp);
+            var user = new YoutrackUser(rspObj.login.ToString(), rspObj.name.ToString(), rspObj.email.ToString());
             return user;
         }
 
@@ -140,13 +149,13 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
             return "{color:darkgreen}*PSCM - BRANCH CREATED*{color}";
         }
 
-        public async void EnsureIssueInProgress(string pIssueID)
+        public void EnsureIssueInProgress(string pIssueID)
         {
             ensureAuthenticated();
 
             try
             {
-                var issue = await _ytIssues.GetIssue(pIssueID);
+                var issue = _ytIssues.GetIssue(pIssueID).Result;
                 if (issue == null)
                     throw new NullReferenceException(string.Format("Unable to find issue by ID {0}.", pIssueID));
                 var issueCurrentState = issue.GetField("State").AsString();
@@ -155,7 +164,7 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
                 if (stateTransitions.ContainsKey(issueCurrentState))
                 {
                     var transitionCommand = stateTransitions[issueCurrentState];
-                    await _ytIssues.ApplyCommand(pIssueID, transitionCommand, GetBranchCreationMessage());
+                    Task.Run(() => _ytIssues.ApplyCommand(pIssueID, transitionCommand, GetBranchCreationMessage()));
                 }
                 else
                     _log.InfoFormat("Issue '{0}' already marked in-progress.", pIssueID);
@@ -200,19 +209,19 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
             return commentBuilder.ToString();
         }
 
-        public async void AddCommentToIssue
+        public void AddCommentToIssue
         (string pIssueID, string pRepositoryServer, string pRepository, Uri pWebGui, string pBranch, long pChangeSetId, string pComment,
             Guid pChangeSetGuid)
         {
             ensureAuthenticated();
 
-            if (await _ytIssues.Exists(pIssueID) == false)
+            if (_ytIssues.Exists(pIssueID).Result == false)
                 return;
 
             try
             {
                 var completeComment = FormatComment(pRepositoryServer, pRepository, pWebGui, pBranch, pChangeSetId, pComment, pChangeSetGuid);
-                _ytIssues.ApplyCommand(pIssueID, "comment", completeComment, false).Wait(1000);
+                Task.Run(() => _ytIssues.ApplyCommand(pIssueID, "comment", completeComment, false).Wait(1000));
             }
             catch (Exception ex)
             {
@@ -220,14 +229,14 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
             }
         }
 
-        public async void AssignIssue(string pIssueID, string pAssignee, bool pAddComment = true)
+        public void AssignIssue(string pIssueID, string pAssignee, bool pAddComment = true)
         {
             ensureAuthenticated();
 
             try
             {
                 var mappedAssignee = applyUserMapping(pAssignee);
-                var issue = await _ytIssues.GetIssue(pIssueID);
+                var issue = _ytIssues.GetIssue(pIssueID).Result;
                 if (issue == null)
                     throw new NullReferenceException(string.Format("Unable to find issue by ID {0}.", pIssueID));
 
@@ -238,9 +247,10 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
                 if (!string.Equals(currentAssignee, mappedAssignee, StringComparison.InvariantCultureIgnoreCase))
                 {
                     var comment = $"Assigned by PlasticSCM to user '{mappedAssignee}'.";
-                    await _ytIssues.ApplyCommand
+                    Task.Run
+                    (() => _ytIssues.ApplyCommand
                     (pIssueID, string.Format("for {0}", mappedAssignee),
-                        pAddComment ? comment : string.Empty);
+                        pAddComment ? comment : string.Empty));
                 }
             }
             catch (Exception ex)
@@ -289,6 +299,9 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
         {
             if (string.IsNullOrEmpty(pAssignee))
                 return string.Empty;
+
+            if (string.IsNullOrEmpty(_config.UsernameMapping))
+                return pAssignee;
 
             return getValueFromKVPStringList(_config.UsernameMapping, pAssignee);
         }

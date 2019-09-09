@@ -1,7 +1,7 @@
 ﻿// *************************************************
 // MMG.PlasticExtensions.Tests.YouTrackServiceTests.cs
-// Last Modified: 03/17/2016 11:16 AM
-// Modified By: Green, Brett (greenb1)
+// Last Modified: 09/09/2019 10:50 AM
+// Modified By: Diego Bustamante (dbustamante)
 // *************************************************
 
 namespace MMG.PlasticExtensions.Tests
@@ -10,12 +10,12 @@ namespace MMG.PlasticExtensions.Tests
     using System.Collections.Generic;
     using System.Configuration;
     using System.Linq;
+    using System.Text;
     using Codice.Client.IssueTracker;
     using Moq;
     using NUnit.Framework;
     using YouTrackPlugin;
     using YouTrackSharp.Issues;
-    using System.Text;
 
     [TestFixture]
     public class YouTrackServiceTests
@@ -69,7 +69,7 @@ namespace MMG.PlasticExtensions.Tests
             Assert.IsNotNull(svc.GetAuthenticatedUser());
 
             var testIssueID = ConfigurationManager.AppSettings["test.issueKey"];
-            svc.AssignIssue(testIssueID, "dbustamante");
+            svc.AssignIssue(testIssueID, ConfigurationManager.AppSettings["username"]);
         }
 
         [Test]
@@ -81,7 +81,7 @@ namespace MMG.PlasticExtensions.Tests
             var issues = svc.GetUnresolvedPlasticTasks().ToList();
             CollectionAssert.IsNotEmpty(issues);
             var assigneeName = ConfigurationManager.AppSettings["test.fieldValue"];
-            Assert.IsTrue(issues.Any(pIssue => !pIssue.Owner.Equals(assigneeName, StringComparison.InvariantCultureIgnoreCase)));
+            Assert.IsTrue(issues.Any(pIssue => pIssue.Owner.Equals(assigneeName, StringComparison.InvariantCultureIgnoreCase)));
         }
 
         [Test]
@@ -128,7 +128,7 @@ namespace MMG.PlasticExtensions.Tests
                 new IssueTrackerConfigurationParameter
                 {
                     Name = ConfigParameterNames.UserId,
-                    Value = ConfigurationManager.AppSettings["username"],
+                    Value = "api",
                     Type = IssueTrackerConfigurationParameterType.User,
                     IsGlobal = false
                 },
@@ -150,6 +150,27 @@ namespace MMG.PlasticExtensions.Tests
                 {
                     Name = ConfigParameterNames.ClosedIssueStates,
                     Value = "Completed,Approved",
+                    Type = IssueTrackerConfigurationParameterType.Text,
+                    IsGlobal = false
+                },
+                new IssueTrackerConfigurationParameter
+                {
+                    Name = ConfigParameterNames.UsernameMapping,
+                    Value = "pmanager:project-manager",
+                    Type = IssueTrackerConfigurationParameterType.Text,
+                    IsGlobal = false
+                },
+                new IssueTrackerConfigurationParameter
+                {
+                    Name = ConfigParameterNames.CreateBranchTransitions,
+                    Value = "Open:In Progress;Planned:In Progress",
+                    Type = IssueTrackerConfigurationParameterType.Text,
+                    IsGlobal = false
+                },
+                new IssueTrackerConfigurationParameter
+                {
+                    Name = ConfigParameterNames.CreateBranchIssueQuery,
+                    Value = "#Unresolved",
                     Type = IssueTrackerConfigurationParameterType.Text,
                     IsGlobal = false
                 }
