@@ -127,14 +127,7 @@ namespace MMG.PlasticExtensions.Tests
                 },
                 new IssueTrackerConfigurationParameter
                 {
-                    Name = ConfigParameterNames.UserId,
-                    Value = "api",
-                    Type = IssueTrackerConfigurationParameterType.User,
-                    IsGlobal = false
-                },
-                new IssueTrackerConfigurationParameter
-                {
-                    Name = ConfigParameterNames.Password,
+                    Name = ConfigParameterNames.AuthToken,
                     Value = ConfigurationManager.AppSettings["auth.token"],
                     Type = IssueTrackerConfigurationParameterType.Password,
                     IsGlobal = false

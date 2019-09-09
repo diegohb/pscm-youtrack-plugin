@@ -28,14 +28,13 @@
             Config = pConfig;
             BranchPrefix = getValidParameterValue(Config, ConfigParameterNames.BranchPrefix, pDefaultValue: "yt_");
             HostUri = getValidParameterValue(Config, ConfigParameterNames.HostUri, pDefaultValue: new Uri("http://issues.domain.com"), converter: new UriTypeConverter());
-            UserId = getValidParameterValue(Config, ConfigParameterNames.UserId, pDefaultValue: "api");
-            Password = getValidParameterValue(Config, ConfigParameterNames.Password, pDefaultValue: string.Empty);
+            AuthToken = getValidParameterValue(Config, ConfigParameterNames.AuthToken, pDefaultValue: string.Empty);
             ShowIssueStateInBranchTitle = getValidParameterValue
                 (Config, ConfigParameterNames.ShowIssueStateInBranchTitle, pDefaultValue: true);
             PostCommentsToTickets = getValidParameterValue(Config, ConfigParameterNames.PostCommentsToTickets, pDefaultValue: true);
             _ignoreIssueStateForBranchTitle = getValidParameterValue
                 (Config, ConfigParameterNames.ClosedIssueStates, pDefaultValue: "Completed");
-            _usernameMapping = getValidParameterValue(Config, ConfigParameterNames.UsernameMapping, pDefaultValue: "api:ytusername");
+            _usernameMapping = getValidParameterValue(Config, ConfigParameterNames.UsernameMapping, pDefaultValue: "plasticusr:ytusername");
             WebGuiRootUrl = getValidParameterValue
                 (Config, ConfigParameterNames.WebGuiRootUrl, pDefaultValue: new Uri("http://plastic-gui.domain.com:7178/"), converter: new UriTypeConverter());
             WorkingMode = getValidParameterValue(Config, nameof(ExtensionWorkingMode), pDefaultValue: ExtensionWorkingMode.TaskOnBranch);
@@ -56,7 +55,7 @@
         public virtual Uri WebGuiRootUrl { get; private set; }
         public virtual string BranchPrefix { get; private set; }
         public virtual string UserId { get; private set; }
-        public virtual string Password { get; private set; }
+        public virtual string AuthToken { get; private set; }
         public virtual bool ShowIssueStateInBranchTitle { get; private set; }
         public virtual bool PostCommentsToTickets { get; private set; }
 
@@ -113,13 +112,6 @@
                 },
                 new IssueTrackerConfigurationParameter
                 {
-                    Name = ConfigParameterNames.UserId,
-                    Value = UserId,
-                    Type = IssueTrackerConfigurationParameterType.User,
-                    IsGlobal = false
-                },
-                new IssueTrackerConfigurationParameter
-                {
                     Name = ConfigParameterNames.UsernameMapping,
                     Value =  base64Encode(UsernameMapping),
                     Type = IssueTrackerConfigurationParameterType.Text,
@@ -127,8 +119,8 @@
                 },
                 new IssueTrackerConfigurationParameter
                 {
-                    Name = ConfigParameterNames.Password,
-                    Value = Password,
+                    Name = ConfigParameterNames.AuthToken,
+                    Value = AuthToken,
                     Type = IssueTrackerConfigurationParameterType.Password,
                     IsGlobal = false
                 },
@@ -175,10 +167,10 @@
             if (Config == null)
                 throw new ApplicationException("The configuration has not yet been initialized!");
 
-            if (string.IsNullOrEmpty(Password))
-                throw new ApplicationException("Password value can not be empty!");
+            if (string.IsNullOrEmpty(AuthToken))
+                throw new ApplicationException("AuthToken value can not be empty!");
 
-            var decryptedPassword = CryptoServices.GetDecryptedPassword(Password);
+            var decryptedPassword = CryptoServices.GetDecryptedPassword(AuthToken);
             return decryptedPassword;
         }
 

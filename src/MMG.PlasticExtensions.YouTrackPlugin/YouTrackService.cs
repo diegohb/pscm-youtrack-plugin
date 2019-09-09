@@ -403,8 +403,7 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
                 throw new ApplicationException(string.Format("YouTrack setting '{0}' cannot be null or empty!", ConfigParameterNames.HostUri));
 
             throwErrorIfRequiredStringSettingIsMissing(pConfig.BranchPrefix, ConfigParameterNames.BranchPrefix);
-            throwErrorIfRequiredStringSettingIsMissing(pConfig.UserId, ConfigParameterNames.UserId);
-            throwErrorIfRequiredStringSettingIsMissing(pConfig.Password, ConfigParameterNames.Password);
+            throwErrorIfRequiredStringSettingIsMissing(pConfig.AuthToken, ConfigParameterNames.AuthToken);
         }
 
         #endregion

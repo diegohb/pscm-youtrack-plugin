@@ -1,7 +1,7 @@
 // *************************************************
 // MMG.PlasticExtensions.YouTrackPlugin.IYouTrackExtensionConfigFacade.cs
-// Last Modified: 03/28/2016 1:57 PM
-// Modified By: Green, Brett (greenb1)
+// Last Modified: 09/09/2019 11:17 AM
+// Modified By: Diego Bustamante (dbustamante)
 // *************************************************
 
 namespace MMG.PlasticExtensions.YouTrackPlugin
@@ -16,8 +16,7 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
         Uri HostUri { get; }
         Uri WebGuiRootUrl { get; }
         string UsernameMapping { get; }
-        string UserId { get; }
-        string Password { get; }
+        string AuthToken { get; }
         bool UseSsl { get; }
         bool ShowIssueStateInBranchTitle { get; }
         bool PostCommentsToTickets { get; }
@@ -29,11 +28,11 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
         string IgnoreIssueStateForBranchTitle { get; }
 
         string CreateBranchIssueQuery { get; }
-        
+
         string CreateBranchTransitions { get; }
 
         ExtensionWorkingMode WorkingMode { get; }
-        
+
         List<IssueTrackerConfigurationParameter> GetYouTrackParameters();
 
         string GetDecryptedPassword();
