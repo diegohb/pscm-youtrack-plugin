@@ -28,14 +28,13 @@
             Config = pConfig;
             BranchPrefix = getValidParameterValue(Config, ConfigParameterNames.BranchPrefix, pDefaultValue: "yt_");
             HostUri = getValidParameterValue(Config, ConfigParameterNames.HostUri, pDefaultValue: new Uri("http://issues.domain.com"), converter: new UriTypeConverter());
-            UserId = getValidParameterValue(Config, ConfigParameterNames.UserId, pDefaultValue: "api");
-            Password = getValidParameterValue(Config, ConfigParameterNames.Password, pDefaultValue: string.Empty);
+            AuthToken = getValidParameterValue(Config, ConfigParameterNames.AuthToken, pDefaultValue: string.Empty);
             ShowIssueStateInBranchTitle = getValidParameterValue
                 (Config, ConfigParameterNames.ShowIssueStateInBranchTitle, pDefaultValue: true);
             PostCommentsToTickets = getValidParameterValue(Config, ConfigParameterNames.PostCommentsToTickets, pDefaultValue: true);
             _ignoreIssueStateForBranchTitle = getValidParameterValue
                 (Config, ConfigParameterNames.ClosedIssueStates, pDefaultValue: "Completed");
-            _usernameMapping = getValidParameterValue(Config, ConfigParameterNames.UsernameMapping, pDefaultValue: "api:ytusername");
+            _usernameMapping = getValidParameterValue(Config, ConfigParameterNames.UsernameMapping, pDefaultValue: "plasticusr:ytusername");
             WebGuiRootUrl = getValidParameterValue
                 (Config, ConfigParameterNames.WebGuiRootUrl, pDefaultValue: new Uri("http://plastic-gui.domain.com:7178/"), converter: new UriTypeConverter());
             WorkingMode = getValidParameterValue(Config, nameof(ExtensionWorkingMode), pDefaultValue: ExtensionWorkingMode.TaskOnBranch);
@@ -56,7 +55,7 @@
         public virtual Uri WebGuiRootUrl { get; private set; }
         public virtual string BranchPrefix { get; private set; }
         public virtual string UserId { get; private set; }
-        public virtual string Password { get; private set; }
+        public virtual string AuthToken { get; private set; }
         public virtual bool ShowIssueStateInBranchTitle { get; private set; }
         public virtual bool PostCommentsToTickets { get; private set; }
 
@@ -113,22 +112,15 @@
                 },
                 new IssueTrackerConfigurationParameter
                 {
-                    Name = ConfigParameterNames.UserId,
-                    Value = UserId,
-                    Type = IssueTrackerConfigurationParameterType.User,
-                    IsGlobal = false
-                },
-                new IssueTrackerConfigurationParameter
-                {
                     Name = ConfigParameterNames.UsernameMapping,
-                    Value =  base64Encode(UsernameMapping),
+                    Value =  UsernameMapping,
                     Type = IssueTrackerConfigurationParameterType.Text,
                     IsGlobal = true
                 },
                 new IssueTrackerConfigurationParameter
                 {
-                    Name = ConfigParameterNames.Password,
-                    Value = Password,
+                    Name = ConfigParameterNames.AuthToken,
+                    Value = AuthToken,
                     Type = IssueTrackerConfigurationParameterType.Password,
                     IsGlobal = false
                 },
@@ -149,21 +141,21 @@
                 new IssueTrackerConfigurationParameter
                 {
                     Name = ConfigParameterNames.ClosedIssueStates,
-                    Value =  base64Encode(IgnoreIssueStateForBranchTitle),
+                    Value =  IgnoreIssueStateForBranchTitle,
                     Type = IssueTrackerConfigurationParameterType.Text,
                     IsGlobal = false
                 },
                 new IssueTrackerConfigurationParameter
                 {
                     Name = ConfigParameterNames.CreateBranchIssueQuery,
-                    Value =  base64Encode(CreateBranchIssueQuery),
+                    Value =  CreateBranchIssueQuery,
                     Type = IssueTrackerConfigurationParameterType.Text,
                     IsGlobal = true
                 },
                 new IssueTrackerConfigurationParameter
                 {
                     Name = ConfigParameterNames.CreateBranchTransitions,
-                    Value =  base64Encode(CreateBranchTransitions),
+                    Value =  CreateBranchTransitions,
                     Type = IssueTrackerConfigurationParameterType.Text,
                     IsGlobal = true
                 }
@@ -175,13 +167,14 @@
             if (Config == null)
                 throw new ApplicationException("The configuration has not yet been initialized!");
 
-            if (string.IsNullOrEmpty(Password))
-                throw new ApplicationException("Password value can not be empty!");
+            if (string.IsNullOrEmpty(AuthToken))
+                throw new ApplicationException("AuthToken value can not be empty!");
 
-            var decryptedPassword = CryptoServices.GetDecryptedPassword(Password);
+            var decryptedPassword = CryptoServices.GetDecryptedPassword(AuthToken);
             return decryptedPassword;
         }
 
+        [Obsolete("Need to remove method.")]
         protected string getInMemDecodedPropertyValue(string pParamName, string pOriginalValue)
         {
             if (Config == null || Config.Parameters.Length == 0)
@@ -191,6 +184,7 @@
             if (configParam.Type == IssueTrackerConfigurationParameterType.Text && isBase64(configParam.Value))
             {
                 //NOTE: workaround for https://github.com/diegohb/pscm-youtrack-plugin/issues/6
+                throw new NotImplementedException("No longer using hack as PlasticSCM released an update to handle serializing and encoding config values.");
                 var configValue = base64Decode(configParam.Value);
                 //_log.DebugFormat($"Value for setting '{pParamName}' encoded. Decoded to '{configValue}'.");
                 return configValue;
@@ -239,15 +233,6 @@
                 return String.Empty;
             var base64EncodedBytes = Convert.FromBase64String(pBase64EncodedData);
             return Encoding.UTF8.GetString(base64EncodedBytes);
-        }
-
-        private static string base64Encode(string pPlainText)
-        {
-            if (String.IsNullOrEmpty(pPlainText))
-                return String.Empty;
-
-            var plainTextBytes = Encoding.UTF8.GetBytes(pPlainText);
-            return Convert.ToBase64String(plainTextBytes);
         }
 
         private static bool isBase64(string pBase64String)
