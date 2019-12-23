@@ -149,13 +149,13 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
             return "{color:darkgreen}*PSCM - BRANCH CREATED*{color}";
         }
 
-        public void EnsureIssueInProgress(string pIssueID)
+        public async Task EnsureIssueInProgress(string pIssueID)
         {
             ensureAuthenticated();
 
             try
             {
-                var issue = _ytIssues.GetIssue(pIssueID).Result;
+                var issue = await _ytIssues.GetIssue(pIssueID);
                 if (issue == null)
                     throw new NullReferenceException(string.Format("Unable to find issue by ID {0}.", pIssueID));
                 var issueCurrentState = issue.GetField("State").AsString();
@@ -164,7 +164,7 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
                 if (stateTransitions.ContainsKey(issueCurrentState))
                 {
                     var transitionCommand = stateTransitions[issueCurrentState];
-                    Task.Run(() => _ytIssues.ApplyCommand(pIssueID, transitionCommand, GetBranchCreationMessage()));
+                    await _ytIssues.ApplyCommand(pIssueID, transitionCommand, GetBranchCreationMessage());
                 }
                 else
                     _log.InfoFormat("Issue '{0}' already marked in-progress.", pIssueID);
@@ -209,19 +209,19 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
             return commentBuilder.ToString();
         }
 
-        public void AddCommentToIssue
+        public async Task AddCommentToIssue
         (string pIssueID, string pRepositoryServer, string pRepository, Uri pWebGui, string pBranch, long pChangeSetId, string pComment,
             Guid pChangeSetGuid)
         {
             ensureAuthenticated();
 
-            if (_ytIssues.Exists(pIssueID).Result == false)
+            if (await _ytIssues.Exists(pIssueID) == false)
                 return;
 
             try
             {
                 var completeComment = FormatComment(pRepositoryServer, pRepository, pWebGui, pBranch, pChangeSetId, pComment, pChangeSetGuid);
-                Task.Run(() => _ytIssues.ApplyCommand(pIssueID, "comment", completeComment, false).Wait(1000));
+                _ytIssues.ApplyCommand(pIssueID, "comment", completeComment, false).Wait(1000);
             }
             catch (Exception ex)
             {
@@ -229,14 +229,14 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
             }
         }
 
-        public void AssignIssue(string pIssueID, string pAssignee, bool pAddComment = true)
+        public async Task AssignIssue(string pIssueID, string pAssignee, bool pAddComment = true)
         {
             ensureAuthenticated();
 
             try
             {
                 var mappedAssignee = applyUserMapping(pAssignee);
-                var issue = _ytIssues.GetIssue(pIssueID).Result;
+                var issue = await _ytIssues.GetIssue(pIssueID);
                 if (issue == null)
                     throw new NullReferenceException(string.Format("Unable to find issue by ID {0}.", pIssueID));
 
@@ -247,10 +247,9 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
                 if (!string.Equals(currentAssignee, mappedAssignee, StringComparison.InvariantCultureIgnoreCase))
                 {
                     var comment = $"Assigned by PlasticSCM to user '{mappedAssignee}'.";
-                    Task.Run
-                    (() => _ytIssues.ApplyCommand
+                    await _ytIssues.ApplyCommand
                     (pIssueID, string.Format("for {0}", mappedAssignee),
-                        pAddComment ? comment : string.Empty));
+                        pAddComment ? comment : string.Empty);
                 }
             }
             catch (Exception ex)

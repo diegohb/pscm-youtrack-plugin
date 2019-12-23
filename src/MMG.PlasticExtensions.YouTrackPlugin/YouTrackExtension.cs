@@ -6,6 +6,7 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
     using System.Collections.Generic;
     using System.Diagnostics;
     using System.Linq;
+    using System.Threading.Tasks;
     using Codice.Client.IssueTracker;
     using log4net;
 
@@ -91,13 +92,13 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
             }
         }
 
-        public void LogCheckinResult(PlasticChangeset pChangeset, List<PlasticTask> pTasks)
+        public async void LogCheckinResult(PlasticChangeset pChangeset, List<PlasticTask> pTasks)
         {
             if (!_config.PostCommentsToTickets)
                 return;
             foreach (var task in pTasks)
             {
-                _ytService.AddCommentToIssue
+                await _ytService.AddCommentToIssue
                 (task.Id, pChangeset.RepositoryServer, pChangeset.Repository,
                     _config.WebGuiRootUrl ?? new Uri($"http://{pChangeset.RepositoryServer}"),
                     pChangeset.Branch, pChangeset.Id, pChangeset.Comment, pChangeset.Guid);
@@ -160,11 +161,11 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
             return plasticTasks;
         }
 
-        public void MarkTaskAsOpen(string pTaskId, string pAssignee)
+        public async void MarkTaskAsOpen(string pTaskId, string pAssignee)
         {
             try
             {
-                _ytService.AssignIssue(pTaskId, pAssignee, false);
+                await _ytService.AssignIssue(pTaskId, pAssignee, false);
             }
             catch (Exception e)
             {
