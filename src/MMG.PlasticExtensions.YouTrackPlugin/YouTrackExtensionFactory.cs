@@ -1,22 +1,24 @@
-﻿// *************************************************
-// MMG.PlasticExtensions.YouTrackPlugin.YouTrackExtensionFactory.cs
-// Last Modified: 12/27/2015 3:47 PM
-// Modified By: Bustamante, Diego (bustamd1)
-// *************************************************
-
-namespace MMG.PlasticExtensions.YouTrackPlugin
+﻿namespace MMG.PlasticExtensions.YouTrackPlugin
 {
+    #region
+
     using Codice.Client.IssueTracker;
     using log4net;
+
+    #endregion
 
     public class YouTrackExtensionFactory : IPlasticIssueTrackerExtensionFactory
     {
         private static readonly ILog _log = LogManager.GetLogger("extensions");
 
+        #region Ctors
+
         public YouTrackExtensionFactory()
         {
             _log.Debug("YouTrackExtensionFactory: ctor called");
         }
+
+        #endregion
 
         public IssueTrackerConfiguration GetConfiguration(IssueTrackerConfiguration pStoredConfiguration)
         {
@@ -24,7 +26,7 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
 
             var configFacade = pStoredConfiguration != null
                 ? new YouTrackExtensionConfigFacade(pStoredConfiguration)
-                : new YouTrackExtensionConfigFacade();
+                : new YouTrackExtensionConfigFacade(new IssueTrackerConfiguration());
 
             var workingMode = configFacade.WorkingMode;
             var parameters = configFacade.GetYouTrackParameters();

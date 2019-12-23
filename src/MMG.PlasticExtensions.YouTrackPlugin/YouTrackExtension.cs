@@ -1,13 +1,7 @@
-// *************************************************
-// MMG.PlasticExtensions.YouTrackPlugin.YouTrackExtension.cs
-// Last Modified: 03/28/2016 1:46 PM
-// Modified By: Green, Brett (greenb1)
-// *************************************************
-
-using System.Threading.Tasks;
-
 namespace MMG.PlasticExtensions.YouTrackPlugin
 {
+    #region
+
     using System;
     using System.Collections.Generic;
     using System.Diagnostics;
@@ -15,11 +9,15 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
     using Codice.Client.IssueTracker;
     using log4net;
 
+    #endregion
+
     public class YouTrackExtension : IPlasticIssueTrackerExtension
     {
         private static readonly ILog _log = LogManager.GetLogger("extensions");
-        private readonly YouTrackService _ytService;
         private readonly IYouTrackExtensionConfigFacade _config;
+        private readonly YouTrackService _ytService;
+
+        #region Ctors
 
         public YouTrackExtension(IYouTrackExtensionConfigFacade pConfig)
         {
@@ -34,11 +32,37 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
             }
         }
 
+        #endregion
+
+        #region Support Methods
+
+        private string getBranchName(string pFullBranchName)
+        {
+            var lastSeparatorIndex = pFullBranchName.LastIndexOf('/');
+
+            if (lastSeparatorIndex < 0)
+                return pFullBranchName;
+
+            return lastSeparatorIndex == pFullBranchName.Length - 1
+                ? string.Empty
+                : pFullBranchName.Substring(lastSeparatorIndex + 1);
+        }
+
+        private string getTicketIDFromTaskBranchName(string pTaskBranchName)
+        {
+            return !string.IsNullOrEmpty(_config.BranchPrefix)
+                   && pTaskBranchName.StartsWith(_config.BranchPrefix, StringComparison.InvariantCultureIgnoreCase)
+                ? pTaskBranchName.Substring(_config.BranchPrefix.Length)
+                : pTaskBranchName;
+        }
+
+        #endregion
+
         #region IPlasticIssueTrackerExtension implementation
 
         public string GetExtensionName()
         {
-            return "YouTrack Issues Viewer";
+            return "YouTrack";
         }
 
         public void Connect()
@@ -66,13 +90,11 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
                 return false;
             }
         }
-        
+
         public void LogCheckinResult(PlasticChangeset pChangeset, List<PlasticTask> pTasks)
         {
             if (!_config.PostCommentsToTickets)
-            {
                 return;
-            }
             foreach (var task in pTasks)
             {
                 _ytService.AddCommentToIssue
@@ -99,7 +121,7 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
         public Dictionary<string, PlasticTask> GetTasksForBranches(List<string> pFullBranchNames)
         {
             var data = pFullBranchNames
-                .Where(pBranch=> pBranch.Split('/').Last().StartsWith(this._config.BranchPrefix))
+                .Where(pBranch => pBranch.Split('/').Last().StartsWith(_config.BranchPrefix))
                 .Select
                 (x => new
                 {
@@ -142,37 +164,21 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
         {
             try
             {
-                _ytService.EnsureIssueInProgress(pTaskId);
                 _ytService.AssignIssue(pTaskId, pAssignee, false);
             }
             catch (Exception e)
             {
-                _log.Error(string.Format("Failed to set issue '{0}' open and assigned.", pTaskId), e);
+                _log.Error(string.Format("Failed to assign issue.", pTaskId), e);
             }
-        }
 
-        #endregion
-
-        #region Support Methods
-
-        private string getBranchName(string pFullBranchName)
-        {
-            var lastSeparatorIndex = pFullBranchName.LastIndexOf('/');
-
-            if (lastSeparatorIndex < 0)
-                return pFullBranchName;
-
-            return lastSeparatorIndex == pFullBranchName.Length - 1
-                ? string.Empty
-                : pFullBranchName.Substring(lastSeparatorIndex + 1);
-        }
-
-        private string getTicketIDFromTaskBranchName(string pTaskBranchName)
-        {
-            return !string.IsNullOrEmpty(_config.BranchPrefix)
-                   && pTaskBranchName.StartsWith(_config.BranchPrefix, StringComparison.InvariantCultureIgnoreCase)
-                ? pTaskBranchName.Substring(_config.BranchPrefix.Length)
-                : pTaskBranchName;
+            try
+            {
+                _ytService.EnsureIssueInProgress(pTaskId);
+            }
+            catch (Exception e)
+            {
+                _log.Error(string.Format("Failed to transition issue '{0}'.", pTaskId), e);
+            }
         }
 
         #endregion

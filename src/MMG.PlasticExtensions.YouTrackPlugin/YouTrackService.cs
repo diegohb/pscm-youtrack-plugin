@@ -1,30 +1,36 @@
 // *************************************************
 // MMG.PlasticExtensions.YouTrackPlugin.YouTrackService.cs
-// Last Modified: 03/21/2016 3:34 PM
-// Modified By: Green, Brett (greenb1)
+// Last Modified: 09/09/2019 10:50 AM
+// Modified By: Diego Bustamante (dbustamante)
 // *************************************************
-
-using System.Security;
-using System.Text;
-using YouTrackSharp;
 
 namespace MMG.PlasticExtensions.YouTrackPlugin
 {
+    #region
+
     using System;
     using System.Collections;
     using System.Collections.Generic;
     using System.Linq;
+    using System.Text;
+    using System.Threading.Tasks;
     using Codice.Client.IssueTracker;
     using log4net;
     using Models;
+    using Newtonsoft.Json.Linq;
+    using YouTrackSharp;
     using YouTrackSharp.Issues;
+
+    #endregion
 
     public class YouTrackService
     {
         private static readonly ILog _log = LogManager.GetLogger("extensions");
-        private readonly Connection _ytConnection;
-        private readonly IssuesService _ytIssues;
         private readonly IYouTrackExtensionConfigFacade _config;
+        private readonly Connection _ytConnection;
+        private readonly IIssuesService _ytIssues;
+
+        #region Ctors
 
         public YouTrackService(IYouTrackExtensionConfigFacade pConfig)
         {
@@ -33,6 +39,8 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
             _ytIssues = _ytConnection.CreateIssuesService();
             _log.Debug("YouTrackService: ctor called");
         }
+
+        #endregion
 
         public PlasticTask GetPlasticTask(string pTaskID)
         {
@@ -53,7 +61,7 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
                 _log.Warn(string.Format("YouTrackService: Failed to fetch youtrack issue '{0}' due to error.", pTaskID), ex);
             }
 
-            return new PlasticTask { Id = pTaskID, CanBeLinked = false };
+            return new PlasticTask {Id = pTaskID, CanBeLinked = false};
         }
 
         public IEnumerable<PlasticTask> GetPlasticTasks(string[] pTaskIDs)
@@ -72,13 +80,11 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
 
             try
             {
-                //TODO: search within project only.
-                //TODO: customize order by setting.
-
                 var assignee = applyUserMapping(pAssignee);
                 var searchString = string.Format
-                    ("#unresolved {0} order by: updated desc",
-                        string.IsNullOrWhiteSpace(assignee) ? string.Empty : string.Format(" for: {0}", assignee));
+                ("{0}{1}", string.IsNullOrWhiteSpace(assignee) ? string.Empty : string.Format("for: {0} ", assignee),
+                    _config.CreateBranchIssueQuery);
+
                 var issues = _ytIssues.GetIssues(searchString, take: pMaxCount).Result.ToList();
                 if (!issues.Any())
                     return new List<PlasticTask>();
@@ -103,9 +109,10 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
         public YoutrackUser GetAuthenticatedUser()
         {
             ensureAuthenticated();
-
-            var authUser = _ytConnection.CreateUserManagementService().GetUser(_config.UserId).Result;
-            var user = new YoutrackUser(authUser.Username, authUser.FullName, authUser.Email);
+            var http = _ytConnection.GetAuthenticatedHttpClient().Result;
+            var rsp = http.GetStringAsync("api/admin/users/me?fields=id,login,name,email").Result;
+            dynamic rspObj = JObject.Parse(rsp);
+            var user = new YoutrackUser(rspObj.login.ToString(), rspObj.name.ToString(), rspObj.email.ToString());
             return user;
         }
 
@@ -142,17 +149,23 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
             return "{color:darkgreen}*PSCM - BRANCH CREATED*{color}";
         }
 
-        public async void EnsureIssueInProgress(string pIssueID)
+        public void EnsureIssueInProgress(string pIssueID)
         {
             ensureAuthenticated();
 
             try
             {
-                var issue = await _ytIssues.GetIssue(pIssueID);
+                var issue = _ytIssues.GetIssue(pIssueID).Result;
                 if (issue == null)
                     throw new NullReferenceException(string.Format("Unable to find issue by ID {0}.", pIssueID));
-                if (issue.GetField("State").AsString() != "In Progress")
-                    await _ytIssues.ApplyCommand(pIssueID, "State: In Progress", GetBranchCreationMessage());
+                var issueCurrentState = issue.GetField("State").AsString();
+
+                var stateTransitions = convertStringListToKVPDictionary(_config.CreateBranchTransitions);
+                if (stateTransitions.ContainsKey(issueCurrentState))
+                {
+                    var transitionCommand = stateTransitions[issueCurrentState];
+                    Task.Run(() => _ytIssues.ApplyCommand(pIssueID, transitionCommand, GetBranchCreationMessage()));
+                }
                 else
                     _log.InfoFormat("Issue '{0}' already marked in-progress.", pIssueID);
             }
@@ -163,7 +176,8 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
             }
         }
 
-        public static string FormatComment(string pHost, string pRepository, Uri pWebGui, string pBranch,
+        public static string FormatComment
+        (string pHost, string pRepository, Uri pWebGui, string pBranch,
             long pChangeSetId, string pComment, Guid pChangeSetGuid)
         {
             var nl = Environment.NewLine;
@@ -175,8 +189,7 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
                  !changeSetUriBuilder.Scheme.Equals("http", StringComparison.CurrentCultureIgnoreCase)))
                 changeSetUriBuilder.Scheme = "http";
 
-            changeSetUriBuilder.Path = $"{pRepository}/ViewChanges";
-            changeSetUriBuilder.Query = $"changeset={pChangeSetGuid}";
+            changeSetUriBuilder.Path = $"webui/repos/{pRepository}/diff/changeset/{pChangeSetGuid}";
 
             var hostName = pHost.StartsWith("localhost", StringComparison.CurrentCultureIgnoreCase) ||
                            pHost.StartsWith("127.0.0.", StringComparison.CurrentCultureIgnoreCase)
@@ -190,23 +203,25 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
             commentBuilder.Append($"{tildes}{nl}");
             commentBuilder.Append($"[{mdComment}|{changeSetUriBuilder}]{nl}");
             //commentBuilder.Append($"{{monospace}}");
-            commentBuilder.Append($"{pChangeSetGuid}@{pBranch}@{pRepository}@{hostName}");
+            commentBuilder.Append($"{pChangeSetGuid} @ {pBranch} @ {pRepository} @ {hostName}");
             //commentBuilder.Append($"{{monospace}}");
 
             return commentBuilder.ToString();
         }
 
-        public async void AddCommentToIssue
-            (string pIssueID, string pRepositoryServer, string pRepository, Uri pWebGui, string pBranch, long pChangeSetId, string pComment, Guid pChangeSetGuid)
+        public void AddCommentToIssue
+        (string pIssueID, string pRepositoryServer, string pRepository, Uri pWebGui, string pBranch, long pChangeSetId, string pComment,
+            Guid pChangeSetGuid)
         {
             ensureAuthenticated();
 
-            if (await _ytIssues.Exists(pIssueID) == false) return;
+            if (_ytIssues.Exists(pIssueID).Result == false)
+                return;
 
             try
             {
                 var completeComment = FormatComment(pRepositoryServer, pRepository, pWebGui, pBranch, pChangeSetId, pComment, pChangeSetGuid);
-                _ytIssues.ApplyCommand(pIssueID, "comment", completeComment, false).Wait(1000);
+                Task.Run(() => _ytIssues.ApplyCommand(pIssueID, "comment", completeComment, false).Wait(1000));
             }
             catch (Exception ex)
             {
@@ -214,13 +229,14 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
             }
         }
 
-        public async void AssignIssue(string pIssueID, string pAssignee, bool pAddComment = true)
+        public void AssignIssue(string pIssueID, string pAssignee, bool pAddComment = true)
         {
             ensureAuthenticated();
 
             try
             {
-                var issue = await _ytIssues.GetIssue(pIssueID);
+                var mappedAssignee = applyUserMapping(pAssignee);
+                var issue = _ytIssues.GetIssue(pIssueID).Result;
                 if (issue == null)
                     throw new NullReferenceException(string.Format("Unable to find issue by ID {0}.", pIssueID));
 
@@ -228,57 +244,19 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
                 if (doesPropertyExist(issue, "Assignee"))
                     currentAssignee = getAssignee(issue).UserName;
 
-                if (!string.Equals(currentAssignee, pAssignee, StringComparison.InvariantCultureIgnoreCase))
+                if (!string.Equals(currentAssignee, mappedAssignee, StringComparison.InvariantCultureIgnoreCase))
                 {
-                    var comment = string.Format("Assigned by PlasticSCM to user '{0}'.", pAssignee);
-                    await _ytIssues.ApplyCommand(pIssueID, string.Format("for {0}", pAssignee),
-                        pAddComment ? comment : string.Empty);
+                    var comment = $"Assigned by PlasticSCM to user '{mappedAssignee}'.";
+                    Task.Run
+                    (() => _ytIssues.ApplyCommand
+                    (pIssueID, string.Format("for {0}", mappedAssignee),
+                        pAddComment ? comment : string.Empty));
                 }
             }
             catch (Exception ex)
             {
                 _log.Error(string.Format("Unable to assign issue '{0}' to '{1}'.", pIssueID, pAssignee), ex);
                 throw new ApplicationException("Error occurred marking issue assigned.", ex);
-            }
-        }
-
-        #region Support Methods
-
-
-        private static Connection getServiceConnection(YouTrackExtensionConfigFacade pConfig)
-        {
-            var password = pConfig.GetDecryptedPassword();
-            var serverUrl = pConfig.HostUri.ToString();
-            return password.StartsWith("perm:")
-                ? (Connection)new BearerTokenConnection(serverUrl, password)
-                : new UsernamePasswordConnection(serverUrl, pConfig.UserId, password);
-        }
-
-        /// <summary>
-        /// This method will take the mapping setting and allow mapping different authentication methods' usernames to issue username. 
-        /// </summary>
-        /// <param name="pAssignee">The username specified for configuration value UserId</param>
-        /// <returns>the username to pass to youtrack to filter for issues assignee.</returns>
-        private string applyUserMapping(string pAssignee)
-        {
-            if (string.IsNullOrEmpty(pAssignee))
-                return string.Empty;
-
-            var youtrackAuthUsername = pAssignee;
-
-            try
-            {
-                var usernameMappings = _config.UsernameMapping.Split(';')
-                    .Select(pMapping => new KeyValuePair<string, string>(pMapping.Split(':')[0], pMapping.Split(':')[1]))
-                    .ToDictionary(p => p.Key, p => p.Value);
-                var youtrackIssueUsername = usernameMappings[youtrackAuthUsername];
-
-                return string.IsNullOrEmpty(youtrackIssueUsername) ? youtrackAuthUsername : youtrackIssueUsername;
-            }
-            catch (Exception e)
-            {
-                _log.Error("Error occurred trying to apply user mappings.", e);
-                return youtrackAuthUsername;
             }
         }
 
@@ -290,7 +268,7 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
             var result = new PlasticTask();
             result.Id = pIssue.Id;
             var title = pIssue.Summary;
-            var state = pIssue.GetField("state").Name;
+            var state = pIssue.GetField("state").AsCollection().First();
             result.Title = getBranchTitle(state, title);
             result.Status = state;
 
@@ -310,19 +288,58 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
             return result;
         }
 
+        #region Support Methods
+
+        /// <summary>
+        /// This method will take the mapping setting and allow mapping different authentication methods' usernames to issue username. 
+        /// </summary>
+        /// <param name="pAssignee">The username specified for configuration value UserId</param>
+        /// <returns>the username to pass to youtrack to filter for issues assignee.</returns>
+        private string applyUserMapping(string pAssignee)
+        {
+            if (string.IsNullOrEmpty(pAssignee))
+                return string.Empty;
+
+            if (string.IsNullOrEmpty(_config.UsernameMapping))
+                return pAssignee;
+
+            return getValueFromKVPStringList(_config.UsernameMapping, pAssignee);
+        }
+
+        private static Dictionary<string, string> convertStringListToKVPDictionary(string pCSVList)
+        {
+            var dictionary = pCSVList.Split(';')
+                .Select
+                (pMapping =>
+                {
+                    var strings = pMapping.Split(':');
+                    return new KeyValuePair<string, string>
+                    (strings[0], strings.Length > 2
+                        ? pMapping.Replace($"{strings[0]}:", string.Empty) //accounts for commands like "state:in progress"
+                        : strings[1]); //works for verbs in statemachine workflows
+                })
+                .ToDictionary(p => p.Key, p => p.Value);
+            return dictionary;
+        }
+
+        private static bool doesPropertyExist(Issue pIssue, string pPropertyName)
+        {
+            return pIssue.GetField(pPropertyName) != null;
+        }
+
+        private void ensureAuthenticated()
+        {
+            Authenticate();
+        }
+
         private static Assignee getAssignee(Issue pIssue)
         {
             var field = pIssue.GetField("Assignee");
             if (field == null)
                 throw new NullReferenceException("Ticket doesn't contain field 'Assignee' as expected.");
 
-            var assignees = (List<Assignee>)field.Value;
+            var assignees = (List<Assignee>) field.Value;
             return assignees[0];
-        }
-
-        private void ensureAuthenticated()
-        {
-            Authenticate();
         }
 
         private string getBranchTitle(string pIssueState, string pIssueSummary)
@@ -342,6 +359,37 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
                 : string.Format("{0} [{1}]", pIssueSummary, pIssueState);
         }
 
+
+        private static Connection getServiceConnection(YouTrackExtensionConfigFacade pConfig)
+        {
+            var password = pConfig.GetDecryptedPassword();
+            var serverUrl = pConfig.HostUri.ToString();
+            //TODO: must be an api (starts with "perm:")
+            return new BearerTokenConnection(serverUrl, password);
+        }
+
+        private string getValueFromKVPStringList(string pCSVList, string pKeyName)
+        {
+            try
+            {
+                var dictionary = convertStringListToKVPDictionary(pCSVList);
+                var value = dictionary[pKeyName];
+
+                return string.IsNullOrEmpty(value) ? pKeyName : value;
+            }
+            catch (Exception e)
+            {
+                _log.Error("Error occurred trying to apply user mappings.", e);
+                return pKeyName;
+            }
+        }
+
+        private static void throwErrorIfRequiredStringSettingIsMissing(string pSettingValue, string pSettingName)
+        {
+            if (string.IsNullOrWhiteSpace(pSettingValue))
+                throw new ApplicationException(string.Format("YouTrack setting '{0}' cannot be null or empty!", pSettingName));
+        }
+
         private static void validateConfig(IYouTrackExtensionConfigFacade pConfig)
         {
             if (pConfig.HostUri.Host.Equals("issues.domain.com", StringComparison.InvariantCultureIgnoreCase))
@@ -355,19 +403,7 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
                 throw new ApplicationException(string.Format("YouTrack setting '{0}' cannot be null or empty!", ConfigParameterNames.HostUri));
 
             throwErrorIfRequiredStringSettingIsMissing(pConfig.BranchPrefix, ConfigParameterNames.BranchPrefix);
-            throwErrorIfRequiredStringSettingIsMissing(pConfig.UserId, ConfigParameterNames.UserId);
-            throwErrorIfRequiredStringSettingIsMissing(pConfig.Password, ConfigParameterNames.Password);
-        }
-
-        private static void throwErrorIfRequiredStringSettingIsMissing(string pSettingValue, string pSettingName)
-        {
-            if (string.IsNullOrWhiteSpace(pSettingValue))
-                throw new ApplicationException(string.Format("YouTrack setting '{0}' cannot be null or empty!", pSettingName));
-        }
-
-        private static bool doesPropertyExist(Issue pIssue, string pPropertyName)
-        {
-            return pIssue.GetField(pPropertyName) != null;
+            throwErrorIfRequiredStringSettingIsMissing(pConfig.AuthToken, ConfigParameterNames.AuthToken);
         }
 
         #endregion
