@@ -42,7 +42,7 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
 
         #endregion
 
-        public PlasticTask GetPlasticTask(string pTaskID)
+        public async Task<PlasticTask> GetPlasticTask(string pTaskID)
         {
             _log.DebugFormat("YouTrackService: GetPlasticTask {0}", pTaskID);
 
@@ -52,7 +52,7 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
 
             try
             {
-                var issue = _ytIssues.GetIssue(pTaskID).Result;
+                var issue = await _ytIssues.GetIssue(pTaskID);
                 if (issue != null)
                     return hydratePlasticTaskFromIssue(issue);
             }
@@ -64,13 +64,13 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
             return new PlasticTask {Id = pTaskID, CanBeLinked = false};
         }
 
-        public IEnumerable<PlasticTask> GetPlasticTasks(string[] pTaskIDs)
+        public async Task<IEnumerable<PlasticTask>> GetPlasticTasks(string[] pTaskIDs)
         {
             ensureAuthenticated();
 
             _log.DebugFormat("YouTrackService: GetPlasticTasks - {0} task ID(s) supplied", pTaskIDs.Length);
 
-            var result = pTaskIDs.Select(pTaskID => GetPlasticTask(pTaskID)).AsParallel();
+            var result = await Task.WhenAll(pTaskIDs.Select(pTaskID => GetPlasticTask(pTaskID)).AsParallel());
             return result;
         }
 
@@ -221,7 +221,7 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
             try
             {
                 var completeComment = FormatComment(pRepositoryServer, pRepository, pWebGui, pBranch, pChangeSetId, pComment, pChangeSetGuid);
-                _ytIssues.ApplyCommand(pIssueID, "comment", completeComment, false).Wait(1000);
+                await _ytIssues.ApplyCommand(pIssueID, "comment", completeComment, false);
             }
             catch (Exception ex)
             {

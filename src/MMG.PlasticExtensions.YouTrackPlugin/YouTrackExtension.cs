@@ -86,8 +86,9 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
                 YouTrackService.VerifyConfiguration(config);
                 return true;
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                _log.WarnFormat("Unable to test connection to YouTrack: {0}", ex);
                 return false;
             }
         }
@@ -115,8 +116,9 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
             var taskBranchName = getBranchName(pFullBranchName);
             if (!taskBranchName.StartsWith(_config.BranchPrefix))
                 return null;
-
-            return _ytService.GetPlasticTask(getTicketIDFromTaskBranchName(taskBranchName));
+            PlasticTask result = null;
+            Task.Run( ()=> result =  _ytService.GetPlasticTask(getTicketIDFromTaskBranchName(taskBranchName)).Result).Wait(1000);
+            return result;
         }
 
         public Dictionary<string, PlasticTask> GetTasksForBranches(List<string> pFullBranchNames)
@@ -129,7 +131,8 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
                     FullBranchName = x,
                     Task = _ytService.GetPlasticTask(getTicketIDFromTaskBranchName(getBranchName(x)))
                 }).AsParallel();
-            var result = data.ToDictionary(x => x.FullBranchName, x => x.Task);
+            Dictionary<string, PlasticTask> result = null;
+            Task.Run(()=> result = data.ToDictionary(x => x.FullBranchName, x => x.Task.Result)).Wait(1000);
             return result;
         }
 
@@ -142,7 +145,8 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
 
         public List<PlasticTask> LoadTasks(List<string> pTaskIds)
         {
-            var plasticTasks = _ytService.GetPlasticTasks(pTaskIds.ToArray()).ToList();
+            List<PlasticTask> plasticTasks = null;
+            Task.Run(()=> plasticTasks = _ytService.GetPlasticTasks(pTaskIds.ToArray()).Result.ToList()).Wait(1000);
             _log.DebugFormat("YouTrackExtension: Loaded {0} YouTrack plastic tasks.", plasticTasks.Count);
             return plasticTasks;
         }
