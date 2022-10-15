@@ -64,8 +64,8 @@
     <Reference Include="Microsoft.Win32.Primitives, Version=4.0.2.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <HintPath>..\..\lib\Microsoft.Win32.Primitives.4.3.0\lib\net46\Microsoft.Win32.Primitives.dll</HintPath>
     </Reference>
-    <Reference Include="Newtonsoft.Json, Version=11.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
-      <HintPath>..\..\lib\Newtonsoft.Json.11.0.2\lib\net45\Newtonsoft.Json.dll</HintPath>
+    <Reference Include="Newtonsoft.Json, Version=12.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\..\lib\Newtonsoft.Json.12.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.AppContext, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
@@ -127,8 +127,8 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\lib\pscm\utils.dll</HintPath>
     </Reference>
-    <Reference Include="YouTrackSharp, Version=2019.2.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\lib\YouTrackSharp.2019.2.0\lib\netstandard2.0\YouTrackSharp.dll</HintPath>
+    <Reference Include="YouTrackSharp, Version=2021.3.6.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\lib\YouTrackSharp.2021.3.6\lib\net461\YouTrackSharp.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>

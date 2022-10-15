@@ -109,10 +109,9 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
         public YoutrackUser GetAuthenticatedUser()
         {
             ensureAuthenticated();
-            var http = _ytConnection.GetAuthenticatedHttpClient().Result;
-            var rsp = http.GetStringAsync("api/admin/users/me?fields=id,login,name,email").Result;
-            dynamic rspObj = JObject.Parse(rsp);
-            var user = new YoutrackUser(rspObj.login.ToString(), rspObj.name.ToString(), rspObj.email.ToString());
+            var http = _ytConnection.GetAuthenticatedApiClient().Result;
+            var rsp = http.UsersMeAsync("id,login,name,email").Result;
+            var user = new YoutrackUser(rsp.Login, rsp.FullName, rsp.Email);
             return user;
         }
 
