@@ -201,7 +201,7 @@ namespace MMG.PlasticExtensions.Tests
         [Test]
         public void TestCommentFormatting()
         {
-            var host = "www.plasticscm.com/orgs/devensoft/";
+            var host = "www.plasticscm.com/orgs/acme/";
             var webGui = new Uri($"https://{host}");
             var repository = "Test.Repository";
             var branch = "/yt_TEST-60";
