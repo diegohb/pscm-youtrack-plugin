@@ -4,6 +4,8 @@
         <name>MMG.PlasticExtensions.YouTrackPlugin</name>
     </assembly>
     <members>
+        <!-- Badly formed XML comment ignored for member "M:MMG.PlasticExtensions.YouTrackPlugin.AsyncHelpers.RunSync(System.Func{System.Threading.Tasks.Task})" -->
+        <!-- Badly formed XML comment ignored for member "M:MMG.PlasticExtensions.YouTrackPlugin.AsyncHelpers.RunSync``1(System.Func{System.Threading.Tasks.Task{``0}})" -->
         <member name="P:MMG.PlasticExtensions.YouTrackPlugin.IYouTrackExtensionConfigFacade.IgnoreIssueStateForBranchTitle">
             <summary>
             Issue state(s) to not display in branch title when ShowIssueStateInBranchTitle = true.

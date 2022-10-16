@@ -26,7 +26,7 @@ namespace MMG.PlasticExtensions.Tests
         {
             var svc = new YouTrackService(getTestConfig());
             svc.Authenticate();
-            var user = svc.GetAuthenticatedUser();
+            var user = AsyncHelpers.RunSync(() => svc.GetAuthenticatedUser());
             Assert.IsNotNull(user);
 
             var expectedValue = ConfigurationManager.AppSettings["test.authUserEmail"];
@@ -40,7 +40,7 @@ namespace MMG.PlasticExtensions.Tests
         {
             var svc = new YouTrackService(getTestConfig());
             var expectedIssueKey = ConfigurationManager.AppSettings["test.issueKey"];
-            var actualTask = svc.GetPlasticTask(expectedIssueKey);
+            var actualTask = AsyncHelpers.RunSync(()=> svc.GetPlasticTask(expectedIssueKey));
             Assert.IsNotNull(actualTask);
             Assert.AreEqual(expectedIssueKey, actualTask.Id);
             Assert.IsTrue(actualTask.CanBeLinked);
@@ -81,7 +81,7 @@ namespace MMG.PlasticExtensions.Tests
         {
             var config = getTestConfig();
             var svc = new YouTrackService(config);
-            var issues = svc.GetUnresolvedPlasticTasks().ToList();
+            var issues = AsyncHelpers.RunSync(() => svc.GetUnresolvedPlasticTasks()).ToList();
             CollectionAssert.IsNotEmpty(issues);
             var assigneeName = ConfigurationManager.AppSettings["test.fieldValue"];
             Assert.IsTrue(issues.Any(pIssue => pIssue.Owner.Equals(assigneeName, StringComparison.InvariantCultureIgnoreCase)));
@@ -94,7 +94,7 @@ namespace MMG.PlasticExtensions.Tests
             var config = getTestConfig();
             var svc = new YouTrackService(config);
             var assigneeName = ConfigurationManager.AppSettings["test.fieldValue"];
-            var issues = svc.GetUnresolvedPlasticTasks(assigneeName).ToList();
+            var issues = AsyncHelpers.RunSync(() => svc.GetUnresolvedPlasticTasks(assigneeName)).ToList();
             CollectionAssert.IsNotEmpty(issues);
             Assert.IsTrue(issues.All(pIssue => pIssue.Owner.Equals(assigneeName, StringComparison.InvariantCultureIgnoreCase)));
         }

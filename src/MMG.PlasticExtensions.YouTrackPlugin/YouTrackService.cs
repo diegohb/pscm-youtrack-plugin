@@ -42,7 +42,7 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
 
         #endregion
 
-        public PlasticTask GetPlasticTask(string pTaskID)
+        public async Task<PlasticTask> GetPlasticTask(string pTaskID)
         {
             _log.DebugFormat("YouTrackService: GetPlasticTask {0}", pTaskID);
 
@@ -52,32 +52,33 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
 
             try
             {
-                if (_ytIssues.Exists(pTaskID).Result)
+                if (await _ytIssues.Exists(pTaskID))
                 {
-                    var issue = _ytIssues.GetIssue(pTaskID).Result;
+                    var issue = await _ytIssues.GetIssue(pTaskID);
                     if (issue != null)
                         return hydratePlasticTaskFromIssue(issue);
                 }
             }
             catch (Exception ex)
             {
-                _log.Warn(string.Format("YouTrackService: Failed to fetch youtrack issue '{0}' due to error.", pTaskID), ex);
+                _log.Warn($"YouTrackService: Failed to fetch youtrack issue '{pTaskID}' due to error.", ex);
             }
 
             return new PlasticTask {Id = pTaskID, CanBeLinked = false};
         }
 
-        public IEnumerable<PlasticTask> GetPlasticTasks(string[] pTaskIDs)
+        public async Task<IEnumerable<PlasticTask>> GetPlasticTasks(string[] pTaskIDs)
         {
             ensureAuthenticated();
 
             _log.DebugFormat("YouTrackService: GetPlasticTasks - {0} task ID(s) supplied", pTaskIDs.Length);
 
-            var result = pTaskIDs.Select(pTaskID => GetPlasticTask(pTaskID)).AsParallel();
-            return result;
+            var tasks = pTaskIDs.Select(GetPlasticTask);
+            var results = await Task.WhenAll(tasks);
+            return results;
         }
 
-        public IEnumerable<PlasticTask> GetUnresolvedPlasticTasks(string pAssignee = "", int pMaxCount = 500)
+        public async Task<IEnumerable<PlasticTask>> GetUnresolvedPlasticTasks(string pAssignee = "", int pMaxCount = 500)
         {
             ensureAuthenticated();
 
@@ -88,7 +89,7 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
                 ("{0}{1}", string.IsNullOrWhiteSpace(assignee) ? string.Empty : string.Format("for: {0} ", assignee),
                     _config.CreateBranchIssueQuery);
 
-                var issues = _ytIssues.GetIssues(searchString, take: pMaxCount).Result.ToList();
+                var issues = await _ytIssues.GetIssues(searchString, take: pMaxCount);
                 if (!issues.Any())
                     return new List<PlasticTask>();
 
@@ -109,11 +110,11 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
                 : new Uri(_config.HostUri, string.Format("/issue/{0}", pIssueID)).ToString();
         }
 
-        public YoutrackUser GetAuthenticatedUser()
+        public async Task<YoutrackUser> GetAuthenticatedUser()
         {
             ensureAuthenticated();
-            var http = _ytConnection.GetAuthenticatedApiClient().Result;
-            var rsp = http.UsersMeAsync("id,login,name,email").Result;
+            var http = await _ytConnection.GetAuthenticatedApiClient();
+            var rsp = await http.UsersMeAsync("id,login,name,email");
             var user = new YoutrackUser(rsp.Login, rsp.FullName, rsp.Email);
             return user;
         }
