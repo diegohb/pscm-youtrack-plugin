@@ -172,7 +172,7 @@ namespace MMG.PlasticExtensions.Tests
             return parameters.ToArray();
         }
 
-        [Test]
+        [Test, Ignore]
         public void HydratePlasticTask_Base()
         {
             var facade = GetConfigFacade("http://test.com");
