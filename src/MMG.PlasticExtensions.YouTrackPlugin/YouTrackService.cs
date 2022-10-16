@@ -35,7 +35,7 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
         public YouTrackService(IYouTrackExtensionConfigFacade pConfig)
         {
             _config = pConfig;
-            _ytConnection = getServiceConnection((YouTrackExtensionConfigFacade) pConfig);
+            _ytConnection = getServiceConnection(pConfig);
             _ytIssues = _ytConnection.CreateIssuesService();
             _log.Debug("YouTrackService: ctor called");
         }
@@ -358,7 +358,7 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
         }
 
 
-        private static Connection getServiceConnection(YouTrackExtensionConfigFacade pConfig)
+        private static Connection getServiceConnection(IYouTrackExtensionConfigFacade pConfig)
         {
             var password = pConfig.GetDecryptedPassword();
             var serverUrl = pConfig.HostUri.ToString();

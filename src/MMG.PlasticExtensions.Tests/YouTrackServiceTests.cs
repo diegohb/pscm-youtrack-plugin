@@ -21,7 +21,7 @@ namespace MMG.PlasticExtensions.Tests
     public class YouTrackServiceTests
     {
         [Test]
-        [Ignore("These aren't real unit tests and must be run manually after configuring app.config values.")]
+        [Category("Integration")]
         public void GetAuthenticatedUser_ShouldReturnUserWithEmail()
         {
             var svc = new YouTrackService(getTestConfig());
@@ -35,7 +35,7 @@ namespace MMG.PlasticExtensions.Tests
         }
 
         [Test]
-        [Ignore("These aren't real unit tests and must be run manually after configuring app.config values.")]
+        [Category("Integration")]
         public void GetPlasticTask_ShouldReturnLinkedTask()
         {
             var svc = new YouTrackService(getTestConfig());
@@ -47,7 +47,7 @@ namespace MMG.PlasticExtensions.Tests
         }
 
         [Test]
-        [Ignore("These aren't real unit tests and must be run manually after configuring app.config values.")]
+        [Category("Integration")]
         public void BeginWorkOnIssue_ShouldUpdateTicketToInProgress()
         {
             var config = getTestConfig();
@@ -60,7 +60,7 @@ namespace MMG.PlasticExtensions.Tests
         }
 
         [Test]
-        [Ignore("These aren't real unit tests and must be run manually after configuring app.config values.")]
+        [Category("Integration")]
         public void AssignIssue_ShouldUpdateTicketToAssigned()
         {
             var config = getTestConfig();
@@ -73,7 +73,7 @@ namespace MMG.PlasticExtensions.Tests
         }
 
         [Test]
-        [Ignore("These aren't real unit tests and must be run manually after configuring app.config values.")]
+        [Category("Integration")]
         public void GetUnresolvedIssues_ShouldReturnTicketsUnresolved()
         {
             var config = getTestConfig();
@@ -85,7 +85,7 @@ namespace MMG.PlasticExtensions.Tests
         }
 
         [Test]
-        [Ignore("These aren't real unit tests and must be run manually after configuring app.config values.")]
+        [Category("Integration")]
         public void GetUnresolvedIssuesByAssignee_ShouldReturnTicketsForAssignee()
         {
             var config = getTestConfig();
@@ -184,7 +184,7 @@ namespace MMG.PlasticExtensions.Tests
             issue.Id = "ABC1234";
             issue.Summary = "Issue Summary";
             issue.State = "In Progress";
-            issue.AssigneeName = "jdoe";
+            issue.Assignee = new List<Assignee>(new[] { new Assignee() { UserName = "jdoe", FullName = "John Doe" } });
             issue.Description = "Issue Description";
 
             var task = sut.hydratePlasticTaskFromIssue(issue);
