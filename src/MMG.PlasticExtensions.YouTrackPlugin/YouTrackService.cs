@@ -148,7 +148,7 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
             return "{color:darkgreen}*PSCM - BRANCH CREATED*{color}";
         }
 
-        public async Task EnsureIssueInProgress(string pIssueID)
+        public void EnsureIssueInProgress(string pIssueID)
         {
             ensureAuthenticated();
 
@@ -163,7 +163,7 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
                 if (stateTransitions.ContainsKey(issueCurrentState))
                 {
                     var transitionCommand = stateTransitions[issueCurrentState];
-                    await _ytIssues.ApplyCommand(pIssueID, transitionCommand, GetBranchCreationMessage());
+                    _ytIssues.ApplyCommand(pIssueID, transitionCommand, GetBranchCreationMessage()).RunSynchronously();
                 }
                 else
                     _log.InfoFormat("Issue '{0}' already marked in-progress.", pIssueID);
@@ -235,7 +235,7 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
             try
             {
                 var mappedAssignee = applyUserMapping(pAssignee);
-                var issue = await _ytIssues.GetIssue(pIssueID);
+                var issue = _ytIssues.GetIssue(pIssueID).Result;
                 if (issue == null)
                     throw new NullReferenceException(string.Format("Unable to find issue by ID {0}.", pIssueID));
 
@@ -246,9 +246,7 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
                 if (!string.Equals(currentAssignee, mappedAssignee, StringComparison.InvariantCultureIgnoreCase))
                 {
                     var comment = $"Assigned by PlasticSCM to user '{mappedAssignee}'.";
-                    await _ytIssues.ApplyCommand
-                    (pIssueID, string.Format("for {0}", mappedAssignee),
-                        pAddComment ? comment : string.Empty);
+                    _ytIssues.ApplyCommand(pIssueID, string.Format("for {0}", mappedAssignee), pAddComment ? comment : string.Empty).RunSynchronously();
                 }
             }
             catch (Exception ex)
