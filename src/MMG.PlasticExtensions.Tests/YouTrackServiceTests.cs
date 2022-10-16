@@ -56,7 +56,7 @@ namespace MMG.PlasticExtensions.Tests
             Assert.IsNotNull(svc.GetAuthenticatedUser());
 
             var testIssueID = ConfigurationManager.AppSettings["test.issueKey"];
-            svc.EnsureIssueInProgress(testIssueID);
+            Assert.DoesNotThrow(() => svc.EnsureIssueInProgress(testIssueID));
         }
 
         [Test]
@@ -69,7 +69,10 @@ namespace MMG.PlasticExtensions.Tests
             Assert.IsNotNull(svc.GetAuthenticatedUser());
 
             var testIssueID = ConfigurationManager.AppSettings["test.issueKey"];
-            svc.AssignIssue(testIssueID, ConfigurationManager.AppSettings["username"]);
+            Assert.DoesNotThrow( () =>
+            {
+                svc.AssignIssue(testIssueID, ConfigurationManager.AppSettings["username"]).Wait(1000);
+            });
         }
 
         [Test]
@@ -198,7 +201,7 @@ namespace MMG.PlasticExtensions.Tests
         [Test]
         public void TestCommentFormatting()
         {
-            var host = "acme.website.int:5656/";
+            var host = "www.plasticscm.com/orgs/devensoft/";
             var webGui = new Uri($"https://{host}");
             var repository = "Test.Repository";
             var branch = "/yt_TEST-60";
@@ -209,7 +212,7 @@ namespace MMG.PlasticExtensions.Tests
 
             var generatedComment = YouTrackService.FormatComment(host, repository, webGui, branch, changeSetId, comment, guid);
 
-            var mdComment = $"{{color:darkgreen}}*PSCM - CODE COMMIT #{changeSetId}*{{color}}";
+            var mdComment = $"*PSCM - CODE COMMIT #{changeSetId}*";
 
             var changeSetUriBuilder = new UriBuilder(webGui);
             if (string.IsNullOrEmpty(changeSetUriBuilder.Scheme) ||
@@ -217,7 +220,7 @@ namespace MMG.PlasticExtensions.Tests
                  !changeSetUriBuilder.Scheme.Equals("http", StringComparison.CurrentCultureIgnoreCase)))
                 changeSetUriBuilder.Scheme = "http";
 
-            changeSetUriBuilder.Path = $"webui/repos/{repository}/diff/changeset/{guid}";
+            changeSetUriBuilder.Path += $"repos/{repository}/diff/changeset/{guid}";
 
             var hostName = host.StartsWith("localhost", StringComparison.CurrentCultureIgnoreCase) ||
                            host.StartsWith("127.0.0.", StringComparison.CurrentCultureIgnoreCase)
@@ -229,7 +232,7 @@ namespace MMG.PlasticExtensions.Tests
             var commentBuilder = new StringBuilder();
             commentBuilder.Append($"{comment}{nl}{nl}");
             commentBuilder.Append($"{tildes}{nl}");
-            commentBuilder.Append($"[{mdComment}|{changeSetUriBuilder}]{nl}");
+            commentBuilder.Append($"[{mdComment}]({changeSetUriBuilder}){nl}");
             //commentBuilder.Append($"{{monospace}}");
             commentBuilder.Append($"{guid} @ {branch} @ {repository} @ {hostName}");
             //commentBuilder.Append($"{{monospace}}");
@@ -242,7 +245,7 @@ namespace MMG.PlasticExtensions.Tests
         [Test]
         public void TestMarkTaskAsOpen_Comment()
         {
-            var msg = "{color:darkgreen}*PSCM - BRANCH CREATED*{color}";
+            var msg = "*PSCM - BRANCH CREATED*";
             Assert.AreEqual(msg, YouTrackService.GetBranchCreationMessage());
         }
 

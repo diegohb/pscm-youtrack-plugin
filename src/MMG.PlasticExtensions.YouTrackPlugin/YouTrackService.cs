@@ -145,7 +145,7 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
 
         public static string GetBranchCreationMessage()
         {
-            return "{color:darkgreen}*PSCM - BRANCH CREATED*{color}";
+            return "*PSCM - BRANCH CREATED*";
         }
 
         public void EnsureIssueInProgress(string pIssueID)
@@ -180,7 +180,7 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
             long pChangeSetId, string pComment, Guid pChangeSetGuid)
         {
             var nl = Environment.NewLine;
-            var mdComment = $"{{color:darkgreen}}*PSCM - CODE COMMIT #{pChangeSetId}*{{color}}";
+            var mdComment = $"*PSCM - CODE COMMIT #{pChangeSetId}*";
 
             var changeSetUriBuilder = new UriBuilder(pWebGui);
             if (string.IsNullOrEmpty(changeSetUriBuilder.Scheme) ||
@@ -188,7 +188,7 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
                  !changeSetUriBuilder.Scheme.Equals("http", StringComparison.CurrentCultureIgnoreCase)))
                 changeSetUriBuilder.Scheme = "http";
 
-            changeSetUriBuilder.Path = $"webui/repos/{pRepository}/diff/changeset/{pChangeSetGuid}";
+            changeSetUriBuilder.Path += $"repos/{pRepository}/diff/changeset/{pChangeSetGuid}";
 
             var hostName = pHost.StartsWith("localhost", StringComparison.CurrentCultureIgnoreCase) ||
                            pHost.StartsWith("127.0.0.", StringComparison.CurrentCultureIgnoreCase)
@@ -200,7 +200,7 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
             var commentBuilder = new StringBuilder();
             commentBuilder.Append($"{pComment}{nl}{nl}");
             commentBuilder.Append($"{tildes}{nl}");
-            commentBuilder.Append($"[{mdComment}|{changeSetUriBuilder}]{nl}");
+            commentBuilder.Append($"[{mdComment}]({changeSetUriBuilder}){nl}");
             //commentBuilder.Append($"{{monospace}}");
             commentBuilder.Append($"{pChangeSetGuid} @ {pBranch} @ {pRepository} @ {hostName}");
             //commentBuilder.Append($"{{monospace}}");
@@ -246,7 +246,8 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
                 if (!string.Equals(currentAssignee, mappedAssignee, StringComparison.InvariantCultureIgnoreCase))
                 {
                     var comment = $"Assigned by PlasticSCM to user '{mappedAssignee}'.";
-                    _ytIssues.ApplyCommand(pIssueID, $"for {mappedAssignee}", pAddComment ? comment : string.Empty).RunSynchronously();
+                    _ytIssues.ApplyCommand(pIssueID, $"for {mappedAssignee}", pAddComment ? comment : string.Empty)
+                        .Wait(1000);
                 }
             }
             catch (Exception ex)
