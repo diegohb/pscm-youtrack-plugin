@@ -154,7 +154,7 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
 
             try
             {
-                var issue = await _ytIssues.GetIssue(pIssueID);
+                var issue = _ytIssues.GetIssue(pIssueID).Result;
                 if (issue == null)
                     throw new NullReferenceException(string.Format("Unable to find issue by ID {0}.", pIssueID));
                 var issueCurrentState = issue.GetField("State").AsString();
