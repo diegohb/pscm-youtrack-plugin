@@ -52,9 +52,12 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
 
             try
             {
-                var issue = _ytIssues.GetIssue(pTaskID).Result;
-                if (issue != null)
-                    return hydratePlasticTaskFromIssue(issue);
+                if (_ytIssues.Exists(pTaskID).Result)
+                {
+                    var issue = _ytIssues.GetIssue(pTaskID).Result;
+                    if (issue != null)
+                        return hydratePlasticTaskFromIssue(issue);
+                }
             }
             catch (Exception ex)
             {
