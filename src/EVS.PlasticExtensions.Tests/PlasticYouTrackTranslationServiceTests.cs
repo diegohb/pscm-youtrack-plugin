@@ -1,13 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
-using MMG.PlasticExtensions.YouTrackPlugin;
-using MMG.PlasticExtensions.YouTrackPlugin.Core.Services;
-using MMG.PlasticExtensions.YouTrackPlugin.Core.Services.Impl;
+using EVS.PlasticExtensions.YouTrackPlugin.Core.Services;
+using EVS.PlasticExtensions.YouTrackPlugin.Core.Services.Impl;
 using Moq;
 using NUnit.Framework;
 using YouTrackSharp.Issues;
 
-namespace MMG.PlasticExtensions.Tests
+namespace EVS.PlasticExtensions.Tests
 {
     [TestFixture]
     public class PlasticYouTrackTranslationServiceTests

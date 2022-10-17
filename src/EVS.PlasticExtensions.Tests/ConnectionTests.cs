@@ -4,14 +4,13 @@
 // Modified By: Diego Bustamante (dbustamante)
 // *************************************************
 
+using System.Configuration;
 using System.Threading.Tasks;
+using NUnit.Framework;
+using YouTrackSharp;
 
-namespace MMG.PlasticExtensions.Tests
+namespace EVS.PlasticExtensions.Tests
 {
-    using System.Configuration;
-    using NUnit.Framework;
-    using YouTrackSharp;
-
     [TestFixture]
     public class ConnectionTests
     {

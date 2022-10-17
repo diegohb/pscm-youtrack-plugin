@@ -1,12 +1,10 @@
-﻿using MMG.PlasticExtensions.YouTrackPlugin.Core.Services.Impl;
-using MMG.PlasticExtensions.YouTrackPlugin.Infrastructure;
+﻿using Codice.Client.IssueTracker;
+using EVS.PlasticExtensions.YouTrackPlugin.Core.Services.Impl;
+using log4net;
 
-namespace MMG.PlasticExtensions.YouTrackPlugin
+namespace EVS.PlasticExtensions.YouTrackPlugin
 {
     #region
-
-    using Codice.Client.IssueTracker;
-    using log4net;
 
     #endregion
 
@@ -50,7 +48,7 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
 
         public string GetIssueTrackerName()
         {
-            return "YouTrack Issues";
+            return "YouTrack";
         }
     }
 }

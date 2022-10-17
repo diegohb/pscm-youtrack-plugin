@@ -8,7 +8,7 @@ using System;
 using System.Collections.Generic;
 using Codice.Client.IssueTracker;
 
-namespace MMG.PlasticExtensions.YouTrackPlugin.Core.Services
+namespace EVS.PlasticExtensions.YouTrackPlugin.Core.Services
 {
     public interface IYouTrackExtensionConfigFacade
     {

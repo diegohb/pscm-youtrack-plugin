@@ -4,20 +4,19 @@
 // Modified By: Diego Bustamante (dbustamante)
 // *************************************************
 
-    using System;
-    using System.Collections.Generic;
-    using System.Configuration;
-    using System.Linq;
-    using System.Text;
-    using Codice.Client.IssueTracker;
-using MMG.PlasticExtensions.YouTrackPlugin;
-using MMG.PlasticExtensions.YouTrackPlugin.Core;
-using MMG.PlasticExtensions.YouTrackPlugin.Core.Models;
-using MMG.PlasticExtensions.YouTrackPlugin.Core.Services.Impl;
-using MMG.PlasticExtensions.YouTrackPlugin.Infrastructure;
-    using NUnit.Framework;
+using System;
+using System.Collections.Generic;
+using System.Configuration;
+using System.Linq;
+using System.Text;
+using Codice.Client.IssueTracker;
+using EVS.PlasticExtensions.YouTrackPlugin.Core;
+using EVS.PlasticExtensions.YouTrackPlugin.Core.Models;
+using EVS.PlasticExtensions.YouTrackPlugin.Core.Services.Impl;
+using EVS.PlasticExtensions.YouTrackPlugin.Infrastructure;
+using NUnit.Framework;
 
-namespace MMG.PlasticExtensions.Tests
+namespace EVS.PlasticExtensions.Tests
 {
     [TestFixture]
     public class YouTrackServiceTests
@@ -240,5 +239,5 @@ namespace MMG.PlasticExtensions.Tests
             var msg = $"[*PSCM - BRANCH CREATED*](https://plasticscm.com/orgs/acme/repos/{repoName}/diff/branch/{Uri.EscapeUriString(branch)}";
             Assert.AreEqual(msg, YouTrackService.GetBranchCreationMessage());
         }
-        }
     }
+}
