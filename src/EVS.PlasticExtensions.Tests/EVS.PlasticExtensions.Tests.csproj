@@ -68,7 +68,7 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\MMG.PlasticExtensions.YouTrackPlugin\MMG.PlasticExtensions.YouTrackPlugin.csproj">
+    <ProjectReference Include="..\EVS.PlasticExtensions.YouTrackPlugin\EVS.PlasticExtensions.YouTrackPlugin.csproj">
       <Project>{B9AD489C-9657-4B06-86CB-2D148F0DCB65}</Project>
       <Name>MMG.PlasticExtensions.YouTrackPlugin</Name>
     </ProjectReference>
