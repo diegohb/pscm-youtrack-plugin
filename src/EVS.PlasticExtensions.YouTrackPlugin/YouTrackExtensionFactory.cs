@@ -48,7 +48,7 @@ namespace EVS.PlasticExtensions.YouTrackPlugin
 
         public string GetIssueTrackerName()
         {
-            return "YouTrack Issues";
+            return "YouTrack";
         }
     }
 }

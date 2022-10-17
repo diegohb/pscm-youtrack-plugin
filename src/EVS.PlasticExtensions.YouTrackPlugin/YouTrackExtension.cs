@@ -66,7 +66,7 @@ namespace EVS.PlasticExtensions.YouTrackPlugin
 
         public string GetExtensionName()
         {
-            return "YouTrack";
+            return "Jetbrains YouTrack Integration";
         }
 
         public void Connect()
