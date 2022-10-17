@@ -188,7 +188,8 @@ namespace MMG.PlasticExtensions.Tests
             var facade = GetConfigFacade("http://test.com");
             facade.SetupGet(x => x.ShowIssueStateInBranchTitle).Returns(false);
             facade.SetupGet(x => x.IgnoreIssueStateForBranchTitle).Returns("");
-            var sut = new YouTrackService(facade.Object);
+            facade.SetupGet(x => x.UsernameMapping).Returns("john.doe:jdoe");
+            var sut = new PlasticYouTrackTranslationService(facade.Object);
 
             dynamic issue = new Issue();
             issue.Id = "ABC1234";
@@ -197,11 +198,11 @@ namespace MMG.PlasticExtensions.Tests
             issue.Assignee = new List<Assignee>(new[] { new Assignee() { UserName = "jdoe", FullName = "John Doe" } });
             issue.Description = "Issue Description";
 
-            var task = sut.hydratePlasticTaskFromIssue(issue);
+            var task = sut.GetPlasticTaskFromIssue(issue);
             Assert.AreEqual("ABC1234", task.Id);
             Assert.AreEqual("Issue Summary", task.Title);
             Assert.AreEqual("In Progress", task.Status);
-            Assert.AreEqual("jdoe", task.Owner);
+            Assert.AreEqual("john.doe", task.Owner);
             Assert.AreEqual("Issue Description", task.Description);
         }
 
