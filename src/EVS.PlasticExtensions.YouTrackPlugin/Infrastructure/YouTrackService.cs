@@ -6,16 +6,18 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using CacheManager.Core;
 using Codice.Client.IssueTracker;
+using EVS.PlasticExtensions.YouTrackPlugin.Core;
 using EVS.PlasticExtensions.YouTrackPlugin.Core.Models;
 using EVS.PlasticExtensions.YouTrackPlugin.Core.Services;
 using EVS.PlasticExtensions.YouTrackPlugin.Core.Services.Impl;
 using log4net;
 using YouTrackSharp;
-using YouTrackSharp.Generated;
 using YouTrackSharp.Issues;
 
 namespace EVS.PlasticExtensions.YouTrackPlugin.Infrastructure
@@ -27,6 +29,7 @@ namespace EVS.PlasticExtensions.YouTrackPlugin.Infrastructure
         private readonly IPlasticYouTrackTranslationService _translationService;
         private readonly Connection _ytConnection;
         private readonly IIssuesService _ytIssues;
+        private readonly ICacheManager<Issue> _cache;
 
         #region Ctors
 
@@ -37,6 +40,13 @@ namespace EVS.PlasticExtensions.YouTrackPlugin.Infrastructure
             _ytIssues = _ytConnection.CreateIssuesService();
             _log.Debug("YouTrackService: ctor called");
             _translationService = new PlasticYouTrackTranslationService(_config);
+
+            _cache = CacheFactory.Build<Issue>("YoutrackIssues", settings =>
+            {
+                var cacheLimitSeconds = Debugger.IsAttached ? 10 : 60;
+                settings.WithSystemRuntimeCacheHandle().WithExpiration(ExpirationMode.Absolute, TimeSpan.FromSeconds(cacheLimitSeconds));
+            });
+
         }
 
         #endregion
@@ -51,9 +61,12 @@ namespace EVS.PlasticExtensions.YouTrackPlugin.Infrastructure
             {
                 if (await _ytIssues.Exists(pTaskID))
                 {
-                    var issue = await _ytIssues.GetIssue(pTaskID);
+                    _cache.TryGetOrAdd(pTaskID,
+                        pKey => { return AsyncHelpers.RunSync(() => _ytIssues.GetIssue(pTaskID)); }, out var issue);
                     if (issue != null)
+                    {
                         return _translationService.GetPlasticTaskFromIssue(issue);
+                    }
                 }
             }
             catch (Exception ex)
@@ -91,8 +104,16 @@ namespace EVS.PlasticExtensions.YouTrackPlugin.Infrastructure
                 if (!issues.Any())
                     return new List<PlasticTask>();
 
-                var tasks = issues.Select(pIssue => _translationService.GetPlasticTaskFromIssue(pIssue));
-                return tasks.ToList();
+                var tasks = issues.Select(pIssue => _translationService.GetPlasticTaskFromIssue(pIssue)).ToList();
+
+                foreach (var issue in issues)
+                {
+                    if (_cache.Exists(issue.Id))
+                    {
+                        _cache.Put(issue.Id, issue);
+                    }
+                }
+                return tasks;
             }
             catch (Exception ex)
             {
@@ -133,6 +154,10 @@ namespace EVS.PlasticExtensions.YouTrackPlugin.Infrastructure
                 var issue = await _ytIssues.GetIssue(pIssueID);
                 if (issue == null)
                     throw new NullReferenceException($"Unable to find issue by ID {pIssueID}.");
+                if (_cache.Exists(pIssueID))
+                {
+                    _cache.Put(pIssueID, issue);
+                }
 
                 var transitionTarget = _translationService.GetMarkAsOpenTransitionFromIssue(issue);
 
@@ -141,7 +166,7 @@ namespace EVS.PlasticExtensions.YouTrackPlugin.Infrastructure
                 else
                     _log.InfoFormat("Issue '{0}' already marked in-progress.", pIssueID);
             }
-            catch (YouTrackErrorException ex)
+            catch (YouTrackSharp.Generated.YouTrackErrorException ex)
             {
                 _log.Error($"Unable to mark issue '{pIssueID}' in-progress.", ex);
                 throw new ApplicationException("Error occurred marking issue in-progress.", ex);
@@ -180,6 +205,10 @@ namespace EVS.PlasticExtensions.YouTrackPlugin.Infrastructure
                 var issue = await _ytIssues.GetIssue(pIssueID);
                 if (issue == null)
                     throw new NullReferenceException($"Unable to find issue by ID {pIssueID}.");
+                if (_cache.Exists(pIssueID))
+                {
+                    _cache.Put(pIssueID, issue);
+                }
 
                 var currentAssignee = _translationService.GetAssigneeFromYouTrackIssue(issue).Username;
 
