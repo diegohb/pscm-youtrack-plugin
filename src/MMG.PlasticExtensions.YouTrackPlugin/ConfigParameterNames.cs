@@ -8,6 +8,7 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
 {
     public static class ConfigParameterNames
     {
+        public const string UserId = "User ID";
         public const string BranchPrefix = "Branch Name Prefix";
         public const string AuthToken = "Auth Token";
         public const string HostUri = "Host";

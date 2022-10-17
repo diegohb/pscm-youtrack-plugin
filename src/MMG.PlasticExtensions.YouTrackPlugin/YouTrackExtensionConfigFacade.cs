@@ -25,6 +25,7 @@
         {
             _log.Debug("YouTrackExtensionConfigFacade: configured ctor called");
             Config = pConfig;
+            UserId = getValidParameterValue(Config, ConfigParameterNames.UserId, pDefaultValue: "");
             BranchPrefix = getValidParameterValue(Config, ConfigParameterNames.BranchPrefix, pDefaultValue: "yt_");
             HostUri = getValidParameterValue(Config, ConfigParameterNames.HostUri, pDefaultValue: new Uri("http://issues.domain.com"), converter: new UriTypeConverter());
             AuthToken = getValidParameterValue(Config, ConfigParameterNames.AuthToken, pDefaultValue: string.Empty);
@@ -33,14 +34,14 @@
             PostCommentsToTickets = getValidParameterValue(Config, ConfigParameterNames.PostCommentsToTickets, pDefaultValue: true);
             _ignoreIssueStateForBranchTitle = getValidParameterValue
                 (Config, ConfigParameterNames.ClosedIssueStates, pDefaultValue: "Completed");
-            _usernameMapping = getValidParameterValue(Config, ConfigParameterNames.UsernameMapping, pDefaultValue: "plasticusr:ytusername");
+            _usernameMapping = getValidParameterValue(Config, ConfigParameterNames.UsernameMapping, pDefaultValue: "plasticusr1:ytusername1;plasticusr2:ytusername2");
             WebGuiRootUrl = getValidParameterValue
                 (Config, ConfigParameterNames.WebGuiRootUrl, pDefaultValue: new Uri("http://plastic-gui.domain.com:7178/"), converter: new UriTypeConverter());
             WorkingMode = getValidParameterValue(Config, nameof(ExtensionWorkingMode), pDefaultValue: ExtensionWorkingMode.TaskOnBranch);
             _createBranchIssueQuery = getValidParameterValue
                 (Config, ConfigParameterNames.CreateBranchIssueQuery, pDefaultValue: "#unresolved order by: updated desc");
             _createBranchTransitions = getValidParameterValue
-                (Config, ConfigParameterNames.CreateBranchTransitions, pDefaultValue: "Submitted:Start Work;Planned:Start Work;Incomplete:Start Work");
+                (Config, ConfigParameterNames.CreateBranchTransitions, pDefaultValue: "Submitted:Plan;Planned:Start Work;Incomplete:Start Work");
             _log.Debug("YouTrackExtensionConfigFacade: configured ctor completed");
         }
 
@@ -75,6 +76,13 @@
         {
             return new List<IssueTrackerConfigurationParameter>
             {
+                new IssueTrackerConfigurationParameter
+                {
+                    Name = ConfigParameterNames.UserId,
+                    Value = UserId,
+                    Type = IssueTrackerConfigurationParameterType.User,
+                    IsGlobal = false
+                },
                 new IssueTrackerConfigurationParameter
                 {
                     Name = ConfigParameterNames.BranchPrefix,

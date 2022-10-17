@@ -116,6 +116,13 @@ namespace MMG.PlasticExtensions.Tests
             {
                 new IssueTrackerConfigurationParameter
                 {
+                    Name = ConfigParameterNames.UserId,
+                    Value = "dbustamante",
+                    Type = IssueTrackerConfigurationParameterType.User,
+                    IsGlobal = false
+                },
+                new IssueTrackerConfigurationParameter
+                {
                     Name = ConfigParameterNames.BranchPrefix,
                     Value = "yt",
                     Type = IssueTrackerConfigurationParameterType.BranchPrefix,
@@ -140,19 +147,19 @@ namespace MMG.PlasticExtensions.Tests
                     Name = ConfigParameterNames.ShowIssueStateInBranchTitle,
                     Value = "false",
                     Type = IssueTrackerConfigurationParameterType.Boolean,
-                    IsGlobal = false
+                    IsGlobal = true
                 },
                 new IssueTrackerConfigurationParameter
                 {
                     Name = ConfigParameterNames.ClosedIssueStates,
                     Value = "Completed,Approved",
                     Type = IssueTrackerConfigurationParameterType.Text,
-                    IsGlobal = false
+                    IsGlobal = true
                 },
                 new IssueTrackerConfigurationParameter
                 {
                     Name = ConfigParameterNames.UsernameMapping,
-                    Value = "pmanager:project-manager",
+                    Value = "pscmuser:ytuser",
                     Type = IssueTrackerConfigurationParameterType.Text,
                     IsGlobal = false
                 },

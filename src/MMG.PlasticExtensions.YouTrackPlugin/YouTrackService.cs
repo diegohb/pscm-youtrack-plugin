@@ -142,8 +142,8 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
             }
             catch (Exception e)
             {
-                _log.Warn(string.Format("Failed to verify configuration against host '{0}'.", pConfig.HostUri), e);
-                throw new ApplicationException(string.Format("Failed to authenticate against the host. Message: {0}", e.Message), e);
+                _log.Warn($"Failed to verify configuration against host '{pConfig.HostUri}'.", e);
+                throw new ApplicationException($"Failed to authenticate against the host. Message: {e.Message}", e);
             }
         }
 
@@ -152,22 +152,22 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
             return "*PSCM - BRANCH CREATED*";
         }
 
-        public void EnsureIssueInProgress(string pIssueID)
+        public async Task EnsureIssueInProgress(string pIssueID)
         {
             ensureAuthenticated();
 
             try
             {
-                var issue = _ytIssues.GetIssue(pIssueID).Result;
+                var issue = await _ytIssues.GetIssue(pIssueID);
                 if (issue == null)
-                    throw new NullReferenceException(string.Format("Unable to find issue by ID {0}.", pIssueID));
+                    throw new NullReferenceException($"Unable to find issue by ID {pIssueID}.");
                 var issueCurrentState = issue.GetField("State").AsString();
 
                 var stateTransitions = convertStringListToKVPDictionary(_config.CreateBranchTransitions);
                 if (stateTransitions.ContainsKey(issueCurrentState))
                 {
                     var transitionCommand = stateTransitions[issueCurrentState];
-                    _ytIssues.ApplyCommand(pIssueID, transitionCommand, GetBranchCreationMessage()).RunSynchronously();
+                    await _ytIssues.ApplyCommand(pIssueID, transitionCommand, GetBranchCreationMessage());
                 }
                 else
                     _log.InfoFormat("Issue '{0}' already marked in-progress.", pIssueID);
@@ -224,7 +224,7 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
             try
             {
                 var completeComment = FormatComment(pRepositoryServer, pRepository, pWebGui, pBranch, pChangeSetId, pComment, pChangeSetGuid);
-                _ytIssues.ApplyCommand(pIssueID, "comment", completeComment, false).Wait(1000);
+                await _ytIssues.AddCommentForIssue(pIssueID, completeComment);
             }
             catch (Exception ex)
             {
@@ -239,7 +239,7 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
             try
             {
                 var mappedAssignee = applyUserMapping(pAssignee);
-                var issue = _ytIssues.GetIssue(pIssueID).Result;
+                var issue = await _ytIssues.GetIssue(pIssueID);
                 if (issue == null)
                     throw new NullReferenceException($"Unable to find issue by ID {pIssueID}.");
 
@@ -269,19 +269,11 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
             var result = new PlasticTask();
             result.Id = pIssue.Id;
             var title = pIssue.Summary;
-            var state = pIssue.GetField("state").AsCollection().First();
+            var state = pIssue.GetField("state").AsCollection().Single();
             result.Title = getBranchTitle(state, title);
             result.Status = state;
-
-            try
-            {
-                result.Owner = getAssignee(pIssue).UserName;
-            }
-            catch (NullReferenceException)
-            {
-                result.Owner = "Unassigned";
-            }
-
+            result.Owner = getAssignee(pIssue).UserName;
+            
             if (pIssue.GetField("description") != null)
                 result.Description = pIssue.GetField("description").AsString();
 
@@ -337,7 +329,7 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
         {
             var field = pIssue.GetField("Assignee");
             if (field == null)
-                throw new NullReferenceException("Ticket doesn't contain field 'Assignee' as expected.");
+                return new Assignee() { FullName = "Unassigned", UserName = "Unassigned" };
 
             var assignees = (List<Assignee>) field.Value;
             return assignees[0];
@@ -357,7 +349,7 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
             var ignoreStates = new ArrayList(_config.IgnoreIssueStateForBranchTitle.Trim().Split(','));
             return ignoreStates.Contains(pIssueState)
                 ? pIssueSummary
-                : string.Format("{0} [{1}]", pIssueSummary, pIssueState);
+                : $"{pIssueSummary} [{pIssueState}]";
         }
 
 

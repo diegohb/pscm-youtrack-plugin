@@ -161,11 +161,11 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
             return plasticTasks;
         }
 
-        public async void MarkTaskAsOpen(string pTaskId, string pAssignee)
+        public void MarkTaskAsOpen(string pTaskId, string pAssignee)
         {
             try
             {
-                await _ytService.AssignIssue(pTaskId, pAssignee, false);
+                AsyncHelpers.RunSync(() => _ytService.AssignIssue(pTaskId, pAssignee, false));
             }
             catch (Exception e)
             {
@@ -174,7 +174,7 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
 
             try
             {
-                _ytService.EnsureIssueInProgress(pTaskId);
+                AsyncHelpers.RunSync(() => _ytService.EnsureIssueInProgress(pTaskId));
             }
             catch (Exception e)
             {
