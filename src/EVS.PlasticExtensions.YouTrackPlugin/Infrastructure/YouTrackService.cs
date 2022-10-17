@@ -9,13 +9,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using CacheManager.Core;
 using Codice.Client.IssueTracker;
 using EVS.PlasticExtensions.YouTrackPlugin.Core.Models;
 using EVS.PlasticExtensions.YouTrackPlugin.Core.Services;
 using EVS.PlasticExtensions.YouTrackPlugin.Core.Services.Impl;
 using log4net;
 using YouTrackSharp;
-using YouTrackSharp.Generated;
 using YouTrackSharp.Issues;
 
 namespace EVS.PlasticExtensions.YouTrackPlugin.Infrastructure
@@ -27,6 +27,7 @@ namespace EVS.PlasticExtensions.YouTrackPlugin.Infrastructure
         private readonly IPlasticYouTrackTranslationService _translationService;
         private readonly Connection _ytConnection;
         private readonly IIssuesService _ytIssues;
+        private readonly ICacheManager<Issue> _cache;
 
         #region Ctors
 
@@ -37,6 +38,11 @@ namespace EVS.PlasticExtensions.YouTrackPlugin.Infrastructure
             _ytIssues = _ytConnection.CreateIssuesService();
             _log.Debug("YouTrackService: ctor called");
             _translationService = new PlasticYouTrackTranslationService(_config);
+
+            _cache = CacheFactory.Build<Issue>("YoutrackIssues", settings =>
+            {
+                settings.WithSystemRuntimeCacheHandle().WithExpiration(ExpirationMode.Absolute, TimeSpan.FromSeconds(120));
+            });
         }
 
         #endregion
@@ -53,7 +59,9 @@ namespace EVS.PlasticExtensions.YouTrackPlugin.Infrastructure
                 {
                     var issue = await _ytIssues.GetIssue(pTaskID);
                     if (issue != null)
+                    {
                         return _translationService.GetPlasticTaskFromIssue(issue);
+                    }
                 }
             }
             catch (Exception ex)
@@ -141,7 +149,7 @@ namespace EVS.PlasticExtensions.YouTrackPlugin.Infrastructure
                 else
                     _log.InfoFormat("Issue '{0}' already marked in-progress.", pIssueID);
             }
-            catch (YouTrackErrorException ex)
+            catch (YouTrackSharp.Generated.YouTrackErrorException ex)
             {
                 _log.Error($"Unable to mark issue '{pIssueID}' in-progress.", ex);
                 throw new ApplicationException("Error occurred marking issue in-progress.", ex);
