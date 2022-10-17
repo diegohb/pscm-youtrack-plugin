@@ -6,11 +6,13 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using CacheManager.Core;
 using Codice.Client.IssueTracker;
+using EVS.PlasticExtensions.YouTrackPlugin.Core;
 using EVS.PlasticExtensions.YouTrackPlugin.Core.Models;
 using EVS.PlasticExtensions.YouTrackPlugin.Core.Services;
 using EVS.PlasticExtensions.YouTrackPlugin.Core.Services.Impl;
@@ -41,8 +43,10 @@ namespace EVS.PlasticExtensions.YouTrackPlugin.Infrastructure
 
             _cache = CacheFactory.Build<Issue>("YoutrackIssues", settings =>
             {
-                settings.WithSystemRuntimeCacheHandle().WithExpiration(ExpirationMode.Absolute, TimeSpan.FromSeconds(120));
+                var cacheLimitSeconds = Debugger.IsAttached ? 10 : 60;
+                settings.WithSystemRuntimeCacheHandle().WithExpiration(ExpirationMode.Absolute, TimeSpan.FromSeconds(cacheLimitSeconds));
             });
+
         }
 
         #endregion
@@ -57,7 +61,8 @@ namespace EVS.PlasticExtensions.YouTrackPlugin.Infrastructure
             {
                 if (await _ytIssues.Exists(pTaskID))
                 {
-                    var issue = await _ytIssues.GetIssue(pTaskID);
+                    _cache.TryGetOrAdd(pTaskID,
+                        pKey => { return AsyncHelpers.RunSync(() => _ytIssues.GetIssue(pTaskID)); }, out var issue);
                     if (issue != null)
                     {
                         return _translationService.GetPlasticTaskFromIssue(issue);
@@ -99,8 +104,16 @@ namespace EVS.PlasticExtensions.YouTrackPlugin.Infrastructure
                 if (!issues.Any())
                     return new List<PlasticTask>();
 
-                var tasks = issues.Select(pIssue => _translationService.GetPlasticTaskFromIssue(pIssue));
-                return tasks.ToList();
+                var tasks = issues.Select(pIssue => _translationService.GetPlasticTaskFromIssue(pIssue)).ToList();
+
+                foreach (var issue in issues)
+                {
+                    if (_cache.Exists(issue.Id))
+                    {
+                        _cache.Put(issue.Id, issue);
+                    }
+                }
+                return tasks;
             }
             catch (Exception ex)
             {
@@ -141,6 +154,10 @@ namespace EVS.PlasticExtensions.YouTrackPlugin.Infrastructure
                 var issue = await _ytIssues.GetIssue(pIssueID);
                 if (issue == null)
                     throw new NullReferenceException($"Unable to find issue by ID {pIssueID}.");
+                if (_cache.Exists(pIssueID))
+                {
+                    _cache.Put(pIssueID, issue);
+                }
 
                 var transitionTarget = _translationService.GetMarkAsOpenTransitionFromIssue(issue);
 
@@ -188,6 +205,10 @@ namespace EVS.PlasticExtensions.YouTrackPlugin.Infrastructure
                 var issue = await _ytIssues.GetIssue(pIssueID);
                 if (issue == null)
                     throw new NullReferenceException($"Unable to find issue by ID {pIssueID}.");
+                if (_cache.Exists(pIssueID))
+                {
+                    _cache.Put(pIssueID, issue);
+                }
 
                 var currentAssignee = _translationService.GetAssigneeFromYouTrackIssue(issue).Username;
 
