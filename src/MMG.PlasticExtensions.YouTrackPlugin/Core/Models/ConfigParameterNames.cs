@@ -4,7 +4,7 @@
 // Modified By: Diego Bustamante (dbustamante)
 // *************************************************
 
-namespace MMG.PlasticExtensions.YouTrackPlugin
+namespace MMG.PlasticExtensions.YouTrackPlugin.Core.Models
 {
     public static class ConfigParameterNames
     {

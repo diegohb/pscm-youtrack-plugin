@@ -4,12 +4,12 @@
 // Modified By: Diego Bustamante (dbustamante)
 // *************************************************
 
-namespace MMG.PlasticExtensions.YouTrackPlugin
-{
-    using System;
-    using System.Collections.Generic;
-    using Codice.Client.IssueTracker;
+using System;
+using System.Collections.Generic;
+using Codice.Client.IssueTracker;
 
+namespace MMG.PlasticExtensions.YouTrackPlugin.Core.Services
+{
     public interface IYouTrackExtensionConfigFacade
     {
         string BranchPrefix { get; }

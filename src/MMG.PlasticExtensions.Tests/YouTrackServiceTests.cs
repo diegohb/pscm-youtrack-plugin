@@ -4,19 +4,21 @@
 // Modified By: Diego Bustamante (dbustamante)
 // *************************************************
 
-namespace MMG.PlasticExtensions.Tests
-{
     using System;
     using System.Collections.Generic;
     using System.Configuration;
     using System.Linq;
     using System.Text;
     using Codice.Client.IssueTracker;
-    using Moq;
+using MMG.PlasticExtensions.YouTrackPlugin;
+using MMG.PlasticExtensions.YouTrackPlugin.Core;
+using MMG.PlasticExtensions.YouTrackPlugin.Core.Models;
+using MMG.PlasticExtensions.YouTrackPlugin.Core.Services.Impl;
+using MMG.PlasticExtensions.YouTrackPlugin.Infrastructure;
     using NUnit.Framework;
-    using YouTrackPlugin;
-    using YouTrackSharp.Issues;
 
+namespace MMG.PlasticExtensions.Tests
+{
     [TestFixture]
     public class YouTrackServiceTests
     {
@@ -40,7 +42,7 @@ namespace MMG.PlasticExtensions.Tests
         {
             var svc = new YouTrackService(getTestConfig());
             var expectedIssueKey = ConfigurationManager.AppSettings["test.issueKey"];
-            var actualTask = AsyncHelpers.RunSync(()=> svc.GetPlasticTask(expectedIssueKey));
+            var actualTask = AsyncHelpers.RunSync(() => svc.GetPlasticTask(expectedIssueKey));
             Assert.IsNotNull(actualTask);
             Assert.AreEqual(expectedIssueKey, actualTask.Id);
             Assert.IsTrue(actualTask.CanBeLinked);
@@ -56,7 +58,7 @@ namespace MMG.PlasticExtensions.Tests
             Assert.IsNotNull(svc.GetAuthenticatedUser());
 
             var testIssueID = ConfigurationManager.AppSettings["test.issueKey"];
-            Assert.DoesNotThrow(() => svc.EnsureIssueInProgress(testIssueID));
+            Assert.DoesNotThrow(() => AsyncHelpers.RunSync(() => svc.EnsureIssueInProgress(testIssueID)));
         }
 
         [Test]
@@ -69,7 +71,7 @@ namespace MMG.PlasticExtensions.Tests
             Assert.IsNotNull(svc.GetAuthenticatedUser());
 
             var testIssueID = ConfigurationManager.AppSettings["test.issueKey"];
-            Assert.DoesNotThrow( () =>
+            Assert.DoesNotThrow(() =>
             {
                 svc.AssignIssue(testIssueID, ConfigurationManager.AppSettings["username"]).Wait(1000);
             });
@@ -84,7 +86,8 @@ namespace MMG.PlasticExtensions.Tests
             var issues = AsyncHelpers.RunSync(() => svc.GetUnresolvedPlasticTasks()).ToList();
             CollectionAssert.IsNotEmpty(issues);
             var assigneeName = ConfigurationManager.AppSettings["test.fieldValue"];
-            Assert.IsTrue(issues.Any(pIssue => pIssue.Owner.Equals(assigneeName, StringComparison.InvariantCultureIgnoreCase)));
+            Assert.IsTrue(issues.Any(pIssue =>
+                pIssue.Owner.Equals(assigneeName, StringComparison.InvariantCultureIgnoreCase)));
         }
 
         [Test]
@@ -96,12 +99,13 @@ namespace MMG.PlasticExtensions.Tests
             var assigneeName = ConfigurationManager.AppSettings["test.fieldValue"];
             var issues = AsyncHelpers.RunSync(() => svc.GetUnresolvedPlasticTasks(assigneeName)).ToList();
             CollectionAssert.IsNotEmpty(issues);
-            Assert.IsTrue(issues.All(pIssue => pIssue.Owner.Equals(assigneeName, StringComparison.InvariantCultureIgnoreCase)));
+            Assert.IsTrue(issues.All(pIssue =>
+                pIssue.Owner.Equals(assigneeName, StringComparison.InvariantCultureIgnoreCase)));
         }
 
         private YouTrackExtensionConfigFacade getTestConfig()
         {
-            var testStoredConfig = new IssueTrackerConfiguration()
+            var testStoredConfig = new IssueTrackerConfiguration
             {
                 WorkingMode = ExtensionWorkingMode.TaskOnBranch,
                 Parameters = getTestConfigParams()
@@ -182,28 +186,6 @@ namespace MMG.PlasticExtensions.Tests
             return parameters.ToArray();
         }
 
-        [Test]
-        public void HydratePlasticTask_Base()
-        {
-            var facade = GetConfigFacade("http://test.com");
-            facade.SetupGet(x => x.ShowIssueStateInBranchTitle).Returns(false);
-            facade.SetupGet(x => x.IgnoreIssueStateForBranchTitle).Returns("");
-            var sut = new YouTrackService(facade.Object);
-
-            dynamic issue = new Issue();
-            issue.Id = "ABC1234";
-            issue.Summary = "Issue Summary";
-            issue.State = "In Progress";
-            issue.Assignee = new List<Assignee>(new[] { new Assignee() { UserName = "jdoe", FullName = "John Doe" } });
-            issue.Description = "Issue Description";
-
-            var task = sut.hydratePlasticTaskFromIssue(issue);
-            Assert.AreEqual("ABC1234", task.Id);
-            Assert.AreEqual("Issue Summary", task.Title);
-            Assert.AreEqual("In Progress", task.Status);
-            Assert.AreEqual("jdoe", task.Owner);
-            Assert.AreEqual("Issue Description", task.Description);
-        }
 
         [Test]
         public void TestCommentFormatting()
@@ -217,14 +199,15 @@ namespace MMG.PlasticExtensions.Tests
             var nl = Environment.NewLine;
             var guid = Guid.NewGuid();
 
-            var generatedComment = YouTrackService.FormatComment(host, repository, webGui, branch, changeSetId, comment, guid);
+            var generatedComment =
+                YouTrackService.FormatComment(host, repository, webGui, branch, changeSetId, comment, guid);
 
             var mdComment = $"*PSCM - CODE COMMIT #{changeSetId}*";
 
             var changeSetUriBuilder = new UriBuilder(webGui);
             if (string.IsNullOrEmpty(changeSetUriBuilder.Scheme) ||
-                (!changeSetUriBuilder.Scheme.Equals("https", StringComparison.CurrentCultureIgnoreCase) &&
-                 !changeSetUriBuilder.Scheme.Equals("http", StringComparison.CurrentCultureIgnoreCase)))
+                !changeSetUriBuilder.Scheme.Equals("https", StringComparison.CurrentCultureIgnoreCase) &&
+                !changeSetUriBuilder.Scheme.Equals("http", StringComparison.CurrentCultureIgnoreCase))
                 changeSetUriBuilder.Scheme = "http";
 
             changeSetUriBuilder.Path += $"repos/{repository}/diff/changeset/{guid}";
@@ -257,13 +240,5 @@ namespace MMG.PlasticExtensions.Tests
             var msg = $"[*PSCM - BRANCH CREATED*](https://plasticscm.com/orgs/acme/repos/{repoName}/diff/branch/{Uri.EscapeUriString(branch)}";
             Assert.AreEqual(msg, YouTrackService.GetBranchCreationMessage());
         }
-
-        private static Mock<IYouTrackExtensionConfigFacade> GetConfigFacade(string pUri)
-        {
-            var facade = new Mock<IYouTrackExtensionConfigFacade>();
-            var uri = new Uri(pUri);
-            facade.SetupGet(x => x.HostUri).Returns(uri);
-            return facade;
         }
     }
-}

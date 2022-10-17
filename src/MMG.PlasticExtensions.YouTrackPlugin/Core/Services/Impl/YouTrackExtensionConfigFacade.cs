@@ -1,13 +1,14 @@
-﻿namespace MMG.PlasticExtensions.YouTrackPlugin
+﻿using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using Codice.Client.IssueTracker;
+using Codice.Utils;
+using log4net;
+using MMG.PlasticExtensions.YouTrackPlugin.Core.Models;
+
+namespace MMG.PlasticExtensions.YouTrackPlugin.Core.Services.Impl
 {
     #region
-
-    using System;
-    using System.Collections.Generic;
-    using System.ComponentModel;
-    using Codice.Client.IssueTracker;
-    using Codice.Utils;
-    using log4net;
 
     #endregion
 
