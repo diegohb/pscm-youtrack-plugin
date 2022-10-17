@@ -4,6 +4,8 @@
 // Modified By: Diego Bustamante (dbustamante)
 // *************************************************
 
+using System.Threading.Tasks;
+
 namespace MMG.PlasticExtensions.Tests
 {
     using System.Configuration;
@@ -15,7 +17,7 @@ namespace MMG.PlasticExtensions.Tests
     {
         [Test]
         [Ignore("Run manually.")]
-        public async void YTSharp_VerifyTicketAccess()
+        public async Task YTSharp_VerifyTicketAccess()
         {
             //arange
             var ticketId = ConfigurationManager.AppSettings["test.issueKey"];
