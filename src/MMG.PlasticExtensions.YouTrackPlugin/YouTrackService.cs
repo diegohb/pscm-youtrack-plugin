@@ -35,14 +35,14 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
         public YouTrackService(IYouTrackExtensionConfigFacade pConfig)
         {
             _config = pConfig;
-            _ytConnection = getServiceConnection((YouTrackExtensionConfigFacade) pConfig);
+            _ytConnection = getServiceConnection(pConfig);
             _ytIssues = _ytConnection.CreateIssuesService();
             _log.Debug("YouTrackService: ctor called");
         }
 
         #endregion
 
-        public PlasticTask GetPlasticTask(string pTaskID)
+        public async Task<PlasticTask> GetPlasticTask(string pTaskID)
         {
             _log.DebugFormat("YouTrackService: GetPlasticTask {0}", pTaskID);
 
@@ -52,29 +52,33 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
 
             try
             {
-                var issue = _ytIssues.GetIssue(pTaskID).Result;
-                if (issue != null)
-                    return hydratePlasticTaskFromIssue(issue);
+                if (await _ytIssues.Exists(pTaskID))
+                {
+                    var issue = await _ytIssues.GetIssue(pTaskID);
+                    if (issue != null)
+                        return hydratePlasticTaskFromIssue(issue);
+                }
             }
             catch (Exception ex)
             {
-                _log.Warn(string.Format("YouTrackService: Failed to fetch youtrack issue '{0}' due to error.", pTaskID), ex);
+                _log.Warn($"YouTrackService: Failed to fetch youtrack issue '{pTaskID}' due to error.", ex);
             }
 
             return new PlasticTask {Id = pTaskID, CanBeLinked = false};
         }
 
-        public IEnumerable<PlasticTask> GetPlasticTasks(string[] pTaskIDs)
+        public async Task<IEnumerable<PlasticTask>> GetPlasticTasks(string[] pTaskIDs)
         {
             ensureAuthenticated();
 
             _log.DebugFormat("YouTrackService: GetPlasticTasks - {0} task ID(s) supplied", pTaskIDs.Length);
 
-            var result = pTaskIDs.Select(pTaskID => GetPlasticTask(pTaskID)).AsParallel();
-            return result;
+            var tasks = pTaskIDs.Select(GetPlasticTask);
+            var results = await Task.WhenAll(tasks);
+            return results;
         }
 
-        public IEnumerable<PlasticTask> GetUnresolvedPlasticTasks(string pAssignee = "", int pMaxCount = 500)
+        public async Task<IEnumerable<PlasticTask>> GetUnresolvedPlasticTasks(string pAssignee = "", int pMaxCount = 500)
         {
             ensureAuthenticated();
 
@@ -85,7 +89,7 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
                 ("{0}{1}", string.IsNullOrWhiteSpace(assignee) ? string.Empty : string.Format("for: {0} ", assignee),
                     _config.CreateBranchIssueQuery);
 
-                var issues = _ytIssues.GetIssues(searchString, take: pMaxCount).Result.ToList();
+                var issues = await _ytIssues.GetIssues(searchString, take: pMaxCount);
                 if (!issues.Any())
                     return new List<PlasticTask>();
 
@@ -106,11 +110,11 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
                 : new Uri(_config.HostUri, string.Format("/issue/{0}", pIssueID)).ToString();
         }
 
-        public YoutrackUser GetAuthenticatedUser()
+        public async Task<YoutrackUser> GetAuthenticatedUser()
         {
             ensureAuthenticated();
-            var http = _ytConnection.GetAuthenticatedApiClient().Result;
-            var rsp = http.UsersMeAsync("id,login,name,email").Result;
+            var http = await _ytConnection.GetAuthenticatedApiClient();
+            var rsp = await http.UsersMeAsync("id,login,name,email");
             var user = new YoutrackUser(rsp.Login, rsp.FullName, rsp.Email);
             return user;
         }
@@ -138,14 +142,14 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
             }
             catch (Exception e)
             {
-                _log.Warn(string.Format("Failed to verify configuration against host '{0}'.", pConfig.HostUri), e);
-                throw new ApplicationException(string.Format("Failed to authenticate against the host. Message: {0}", e.Message), e);
+                _log.Warn($"Failed to verify configuration against host '{pConfig.HostUri}'.", e);
+                throw new ApplicationException($"Failed to authenticate against the host. Message: {e.Message}", e);
             }
         }
 
         public static string GetBranchCreationMessage()
         {
-            return "{color:darkgreen}*PSCM - BRANCH CREATED*{color}";
+            return "*PSCM - BRANCH CREATED*";
         }
 
         public async Task EnsureIssueInProgress(string pIssueID)
@@ -154,9 +158,9 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
 
             try
             {
-                var issue = _ytIssues.GetIssue(pIssueID).Result;
+                var issue = await _ytIssues.GetIssue(pIssueID);
                 if (issue == null)
-                    throw new NullReferenceException(string.Format("Unable to find issue by ID {0}.", pIssueID));
+                    throw new NullReferenceException($"Unable to find issue by ID {pIssueID}.");
                 var issueCurrentState = issue.GetField("State").AsString();
 
                 var stateTransitions = convertStringListToKVPDictionary(_config.CreateBranchTransitions);
@@ -180,7 +184,7 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
             long pChangeSetId, string pComment, Guid pChangeSetGuid)
         {
             var nl = Environment.NewLine;
-            var mdComment = $"{{color:darkgreen}}*PSCM - CODE COMMIT #{pChangeSetId}*{{color}}";
+            var mdComment = $"*PSCM - CODE COMMIT #{pChangeSetId}*";
 
             var changeSetUriBuilder = new UriBuilder(pWebGui);
             if (string.IsNullOrEmpty(changeSetUriBuilder.Scheme) ||
@@ -188,7 +192,7 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
                  !changeSetUriBuilder.Scheme.Equals("http", StringComparison.CurrentCultureIgnoreCase)))
                 changeSetUriBuilder.Scheme = "http";
 
-            changeSetUriBuilder.Path = $"webui/repos/{pRepository}/diff/changeset/{pChangeSetGuid}";
+            changeSetUriBuilder.Path += $"repos/{pRepository}/diff/changeset/{pChangeSetGuid}";
 
             var hostName = pHost.StartsWith("localhost", StringComparison.CurrentCultureIgnoreCase) ||
                            pHost.StartsWith("127.0.0.", StringComparison.CurrentCultureIgnoreCase)
@@ -200,7 +204,7 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
             var commentBuilder = new StringBuilder();
             commentBuilder.Append($"{pComment}{nl}{nl}");
             commentBuilder.Append($"{tildes}{nl}");
-            commentBuilder.Append($"[{mdComment}|{changeSetUriBuilder}]{nl}");
+            commentBuilder.Append($"[{mdComment}]({changeSetUriBuilder}){nl}");
             //commentBuilder.Append($"{{monospace}}");
             commentBuilder.Append($"{pChangeSetGuid} @ {pBranch} @ {pRepository} @ {hostName}");
             //commentBuilder.Append($"{{monospace}}");
@@ -220,7 +224,7 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
             try
             {
                 var completeComment = FormatComment(pRepositoryServer, pRepository, pWebGui, pBranch, pChangeSetId, pComment, pChangeSetGuid);
-                _ytIssues.ApplyCommand(pIssueID, "comment", completeComment, false).Wait(1000);
+                await _ytIssues.AddCommentForIssue(pIssueID, completeComment);
             }
             catch (Exception ex)
             {
@@ -237,7 +241,7 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
                 var mappedAssignee = applyUserMapping(pAssignee);
                 var issue = await _ytIssues.GetIssue(pIssueID);
                 if (issue == null)
-                    throw new NullReferenceException(string.Format("Unable to find issue by ID {0}.", pIssueID));
+                    throw new NullReferenceException($"Unable to find issue by ID {pIssueID}.");
 
                 var currentAssignee = string.Empty;
                 if (doesPropertyExist(issue, "Assignee"))
@@ -246,14 +250,13 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
                 if (!string.Equals(currentAssignee, mappedAssignee, StringComparison.InvariantCultureIgnoreCase))
                 {
                     var comment = $"Assigned by PlasticSCM to user '{mappedAssignee}'.";
-                    await _ytIssues.ApplyCommand
-                    (pIssueID, string.Format("for {0}", mappedAssignee),
-                        pAddComment ? comment : string.Empty);
+                    _ytIssues.ApplyCommand(pIssueID, $"for {mappedAssignee}", pAddComment ? comment : string.Empty)
+                        .Wait(1000);
                 }
             }
             catch (Exception ex)
             {
-                _log.Error(string.Format("Unable to assign issue '{0}' to '{1}'.", pIssueID, pAssignee), ex);
+                _log.Error($"Unable to assign issue '{pIssueID}' to '{pAssignee}'.", ex);
                 throw new ApplicationException("Error occurred marking issue assigned.", ex);
             }
         }
@@ -266,19 +269,11 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
             var result = new PlasticTask();
             result.Id = pIssue.Id;
             var title = pIssue.Summary;
-            var state = pIssue.GetField("state").AsCollection().First();
+            var state = pIssue.GetField("state").AsCollection().Single();
             result.Title = getBranchTitle(state, title);
             result.Status = state;
-
-            try
-            {
-                result.Owner = getAssignee(pIssue).UserName;
-            }
-            catch (NullReferenceException)
-            {
-                result.Owner = "Unassigned";
-            }
-
+            result.Owner = getAssignee(pIssue).UserName;
+            
             if (pIssue.GetField("description") != null)
                 result.Description = pIssue.GetField("description").AsString();
 
@@ -334,7 +329,7 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
         {
             var field = pIssue.GetField("Assignee");
             if (field == null)
-                throw new NullReferenceException("Ticket doesn't contain field 'Assignee' as expected.");
+                return new Assignee() { FullName = "Unassigned", UserName = "Unassigned" };
 
             var assignees = (List<Assignee>) field.Value;
             return assignees[0];
@@ -354,11 +349,11 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
             var ignoreStates = new ArrayList(_config.IgnoreIssueStateForBranchTitle.Trim().Split(','));
             return ignoreStates.Contains(pIssueState)
                 ? pIssueSummary
-                : string.Format("{0} [{1}]", pIssueSummary, pIssueState);
+                : $"{pIssueSummary} [{pIssueState}]";
         }
 
 
-        private static Connection getServiceConnection(YouTrackExtensionConfigFacade pConfig)
+        private static Connection getServiceConnection(IYouTrackExtensionConfigFacade pConfig)
         {
             var password = pConfig.GetDecryptedPassword();
             var serverUrl = pConfig.HostUri.ToString();

@@ -21,12 +21,12 @@ namespace MMG.PlasticExtensions.Tests
     public class YouTrackServiceTests
     {
         [Test]
-        [Ignore("These aren't real unit tests and must be run manually after configuring app.config values.")]
+        [Category("Integration")]
         public void GetAuthenticatedUser_ShouldReturnUserWithEmail()
         {
             var svc = new YouTrackService(getTestConfig());
             svc.Authenticate();
-            var user = svc.GetAuthenticatedUser();
+            var user = AsyncHelpers.RunSync(() => svc.GetAuthenticatedUser());
             Assert.IsNotNull(user);
 
             var expectedValue = ConfigurationManager.AppSettings["test.authUserEmail"];
@@ -35,19 +35,19 @@ namespace MMG.PlasticExtensions.Tests
         }
 
         [Test]
-        [Ignore("These aren't real unit tests and must be run manually after configuring app.config values.")]
+        [Category("Integration")]
         public void GetPlasticTask_ShouldReturnLinkedTask()
         {
             var svc = new YouTrackService(getTestConfig());
             var expectedIssueKey = ConfigurationManager.AppSettings["test.issueKey"];
-            var actualTask = svc.GetPlasticTask(expectedIssueKey);
+            var actualTask = AsyncHelpers.RunSync(()=> svc.GetPlasticTask(expectedIssueKey));
             Assert.IsNotNull(actualTask);
             Assert.AreEqual(expectedIssueKey, actualTask.Id);
             Assert.IsTrue(actualTask.CanBeLinked);
         }
 
         [Test]
-        [Ignore("These aren't real unit tests and must be run manually after configuring app.config values.")]
+        [Category("Integration")]
         public void BeginWorkOnIssue_ShouldUpdateTicketToInProgress()
         {
             var config = getTestConfig();
@@ -56,11 +56,11 @@ namespace MMG.PlasticExtensions.Tests
             Assert.IsNotNull(svc.GetAuthenticatedUser());
 
             var testIssueID = ConfigurationManager.AppSettings["test.issueKey"];
-            svc.EnsureIssueInProgress(testIssueID);
+            Assert.DoesNotThrow(() => svc.EnsureIssueInProgress(testIssueID));
         }
 
         [Test]
-        [Ignore("These aren't real unit tests and must be run manually after configuring app.config values.")]
+        [Category("Integration")]
         public void AssignIssue_ShouldUpdateTicketToAssigned()
         {
             var config = getTestConfig();
@@ -69,29 +69,32 @@ namespace MMG.PlasticExtensions.Tests
             Assert.IsNotNull(svc.GetAuthenticatedUser());
 
             var testIssueID = ConfigurationManager.AppSettings["test.issueKey"];
-            svc.AssignIssue(testIssueID, ConfigurationManager.AppSettings["username"]);
+            Assert.DoesNotThrow( () =>
+            {
+                svc.AssignIssue(testIssueID, ConfigurationManager.AppSettings["username"]).Wait(1000);
+            });
         }
 
         [Test]
-        [Ignore("These aren't real unit tests and must be run manually after configuring app.config values.")]
+        [Category("Integration")]
         public void GetUnresolvedIssues_ShouldReturnTicketsUnresolved()
         {
             var config = getTestConfig();
             var svc = new YouTrackService(config);
-            var issues = svc.GetUnresolvedPlasticTasks().ToList();
+            var issues = AsyncHelpers.RunSync(() => svc.GetUnresolvedPlasticTasks()).ToList();
             CollectionAssert.IsNotEmpty(issues);
             var assigneeName = ConfigurationManager.AppSettings["test.fieldValue"];
             Assert.IsTrue(issues.Any(pIssue => pIssue.Owner.Equals(assigneeName, StringComparison.InvariantCultureIgnoreCase)));
         }
 
         [Test]
-        [Ignore("These aren't real unit tests and must be run manually after configuring app.config values.")]
+        [Category("Integration")]
         public void GetUnresolvedIssuesByAssignee_ShouldReturnTicketsForAssignee()
         {
             var config = getTestConfig();
             var svc = new YouTrackService(config);
             var assigneeName = ConfigurationManager.AppSettings["test.fieldValue"];
-            var issues = svc.GetUnresolvedPlasticTasks(assigneeName).ToList();
+            var issues = AsyncHelpers.RunSync(() => svc.GetUnresolvedPlasticTasks(assigneeName)).ToList();
             CollectionAssert.IsNotEmpty(issues);
             Assert.IsTrue(issues.All(pIssue => pIssue.Owner.Equals(assigneeName, StringComparison.InvariantCultureIgnoreCase)));
         }
@@ -111,6 +114,13 @@ namespace MMG.PlasticExtensions.Tests
         {
             var parameters = new List<IssueTrackerConfigurationParameter>
             {
+                new IssueTrackerConfigurationParameter
+                {
+                    Name = ConfigParameterNames.UserId,
+                    Value = "dbustamante",
+                    Type = IssueTrackerConfigurationParameterType.User,
+                    IsGlobal = false
+                },
                 new IssueTrackerConfigurationParameter
                 {
                     Name = ConfigParameterNames.BranchPrefix,
@@ -137,19 +147,19 @@ namespace MMG.PlasticExtensions.Tests
                     Name = ConfigParameterNames.ShowIssueStateInBranchTitle,
                     Value = "false",
                     Type = IssueTrackerConfigurationParameterType.Boolean,
-                    IsGlobal = false
+                    IsGlobal = true
                 },
                 new IssueTrackerConfigurationParameter
                 {
                     Name = ConfigParameterNames.ClosedIssueStates,
                     Value = "Completed,Approved",
                     Type = IssueTrackerConfigurationParameterType.Text,
-                    IsGlobal = false
+                    IsGlobal = true
                 },
                 new IssueTrackerConfigurationParameter
                 {
                     Name = ConfigParameterNames.UsernameMapping,
-                    Value = "pmanager:project-manager",
+                    Value = "pscmuser:ytuser",
                     Type = IssueTrackerConfigurationParameterType.Text,
                     IsGlobal = false
                 },
@@ -184,7 +194,7 @@ namespace MMG.PlasticExtensions.Tests
             issue.Id = "ABC1234";
             issue.Summary = "Issue Summary";
             issue.State = "In Progress";
-            issue.AssigneeName = "jdoe";
+            issue.Assignee = new List<Assignee>(new[] { new Assignee() { UserName = "jdoe", FullName = "John Doe" } });
             issue.Description = "Issue Description";
 
             var task = sut.hydratePlasticTaskFromIssue(issue);
@@ -198,7 +208,7 @@ namespace MMG.PlasticExtensions.Tests
         [Test]
         public void TestCommentFormatting()
         {
-            var host = "acme.website.int:5656/";
+            var host = "www.plasticscm.com/orgs/acme/";
             var webGui = new Uri($"https://{host}");
             var repository = "Test.Repository";
             var branch = "/yt_TEST-60";
@@ -209,7 +219,7 @@ namespace MMG.PlasticExtensions.Tests
 
             var generatedComment = YouTrackService.FormatComment(host, repository, webGui, branch, changeSetId, comment, guid);
 
-            var mdComment = $"{{color:darkgreen}}*PSCM - CODE COMMIT #{changeSetId}*{{color}}";
+            var mdComment = $"*PSCM - CODE COMMIT #{changeSetId}*";
 
             var changeSetUriBuilder = new UriBuilder(webGui);
             if (string.IsNullOrEmpty(changeSetUriBuilder.Scheme) ||
@@ -217,7 +227,7 @@ namespace MMG.PlasticExtensions.Tests
                  !changeSetUriBuilder.Scheme.Equals("http", StringComparison.CurrentCultureIgnoreCase)))
                 changeSetUriBuilder.Scheme = "http";
 
-            changeSetUriBuilder.Path = $"webui/repos/{repository}/diff/changeset/{guid}";
+            changeSetUriBuilder.Path += $"repos/{repository}/diff/changeset/{guid}";
 
             var hostName = host.StartsWith("localhost", StringComparison.CurrentCultureIgnoreCase) ||
                            host.StartsWith("127.0.0.", StringComparison.CurrentCultureIgnoreCase)
@@ -229,7 +239,7 @@ namespace MMG.PlasticExtensions.Tests
             var commentBuilder = new StringBuilder();
             commentBuilder.Append($"{comment}{nl}{nl}");
             commentBuilder.Append($"{tildes}{nl}");
-            commentBuilder.Append($"[{mdComment}|{changeSetUriBuilder}]{nl}");
+            commentBuilder.Append($"[{mdComment}]({changeSetUriBuilder}){nl}");
             //commentBuilder.Append($"{{monospace}}");
             commentBuilder.Append($"{guid} @ {branch} @ {repository} @ {hostName}");
             //commentBuilder.Append($"{{monospace}}");
@@ -242,7 +252,7 @@ namespace MMG.PlasticExtensions.Tests
         [Test]
         public void TestMarkTaskAsOpen_Comment()
         {
-            var msg = "{color:darkgreen}*PSCM - BRANCH CREATED*{color}";
+            var msg = "*PSCM - BRANCH CREATED*";
             Assert.AreEqual(msg, YouTrackService.GetBranchCreationMessage());
         }
 

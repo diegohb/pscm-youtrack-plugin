@@ -116,7 +116,7 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
             if (!taskBranchName.StartsWith(_config.BranchPrefix))
                 return null;
 
-            return _ytService.GetPlasticTask(getTicketIDFromTaskBranchName(taskBranchName));
+            return AsyncHelpers.RunSync(() => _ytService.GetPlasticTask(getTicketIDFromTaskBranchName(taskBranchName)));
         }
 
         public Dictionary<string, PlasticTask> GetTasksForBranches(List<string> pFullBranchNames)
@@ -127,7 +127,7 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
                 (x => new
                 {
                     FullBranchName = x,
-                    Task = _ytService.GetPlasticTask(getTicketIDFromTaskBranchName(getBranchName(x)))
+                    Task = AsyncHelpers.RunSync(() =>_ytService.GetPlasticTask(getTicketIDFromTaskBranchName(getBranchName(x))))
                 }).AsParallel();
             var result = data.ToDictionary(x => x.FullBranchName, x => x.Task);
             return result;
@@ -142,43 +142,43 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
 
         public List<PlasticTask> LoadTasks(List<string> pTaskIds)
         {
-            var plasticTasks = _ytService.GetPlasticTasks(pTaskIds.ToArray()).ToList();
+            var plasticTasks = AsyncHelpers.RunSync(() => _ytService.GetPlasticTasks(pTaskIds.ToArray())).ToList();
             _log.DebugFormat("YouTrackExtension: Loaded {0} YouTrack plastic tasks.", plasticTasks.Count);
             return plasticTasks;
         }
 
         public List<PlasticTask> GetPendingTasks()
         {
-            var plasticTasks = _ytService.GetUnresolvedPlasticTasks().ToList();
+            var plasticTasks = AsyncHelpers.RunSync(()=> _ytService.GetUnresolvedPlasticTasks()).ToList();
             _log.DebugFormat("YouTrackExtension: Loaded {0} YouTrack unresolved plastic tasks.", plasticTasks.Count);
             return plasticTasks;
         }
 
         public List<PlasticTask> GetPendingTasks(string pAssignee)
         {
-            var plasticTasks = _ytService.GetUnresolvedPlasticTasks(pAssignee).ToList();
+            var plasticTasks = AsyncHelpers.RunSync(() => _ytService.GetUnresolvedPlasticTasks(pAssignee)).ToList();
             _log.DebugFormat("YouTrackExtension: Loaded {0} YouTrack unresolved plastic tasks.", plasticTasks.Count);
             return plasticTasks;
         }
 
-        public async void MarkTaskAsOpen(string pTaskId, string pAssignee)
+        public void MarkTaskAsOpen(string pTaskId, string pAssignee)
         {
             try
             {
-                await _ytService.AssignIssue(pTaskId, pAssignee, false);
+                AsyncHelpers.RunSync(() => _ytService.AssignIssue(pTaskId, pAssignee, false));
             }
             catch (Exception e)
             {
-                _log.Error(string.Format("Failed to assign issue.", pTaskId), e);
+                _log.Error($"Failed to assign issue '{pTaskId}'.", e);
             }
 
             try
             {
-                _ytService.EnsureIssueInProgress(pTaskId);
+                AsyncHelpers.RunSync(() => _ytService.EnsureIssueInProgress(pTaskId));
             }
             catch (Exception e)
             {
-                _log.Error(string.Format("Failed to transition issue '{0}'.", pTaskId), e);
+                _log.Error($"Failed to transition issue '{pTaskId}'.", e);
             }
         }
 
