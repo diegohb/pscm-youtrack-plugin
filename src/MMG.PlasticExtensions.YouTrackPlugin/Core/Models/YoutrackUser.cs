@@ -4,11 +4,11 @@
 // Modified By: Bustamante, Diego (bustamd1)
 // *************************************************
 
-namespace MMG.PlasticExtensions.YouTrackPlugin.Models
-{
-    using System.Collections.Generic;
-    using System.Text;
+using System.Collections.Generic;
+using System.Text;
 
+namespace MMG.PlasticExtensions.YouTrackPlugin.Core.Models
+{
     public class YoutrackUser
     {
         private readonly string _username;

@@ -2,9 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Codice.Client.IssueTracker;
-using MMG.PlasticExtensions.YouTrackPlugin.Models;
+using MMG.PlasticExtensions.YouTrackPlugin.Core.Models;
 
-namespace MMG.PlasticExtensions.YouTrackPlugin
+namespace MMG.PlasticExtensions.YouTrackPlugin.Core.Services
 {
     public interface IYouTrackService
     {

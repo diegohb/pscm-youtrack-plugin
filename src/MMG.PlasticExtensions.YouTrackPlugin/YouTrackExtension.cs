@@ -1,3 +1,8 @@
+using MMG.PlasticExtensions.YouTrackPlugin.Core;
+using MMG.PlasticExtensions.YouTrackPlugin.Core.Services;
+using MMG.PlasticExtensions.YouTrackPlugin.Core.Services.Impl;
+using MMG.PlasticExtensions.YouTrackPlugin.Infrastructure;
+
 namespace MMG.PlasticExtensions.YouTrackPlugin
 {
     #region
