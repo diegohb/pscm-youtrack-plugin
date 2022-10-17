@@ -12,11 +12,13 @@ using System.Threading.Tasks;
 using Codice.Client.IssueTracker;
 using log4net;
 using MMG.PlasticExtensions.YouTrackPlugin.Core.Models;
+using MMG.PlasticExtensions.YouTrackPlugin.Core.Services;
+using MMG.PlasticExtensions.YouTrackPlugin.Core.Services.Impl;
 using YouTrackSharp;
 using YouTrackSharp.Generated;
 using YouTrackSharp.Issues;
 
-namespace MMG.PlasticExtensions.YouTrackPlugin
+namespace MMG.PlasticExtensions.YouTrackPlugin.Infrastructure
 {
     public class YouTrackService : IYouTrackService
     {

@@ -7,7 +7,7 @@ using log4net;
 using MMG.PlasticExtensions.YouTrackPlugin.Core.Models;
 using YouTrackSharp.Issues;
 
-namespace MMG.PlasticExtensions.YouTrackPlugin
+namespace MMG.PlasticExtensions.YouTrackPlugin.Core.Services.Impl
 {
     public class PlasticYouTrackTranslationService : IPlasticYouTrackTranslationService
     {

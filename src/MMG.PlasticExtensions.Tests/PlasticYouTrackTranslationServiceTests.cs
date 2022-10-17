@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using MMG.PlasticExtensions.YouTrackPlugin;
+using MMG.PlasticExtensions.YouTrackPlugin.Core.Services;
+using MMG.PlasticExtensions.YouTrackPlugin.Core.Services.Impl;
 using Moq;
 using NUnit.Framework;
 using YouTrackSharp.Issues;

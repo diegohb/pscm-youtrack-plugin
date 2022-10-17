@@ -74,18 +74,18 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AsyncHelpers.cs" />
-    <Compile Include="IPlasticYouTrackTranslationService.cs" />
-    <Compile Include="IYouTrackService.cs" />
+    <Compile Include="Core\AsyncHelpers.cs" />
+    <Compile Include="Core\Services\IPlasticYouTrackTranslationService.cs" />
+    <Compile Include="Core\Services\IYouTrackService.cs" />
     <Compile Include="Core\Models\ConfigParameterNames.cs" />
-    <Compile Include="PlasticYouTrackTranslationService.cs" />
-    <Compile Include="YouTrackExtensionConfigFacade.cs" />
-    <Compile Include="IYouTrackExtensionConfigFacade.cs" />
+    <Compile Include="Core\Services\Impl\PlasticYouTrackTranslationService.cs" />
+    <Compile Include="Core\Services\Impl\YouTrackExtensionConfigFacade.cs" />
+    <Compile Include="Core\Services\IYouTrackExtensionConfigFacade.cs" />
     <Compile Include="Core\Models\YoutrackUser.cs" />
     <Compile Include="YouTrackExtension.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="YouTrackExtensionFactory.cs" />
-    <Compile Include="YouTrackService.cs" />
+    <Compile Include="Infrastructure\YouTrackService.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config">
@@ -226,9 +226,7 @@
       <Version>2021.3.6</Version>
     </PackageReference>
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Infrastructure\" />
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
