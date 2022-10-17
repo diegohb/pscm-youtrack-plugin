@@ -12,6 +12,91 @@ namespace MMG.PlasticExtensions.Tests
     {
 
         [Test]
+        public void GetYouTrackUsernameFromPlasticUsername_WithoutUserMapping_ShouldReturnOriginalName()
+        {
+            var facade = GetConfigFacade("http://test.com");
+            facade.SetupGet(x => x.ShowIssueStateInBranchTitle).Returns(false);
+            facade.SetupGet(x => x.IgnoreIssueStateForBranchTitle).Returns("");
+            facade.SetupGet(x => x.UsernameMapping).Returns(string.Empty);
+            var sut = new PlasticYouTrackTranslationService(facade.Object);
+
+            const string plasticUsername = "john.doe";
+            var actualYoutrackUsername = sut.GetYouTrackUsernameFromPlasticUsername(plasticUsername);
+
+            Assert.AreEqual(plasticUsername, actualYoutrackUsername);
+        }
+
+        [Test]
+        public void GetYouTrackUsernameFromPlasticUsername_WithUserMapping_ShouldReturnMappedName()
+        {
+            const string plasticUsername = "john.doe";
+            const string youtrackUsername = "jdoe";
+
+            var facade = GetConfigFacade("http://test.com");
+            facade.SetupGet(x => x.ShowIssueStateInBranchTitle).Returns(false);
+            facade.SetupGet(x => x.IgnoreIssueStateForBranchTitle).Returns("");
+            facade.SetupGet(x => x.UsernameMapping).Returns($"{plasticUsername}:{youtrackUsername}");
+            var sut = new PlasticYouTrackTranslationService(facade.Object);
+
+            var actualYoutrackUsername = sut.GetYouTrackUsernameFromPlasticUsername(plasticUsername);
+
+            Assert.AreEqual(youtrackUsername, actualYoutrackUsername);
+        }
+
+        [Test]
+        public void GetPlasticUsernameFromYouTrackUser_ByName_WithoutUserMapping_ShouldReturnOriginalName()
+        {
+            var facade = GetConfigFacade("http://test.com");
+            facade.SetupGet(x => x.ShowIssueStateInBranchTitle).Returns(false);
+            facade.SetupGet(x => x.IgnoreIssueStateForBranchTitle).Returns("");
+            facade.SetupGet(x => x.UsernameMapping).Returns(string.Empty);
+            var sut = new PlasticYouTrackTranslationService(facade.Object);
+
+            const string plasticUsername = "john.doe";
+            var actualPlasticUsername = sut.GetPlasticUsernameFromYouTrackUser(plasticUsername);
+
+            Assert.AreEqual(plasticUsername, actualPlasticUsername);
+        }
+
+        [Test]
+        public void GetPlasticUsernameFromYouTrackUser_ByName_WithUserMapping_ShouldReturnMappedName()
+        {
+            const string plasticUsername = "john.doe";
+            const string youtrackUsername = "jdoe";
+
+            var facade = GetConfigFacade("http://test.com");
+            facade.SetupGet(x => x.ShowIssueStateInBranchTitle).Returns(false);
+            facade.SetupGet(x => x.IgnoreIssueStateForBranchTitle).Returns("");
+            facade.SetupGet(x => x.UsernameMapping).Returns($"{plasticUsername}:{youtrackUsername}");
+            var sut = new PlasticYouTrackTranslationService(facade.Object);
+
+            var actualPlasticUsername = sut.GetPlasticUsernameFromYouTrackUser(youtrackUsername);
+
+            Assert.AreEqual(plasticUsername, actualPlasticUsername);
+        }
+
+        [Test]
+        public void GetAssigneeFromYouTrackIssue_WhenAssigneeFieldDoesntExist_ShouldReturnUnassigned()
+        {
+            const string plasticUsername = "john.doe";
+            const string youtrackUsername = "jdoe";
+
+            var facade = GetConfigFacade("http://test.com");
+            facade.SetupGet(x => x.ShowIssueStateInBranchTitle).Returns(false);
+            facade.SetupGet(x => x.IgnoreIssueStateForBranchTitle).Returns("");
+            facade.SetupGet(x => x.UsernameMapping).Returns($"{plasticUsername}:{youtrackUsername}");
+            var sut = new PlasticYouTrackTranslationService(facade.Object);
+            
+            dynamic issue = new Issue();
+            issue.Id = "ABC1234";
+            issue.Summary = "Issue Summary";
+            
+            var actualYoutrackUser = sut.GetAssigneeFromYouTrackIssue(issue);
+
+            Assert.AreEqual("Unassigned", actualYoutrackUser.Username);
+        }
+
+        [Test]
         public void GetPlasticTaskFromIssue_WithoutUserMapping_ShouldReturnPlasticTaskWithMappedName()
         {
             var facade = GetConfigFacade("http://test.com");
@@ -95,6 +180,103 @@ namespace MMG.PlasticExtensions.Tests
             Assert.AreEqual("ABC1234", task.Id);
             Assert.AreEqual("Issue Summary", task.Title);
             Assert.AreEqual("Completed", task.Status);
+        }
+
+        [Test]
+        public void GetMarkAsOpenTransitionFromIssue_WhenPropertyDoesntExist_ShouldReturnEmptyString()
+        {
+            var facade = GetConfigFacade("http://test.com");
+            facade.SetupGet(x => x.ShowIssueStateInBranchTitle).Returns(true);
+            facade.SetupGet(x => x.CreateBranchTransitions).Returns("Planned:Start Work");
+            var sut = new PlasticYouTrackTranslationService(facade.Object);
+
+            dynamic issue = new Issue();
+            issue.Id = "ABC1234";
+            issue.Summary = "Issue Summary";
+
+            var actualTransitionVerb = sut.GetMarkAsOpenTransitionFromIssue(issue);
+            Assert.AreEqual(string.Empty, actualTransitionVerb);
+        }
+
+        [Test]
+        public void GetMarkAsOpenTransitionFromIssue_GivenSingleMapping_ShouldReturnVerb()
+        {
+            var facade = GetConfigFacade("http://test.com");
+            facade.SetupGet(x => x.ShowIssueStateInBranchTitle).Returns(true);
+            facade.SetupGet(x => x.CreateBranchTransitions).Returns("Planned:Start Work");
+            var sut = new PlasticYouTrackTranslationService(facade.Object);
+
+            dynamic issue = new Issue();
+            issue.Id = "ABC1234";
+            issue.Summary = "Issue Summary";
+            issue.State = "Planned";
+
+            var actualTransitionVerb = sut.GetMarkAsOpenTransitionFromIssue(issue);
+            Assert.AreEqual("Start Work", actualTransitionVerb);
+
+        }
+
+        [Test]
+        public void GetMarkAsOpenTransitionFromIssue_GivenSingleMapping_ShouldReturnEmptyWhenNotMatched()
+        {
+            var facade = GetConfigFacade("http://test.com");
+            facade.SetupGet(x => x.ShowIssueStateInBranchTitle).Returns(true);
+            facade.SetupGet(x => x.CreateBranchTransitions).Returns("Planned:Start Work");
+            var sut = new PlasticYouTrackTranslationService(facade.Object);
+
+            dynamic issue = new Issue();
+            issue.Id = "ABC1234";
+            issue.Summary = "Issue Summary";
+            issue.State = "New";
+
+            var actualTransitionVerb = sut.GetMarkAsOpenTransitionFromIssue(issue);
+            Assert.AreEqual(string.Empty, actualTransitionVerb);
+
+        }
+
+        [Test]
+        public void GetPlasticTaskFromIssue_WhenStateFieldIsMissing_ShouldReturnPlasticTask()
+        {
+            var facade = GetConfigFacade("http://test.com");
+            facade.SetupGet(x => x.ShowIssueStateInBranchTitle).Returns(true);
+            facade.SetupGet(x => x.IgnoreIssueStateForBranchTitle).Returns("Completed");
+            var sut = new PlasticYouTrackTranslationService(facade.Object);
+
+            var issue = new Issue();
+            issue.Id = "ABC1234";
+            issue.Summary = "Issue Summary";
+
+            var task = sut.GetPlasticTaskFromIssue(issue);
+            Assert.AreEqual("ABC1234", task.Id);
+            Assert.AreEqual("Issue Summary", task.Title);
+            Assert.AreEqual("Unknown", task.Status);
+        }
+        
+        [Test]
+        public void GetPlasticTaskFromIssue_WhenIssueRequiredFieldsMissing_ShouldReturnPlasticTask()
+        {
+            var facade = GetConfigFacade("http://test.com");
+            facade.SetupGet(x => x.ShowIssueStateInBranchTitle).Returns(true);
+            facade.SetupGet(x => x.IgnoreIssueStateForBranchTitle).Returns("Completed");
+            var sut = new PlasticYouTrackTranslationService(facade.Object);
+
+            var issue = new Issue();
+
+            var task = sut.GetPlasticTaskFromIssue(issue);
+            Assert.AreEqual(false, task.CanBeLinked);
+        }
+
+
+        [Test]
+        public void GetPlasticTaskFromIssue_WhenIssueIsNull_ShouldReturnPlasticTask()
+        {
+            var facade = GetConfigFacade("http://test.com");
+            facade.SetupGet(x => x.ShowIssueStateInBranchTitle).Returns(true);
+            facade.SetupGet(x => x.IgnoreIssueStateForBranchTitle).Returns("Completed");
+            var sut = new PlasticYouTrackTranslationService(facade.Object);
+
+            Assert.Throws<ArgumentNullException>(() => sut.GetPlasticTaskFromIssue(null));
+
         }
 
         private static Mock<IYouTrackExtensionConfigFacade> GetConfigFacade(string pUri)

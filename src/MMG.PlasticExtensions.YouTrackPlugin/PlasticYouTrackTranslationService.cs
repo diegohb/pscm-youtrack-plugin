@@ -51,11 +51,12 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
             else
             {
                 result.Title = title;
+                result.Status = "Unknown";
             }
 
             result.Owner = GetPlasticUserFromYouTrackIssue(pIssue, "Assignee");
 
-            if (doesPropertyExist(pIssue, "description"))
+            if (doesPropertyExist(pIssue, "Description"))
                 result.Description = pIssue.GetField("description").AsString();
 
             result.CanBeLinked = true;
@@ -79,17 +80,24 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
             return _usernameMapping.TryGetValue(pAssignee, out var value) ? value : pAssignee;
         }
 
-        public string GetPlasticUsernameFromYouTrackUser(YoutrackUser pUser)
+        public string GetPlasticUsernameFromYouTrackUser(string pYouTrackUsername)
         {
-            if (pUser == null)
+            if (string.IsNullOrEmpty(pYouTrackUsername))
                 return string.Empty;
 
-            var username = pUser.Username;
-            var value = _usernameMapping.ContainsValue(username)
+            var value = _usernameMapping.ContainsValue(pYouTrackUsername)
                 ? _usernameMapping.Single(kv =>
-                    kv.Value.Equals(pUser.Username, StringComparison.InvariantCultureIgnoreCase)).Key
-                : username;
+                    kv.Value.Equals(pYouTrackUsername, StringComparison.InvariantCultureIgnoreCase)).Key
+                : pYouTrackUsername;
+
             return value;
+        }
+
+        public string GetPlasticUsernameFromYouTrackUser(YoutrackUser pUser)
+        {
+            return pUser == null
+                ? string.Empty
+                : GetPlasticUsernameFromYouTrackUser(pUser.Username);
         }
 
         public YoutrackUser GetAssigneeFromYouTrackIssue(Issue pIssue, string pUserFieldName = "Assignee")
