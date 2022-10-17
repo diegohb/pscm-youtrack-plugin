@@ -10,15 +10,15 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Codice.Client.IssueTracker;
+using EVS.PlasticExtensions.YouTrackPlugin.Core.Models;
+using EVS.PlasticExtensions.YouTrackPlugin.Core.Services;
+using EVS.PlasticExtensions.YouTrackPlugin.Core.Services.Impl;
 using log4net;
-using MMG.PlasticExtensions.YouTrackPlugin.Core.Models;
-using MMG.PlasticExtensions.YouTrackPlugin.Core.Services;
-using MMG.PlasticExtensions.YouTrackPlugin.Core.Services.Impl;
 using YouTrackSharp;
 using YouTrackSharp.Generated;
 using YouTrackSharp.Issues;
 
-namespace MMG.PlasticExtensions.YouTrackPlugin.Infrastructure
+namespace EVS.PlasticExtensions.YouTrackPlugin.Infrastructure
 {
     public class YouTrackService : IYouTrackService
     {

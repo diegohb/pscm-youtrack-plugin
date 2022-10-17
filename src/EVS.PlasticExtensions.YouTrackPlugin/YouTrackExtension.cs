@@ -1,19 +1,17 @@
-using MMG.PlasticExtensions.YouTrackPlugin.Core;
-using MMG.PlasticExtensions.YouTrackPlugin.Core.Services;
-using MMG.PlasticExtensions.YouTrackPlugin.Core.Services.Impl;
-using MMG.PlasticExtensions.YouTrackPlugin.Infrastructure;
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
+using Codice.Client.IssueTracker;
+using EVS.PlasticExtensions.YouTrackPlugin.Core;
+using EVS.PlasticExtensions.YouTrackPlugin.Core.Services;
+using EVS.PlasticExtensions.YouTrackPlugin.Core.Services.Impl;
+using EVS.PlasticExtensions.YouTrackPlugin.Infrastructure;
+using log4net;
 
-namespace MMG.PlasticExtensions.YouTrackPlugin
+namespace EVS.PlasticExtensions.YouTrackPlugin
 {
     #region
-
-    using System;
-    using System.Collections.Generic;
-    using System.Diagnostics;
-    using System.Linq;
-    using System.Threading.Tasks;
-    using Codice.Client.IssueTracker;
-    using log4net;
 
     #endregion
 
@@ -68,7 +66,7 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
 
         public string GetExtensionName()
         {
-            return "YouTrack";
+            return "Jetbrains YouTrack Integration";
         }
 
         public void Connect()

@@ -3,9 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.3.32929.385
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MMG.PlasticExtensions.YouTrackPlugin", "MMG.PlasticExtensions.YouTrackPlugin\MMG.PlasticExtensions.YouTrackPlugin.csproj", "{B9AD489C-9657-4B06-86CB-2D148F0DCB65}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EVS.PlasticExtensions.YouTrackPlugin", "EVS.PlasticExtensions.YouTrackPlugin\EVS.PlasticExtensions.YouTrackPlugin.csproj", "{B9AD489C-9657-4B06-86CB-2D148F0DCB65}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MMG.PlasticExtensions.Tests", "MMG.PlasticExtensions.Tests\MMG.PlasticExtensions.Tests.csproj", "{ADA50EA5-58D0-4D49-96F2-B12ACDAEB914}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EVS.PlasticExtensions.Tests", "EVS.PlasticExtensions.Tests\EVS.PlasticExtensions.Tests.csproj", "{ADA50EA5-58D0-4D49-96F2-B12ACDAEB914}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

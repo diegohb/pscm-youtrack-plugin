@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace MMG.PlasticExtensions.YouTrackPlugin.Core
+namespace EVS.PlasticExtensions.YouTrackPlugin.Core
 {
     public static class AsyncHelpers
     {

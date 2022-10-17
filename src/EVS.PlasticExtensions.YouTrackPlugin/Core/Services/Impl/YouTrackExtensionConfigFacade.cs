@@ -3,10 +3,10 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using Codice.Client.IssueTracker;
 using Codice.Utils;
+using EVS.PlasticExtensions.YouTrackPlugin.Core.Models;
 using log4net;
-using MMG.PlasticExtensions.YouTrackPlugin.Core.Models;
 
-namespace MMG.PlasticExtensions.YouTrackPlugin.Core.Services.Impl
+namespace EVS.PlasticExtensions.YouTrackPlugin.Core.Services.Impl
 {
     #region
 

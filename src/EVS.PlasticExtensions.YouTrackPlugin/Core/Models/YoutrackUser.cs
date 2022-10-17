@@ -7,7 +7,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace MMG.PlasticExtensions.YouTrackPlugin.Core.Models
+namespace EVS.PlasticExtensions.YouTrackPlugin.Core.Models
 {
     public class YoutrackUser
     {
