@@ -76,6 +76,8 @@
   <ItemGroup>
     <Compile Include="AsyncHelpers.cs" />
     <Compile Include="ConfigParameterNames.cs" />
+    <Compile Include="IPlasticYouTrackTranslationService.cs" />
+    <Compile Include="IYouTrackService.cs" />
     <Compile Include="PlasticYouTrackTranslationService.cs" />
     <Compile Include="YouTrackExtensionConfigFacade.cs" />
     <Compile Include="IYouTrackExtensionConfigFacade.cs" />

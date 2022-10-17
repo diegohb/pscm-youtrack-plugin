@@ -16,7 +16,7 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
     {
         private static readonly ILog _log = LogManager.GetLogger("extensions");
         private readonly IYouTrackExtensionConfigFacade _config;
-        private readonly YouTrackService _ytService;
+        private readonly IYouTrackService _ytService;
 
         #region Ctors
 
@@ -83,7 +83,7 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
             try
             {
                 var config = new YouTrackExtensionConfigFacade(pConfiguration);
-                AsyncHelpers.RunSync(() => YouTrackService.VerifyConfiguration(config));
+                AsyncHelpers.RunSync(() => YouTrackService.VerifyConnection(config));
                 return true;
             }
             catch (Exception)

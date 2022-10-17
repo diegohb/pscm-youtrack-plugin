@@ -9,7 +9,7 @@ using YouTrackSharp.Issues;
 
 namespace MMG.PlasticExtensions.YouTrackPlugin
 {
-    public class PlasticYouTrackTranslationService
+    public class PlasticYouTrackTranslationService : IPlasticYouTrackTranslationService
     {
         private static readonly ILog _log = LogManager.GetLogger("extensions");
         private readonly string _emailDomain;

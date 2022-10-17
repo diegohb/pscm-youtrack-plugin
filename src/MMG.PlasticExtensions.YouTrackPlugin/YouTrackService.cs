@@ -18,12 +18,11 @@ using YouTrackSharp.Issues;
 
 namespace MMG.PlasticExtensions.YouTrackPlugin
 {
-    
-    public class YouTrackService
+    public class YouTrackService : IYouTrackService
     {
         private static readonly ILog _log = LogManager.GetLogger("extensions");
         private readonly IYouTrackExtensionConfigFacade _config;
-        private readonly PlasticYouTrackTranslationService _translationService;
+        private readonly IPlasticYouTrackTranslationService _translationService;
         private readonly Connection _ytConnection;
         private readonly IIssuesService _ytIssues;
 
@@ -123,32 +122,6 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
             //no active connection held.
         }
 
-        public void ClearAuthentication()
-        {
-            //no active connection held.
-        }
-
-        public static async Task VerifyConfiguration(YouTrackExtensionConfigFacade pConfig)
-        {
-            validateConfig(pConfig);
-
-            try
-            {
-                var testConnection = getServiceConnection(pConfig);
-                await testConnection.CreateIssuesService().GetIssueCount();
-            }
-            catch (Exception e)
-            {
-                _log.Warn($"Failed to verify configuration against host '{pConfig.HostUri}'.", e);
-                throw new ApplicationException($"Failed to authenticate against the host. Message: {e.Message}", e);
-            }
-        }
-
-        public static string GetBranchCreationMessage()
-        {
-            return "*PSCM - BRANCH CREATED*";
-        }
-
         public async Task EnsureIssueInProgress(string pIssueID)
         {
             ensureAuthenticated();
@@ -171,39 +144,6 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
                 _log.Error($"Unable to mark issue '{pIssueID}' in-progress.", ex);
                 throw new ApplicationException("Error occurred marking issue in-progress.", ex);
             }
-        }
-
-        public static string FormatComment
-        (string pHost, string pRepository, Uri pWebGui, string pBranch,
-            long pChangeSetId, string pComment, Guid pChangeSetGuid)
-        {
-            var nl = Environment.NewLine;
-            var mdComment = $"*PSCM - CODE COMMIT #{pChangeSetId}*";
-
-            var changeSetUriBuilder = new UriBuilder(pWebGui);
-            if (string.IsNullOrEmpty(changeSetUriBuilder.Scheme) ||
-                !changeSetUriBuilder.Scheme.Equals("https", StringComparison.CurrentCultureIgnoreCase) &&
-                !changeSetUriBuilder.Scheme.Equals("http", StringComparison.CurrentCultureIgnoreCase))
-                changeSetUriBuilder.Scheme = "http";
-
-            changeSetUriBuilder.Path += $"repos/{pRepository}/diff/changeset/{pChangeSetGuid}";
-
-            var hostName = pHost.StartsWith("localhost", StringComparison.CurrentCultureIgnoreCase) ||
-                           pHost.StartsWith("127.0.0.", StringComparison.CurrentCultureIgnoreCase)
-                ? Environment.MachineName + (pHost.Contains(":") ? pHost.Substring(pHost.IndexOf(":")) : "")
-                : pHost;
-
-            var tildes = "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~";
-
-            var commentBuilder = new StringBuilder();
-            commentBuilder.Append($"{pComment}{nl}{nl}");
-            commentBuilder.Append($"{tildes}{nl}");
-            commentBuilder.Append($"[{mdComment}]({changeSetUriBuilder}){nl}");
-            //commentBuilder.Append($"{{monospace}}");
-            commentBuilder.Append($"{pChangeSetGuid} @ {pBranch} @ {pRepository} @ {hostName}");
-            //commentBuilder.Append($"{{monospace}}");
-
-            return commentBuilder.ToString();
         }
 
         public async Task AddCommentToIssue
@@ -239,7 +179,7 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
                 if (issue == null)
                     throw new NullReferenceException($"Unable to find issue by ID {pIssueID}.");
 
-                var currentAssignee = _translationService.GetAssigneeFromYouTrackIssue(issue, "Assignee").Username;
+                var currentAssignee = _translationService.GetAssigneeFromYouTrackIssue(issue).Username;
 
                 if (!string.Equals(currentAssignee, mappedAssignee, StringComparison.InvariantCultureIgnoreCase))
                 {
@@ -253,6 +193,60 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
                 _log.Error($"Unable to assign issue '{pIssueID}' to '{pAssignee}'.", ex);
                 throw new ApplicationException("Error occurred marking issue assigned.", ex);
             }
+        }
+
+        public static async Task VerifyConnection(YouTrackExtensionConfigFacade pConfig)
+        {
+            validateConfig(pConfig);
+
+            try
+            {
+                var testConnection = getServiceConnection(pConfig);
+                await testConnection.CreateIssuesService().GetIssueCount();
+            }
+            catch (Exception e)
+            {
+                _log.Warn($"Failed to verify configuration against host '{pConfig.HostUri}'.", e);
+                throw new ApplicationException($"Failed to authenticate against the host. Message: {e.Message}", e);
+            }
+        }
+
+        public static string GetBranchCreationMessage()
+        {
+            return "*PSCM - BRANCH CREATED*";
+        }
+
+        public static string FormatComment
+        (string pHost, string pRepository, Uri pWebGui, string pBranch,
+            long pChangeSetId, string pComment, Guid pChangeSetGuid)
+        {
+            var nl = Environment.NewLine;
+            var mdComment = $"*PSCM - CODE COMMIT #{pChangeSetId}*";
+
+            var changeSetUriBuilder = new UriBuilder(pWebGui);
+            if (string.IsNullOrEmpty(changeSetUriBuilder.Scheme) ||
+                !changeSetUriBuilder.Scheme.Equals("https", StringComparison.CurrentCultureIgnoreCase) &&
+                !changeSetUriBuilder.Scheme.Equals("http", StringComparison.CurrentCultureIgnoreCase))
+                changeSetUriBuilder.Scheme = "http";
+
+            changeSetUriBuilder.Path += $"repos/{pRepository}/diff/changeset/{pChangeSetGuid}";
+
+            var hostName = pHost.StartsWith("localhost", StringComparison.CurrentCultureIgnoreCase) ||
+                           pHost.StartsWith("127.0.0.", StringComparison.CurrentCultureIgnoreCase)
+                ? Environment.MachineName + (pHost.Contains(":") ? pHost.Substring(pHost.IndexOf(":")) : "")
+                : pHost;
+
+            var tildes = "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~";
+
+            var commentBuilder = new StringBuilder();
+            commentBuilder.Append($"{pComment}{nl}{nl}");
+            commentBuilder.Append($"{tildes}{nl}");
+            commentBuilder.Append($"[{mdComment}]({changeSetUriBuilder}){nl}");
+            //commentBuilder.Append($"{{monospace}}");
+            commentBuilder.Append($"{pChangeSetGuid} @ {pBranch} @ {pRepository} @ {hostName}");
+            //commentBuilder.Append($"{{monospace}}");
+
+            return commentBuilder.ToString();
         }
 
         #region Support Methods
