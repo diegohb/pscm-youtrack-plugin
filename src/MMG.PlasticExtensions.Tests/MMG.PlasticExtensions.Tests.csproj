@@ -58,6 +58,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ConnectionTests.cs" />
+    <Compile Include="PlasticYouTrackTranslationServiceTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="YouTrackServiceTests.cs" />
   </ItemGroup>
