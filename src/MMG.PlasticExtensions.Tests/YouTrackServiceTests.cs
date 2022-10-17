@@ -252,7 +252,9 @@ namespace MMG.PlasticExtensions.Tests
         [Test]
         public void TestMarkTaskAsOpen_Comment()
         {
-            var msg = "*PSCM - BRANCH CREATED*";
+            const string repoName = "acme";
+            const string branch = "main/yt_ISSUE-2";
+            var msg = $"[*PSCM - BRANCH CREATED*](https://plasticscm.com/orgs/acme/repos/{repoName}/diff/branch/{Uri.EscapeUriString(branch)}";
             Assert.AreEqual(msg, YouTrackService.GetBranchCreationMessage());
         }
 
