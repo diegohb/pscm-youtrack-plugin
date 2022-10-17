@@ -239,7 +239,7 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
                 if (issue == null)
                     throw new NullReferenceException($"Unable to find issue by ID {pIssueID}.");
 
-                var currentAssignee = _translationService.GetAssigneeFromYouTrackIssue(issue).Username;
+                var currentAssignee = _translationService.GetAssigneeFromYouTrackIssue(issue, "Assignee").Username;
 
                 if (!string.Equals(currentAssignee, mappedAssignee, StringComparison.InvariantCultureIgnoreCase))
                 {

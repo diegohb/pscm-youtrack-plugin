@@ -32,13 +32,28 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
             if (pIssue == null)
                 throw new ArgumentNullException("pIssue");
 
+            if (string.IsNullOrEmpty(pIssue.Id) || string.IsNullOrEmpty(pIssue.Summary))
+            {
+                _log.WarnFormat("The youtrack issue returned a null ID or Summary field.");
+                return new PlasticTask() { CanBeLinked = false };
+            }
+
             var result = new PlasticTask();
             result.Id = pIssue.Id;
             var title = pIssue.Summary;
-            var state = pIssue.GetField("state").AsCollection().Single();
-            result.Title = getBranchTitle(state, title);
-            result.Status = state;
-            result.Owner = GetPlasticUserFromYouTrackIssue(pIssue);
+
+            if (doesPropertyExist(pIssue, "State"))
+            {
+                var state = pIssue.GetField("state").AsCollection().Single();
+                result.Title = getBranchTitle(state, title);
+                result.Status = state;
+            }
+            else
+            {
+                result.Title = title;
+            }
+
+            result.Owner = GetPlasticUserFromYouTrackIssue(pIssue, "Assignee");
 
             if (doesPropertyExist(pIssue, "description"))
                 result.Description = pIssue.GetField("description").AsString();
@@ -77,21 +92,24 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
             return value;
         }
 
-        public YoutrackUser GetAssigneeFromYouTrackIssue(Issue pIssue)
+        public YoutrackUser GetAssigneeFromYouTrackIssue(Issue pIssue, string pUserFieldName = "Assignee")
         {
-            if (!doesPropertyExist(pIssue, "Assignee"))
+            if (!doesPropertyExist(pIssue, pUserFieldName))
                 return new YoutrackUser("Unassigned", "Unassigned", string.Empty);
 
-            var field = pIssue.GetField("Assignee");
+            var field = pIssue.GetField(pUserFieldName);
             var assignees = (List<Assignee>)field.Value;
             var youtrackUser = assignees[0];
             return new YoutrackUser(youtrackUser.UserName, youtrackUser.FullName,
                 $"{youtrackUser.UserName}@{_emailDomain}");
         }
 
-        public string GetPlasticUserFromYouTrackIssue(Issue pIssue)
+        public string GetPlasticUserFromYouTrackIssue(Issue pIssue, string pUserFieldName)
         {
-            var youtrackUser = GetAssigneeFromYouTrackIssue(pIssue);
+            if (!doesPropertyExist(pIssue, pUserFieldName))
+                return string.Empty;
+
+            var youtrackUser = GetAssigneeFromYouTrackIssue(pIssue, pUserFieldName);
             return GetPlasticUsernameFromYouTrackUser(youtrackUser);
         }
 

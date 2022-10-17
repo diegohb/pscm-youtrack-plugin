@@ -34,6 +34,7 @@ namespace MMG.PlasticExtensions.Tests
             Assert.AreEqual("jdoe", task.Owner);
             Assert.AreEqual("Issue Description", task.Description);
         }
+
         [Test]
         public void GetPlasticTaskFromIssue_WithUserMapping_ShouldReturnPlasticTaskWithMappedName()
         {
@@ -56,6 +57,44 @@ namespace MMG.PlasticExtensions.Tests
             Assert.AreEqual("In Progress", task.Status);
             Assert.AreEqual("john.doe", task.Owner);
             Assert.AreEqual("Issue Description", task.Description);
+        }
+
+        [Test]
+        public void GetPlasticTaskFromIssue_IncludeStateInTitle_ShouldIncludeStateInTitle()
+        {
+            var facade = GetConfigFacade("http://test.com");
+            facade.SetupGet(x => x.ShowIssueStateInBranchTitle).Returns(true);
+            facade.SetupGet(x => x.IgnoreIssueStateForBranchTitle).Returns("Completed");
+            var sut = new PlasticYouTrackTranslationService(facade.Object);
+
+            dynamic issue = new Issue();
+            issue.Id = "ABC1234";
+            issue.Summary = "Issue Summary";
+            issue.State = "In Progress";
+
+            var task = sut.GetPlasticTaskFromIssue(issue);
+            Assert.AreEqual("ABC1234", task.Id);
+            Assert.AreEqual("Issue Summary [In Progress]", task.Title);
+            Assert.AreEqual("In Progress", task.Status);
+        }
+
+        [Test]
+        public void GetPlasticTaskFromIssue_IncludeStateInTitle_ShouldExcludeStateInTitle()
+        {
+            var facade = GetConfigFacade("http://test.com");
+            facade.SetupGet(x => x.ShowIssueStateInBranchTitle).Returns(true);
+            facade.SetupGet(x => x.IgnoreIssueStateForBranchTitle).Returns("Completed");
+            var sut = new PlasticYouTrackTranslationService(facade.Object);
+
+            dynamic issue = new Issue();
+            issue.Id = "ABC1234";
+            issue.Summary = "Issue Summary";
+            issue.State = "Completed";
+
+            var task = sut.GetPlasticTaskFromIssue(issue);
+            Assert.AreEqual("ABC1234", task.Id);
+            Assert.AreEqual("Issue Summary", task.Title);
+            Assert.AreEqual("Completed", task.Status);
         }
 
         private static Mock<IYouTrackExtensionConfigFacade> GetConfigFacade(string pUri)
