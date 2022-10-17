@@ -83,7 +83,7 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
             try
             {
                 var config = new YouTrackExtensionConfigFacade(pConfiguration);
-                YouTrackService.VerifyConfiguration(config);
+                AsyncHelpers.RunSync(() => YouTrackService.VerifyConfiguration(config));
                 return true;
             }
             catch (Exception)

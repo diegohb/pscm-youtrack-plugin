@@ -47,9 +47,7 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
             _log.DebugFormat("YouTrackService: GetPlasticTask {0}", pTaskID);
 
             ensureAuthenticated();
-
-            //TODO: implement this as async.
-
+            
             try
             {
                 if (await _ytIssues.Exists(pTaskID))
@@ -131,14 +129,14 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
             //no active connection held.
         }
 
-        public static void VerifyConfiguration(YouTrackExtensionConfigFacade pConfig)
+        public static async Task VerifyConfiguration(YouTrackExtensionConfigFacade pConfig)
         {
             validateConfig(pConfig);
 
             try
             {
                 var testConnection = getServiceConnection(pConfig);
-                testConnection.CreateIssuesService().GetIssueCount().Wait(1000);
+                await testConnection.CreateIssuesService().GetIssueCount();
             }
             catch (Exception e)
             {
@@ -172,9 +170,9 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
                 else
                     _log.InfoFormat("Issue '{0}' already marked in-progress.", pIssueID);
             }
-            catch (Exception ex)
+            catch (YouTrackSharp.Generated.YouTrackErrorException ex)
             {
-                _log.Error("Unable to mark issue '{0}' in-progress.", ex);
+                _log.Error($"Unable to mark issue '{pIssueID}' in-progress.", ex);
                 throw new ApplicationException("Error occurred marking issue in-progress.", ex);
             }
         }
@@ -250,8 +248,7 @@ namespace MMG.PlasticExtensions.YouTrackPlugin
                 if (!string.Equals(currentAssignee, mappedAssignee, StringComparison.InvariantCultureIgnoreCase))
                 {
                     var comment = $"Assigned by PlasticSCM to user '{mappedAssignee}'.";
-                    _ytIssues.ApplyCommand(pIssueID, $"for {mappedAssignee}", pAddComment ? comment : string.Empty)
-                        .Wait(1000);
+                    await _ytIssues.ApplyCommand(pIssueID, $"for {mappedAssignee}", pAddComment ? comment : string.Empty);
                 }
             }
             catch (Exception ex)
