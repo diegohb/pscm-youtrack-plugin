@@ -1,12 +1,12 @@
 <?xml version="1.0"?>
 <doc>
     <assembly>
-        <name>MMG.PlasticExtensions.YouTrackPlugin</name>
+        <name>PlasticExtensions.YouTrackPlugin</name>
     </assembly>
     <members>
-        <!-- Badly formed XML comment ignored for member "M:MMG.PlasticExtensions.YouTrackPlugin.Core.AsyncHelpers.RunSync(System.Func{System.Threading.Tasks.Task})" -->
-        <!-- Badly formed XML comment ignored for member "M:MMG.PlasticExtensions.YouTrackPlugin.Core.AsyncHelpers.RunSync``1(System.Func{System.Threading.Tasks.Task{``0}})" -->
-        <member name="M:MMG.PlasticExtensions.YouTrackPlugin.Core.Services.IPlasticYouTrackTranslationService.GetYouTrackUsernameFromPlasticUsername(System.String)">
+        <!-- Badly formed XML comment ignored for member "M:EVS.PlasticExtensions.YouTrackPlugin.Core.AsyncHelpers.RunSync(System.Func{System.Threading.Tasks.Task})" -->
+        <!-- Badly formed XML comment ignored for member "M:EVS.PlasticExtensions.YouTrackPlugin.Core.AsyncHelpers.RunSync``1(System.Func{System.Threading.Tasks.Task{``0}})" -->
+        <member name="M:EVS.PlasticExtensions.YouTrackPlugin.Core.Services.IPlasticYouTrackTranslationService.GetYouTrackUsernameFromPlasticUsername(System.String)">
             <summary>
                 This method will take the mapping setting and allow mapping different authentication methods' usernames to issue
                 username.
@@ -14,7 +14,7 @@
             <param name="pAssignee">The username specified for configuration value UserId</param>
             <returns>the username to pass to youtrack to filter for issues assignee.</returns>
         </member>
-        <member name="M:MMG.PlasticExtensions.YouTrackPlugin.Core.Services.Impl.PlasticYouTrackTranslationService.GetYouTrackUsernameFromPlasticUsername(System.String)">
+        <member name="M:EVS.PlasticExtensions.YouTrackPlugin.Core.Services.Impl.PlasticYouTrackTranslationService.GetYouTrackUsernameFromPlasticUsername(System.String)">
             <summary>
                 This method will take the mapping setting and allow mapping different authentication methods' usernames to issue
                 username.
@@ -22,7 +22,7 @@
             <param name="pAssignee">The username specified for configuration value UserId</param>
             <returns>the username to pass to youtrack to filter for issues assignee.</returns>
         </member>
-        <member name="P:MMG.PlasticExtensions.YouTrackPlugin.Core.Services.IYouTrackExtensionConfigFacade.IgnoreIssueStateForBranchTitle">
+        <member name="P:EVS.PlasticExtensions.YouTrackPlugin.Core.Services.IYouTrackExtensionConfigFacade.IgnoreIssueStateForBranchTitle">
             <summary>
             Issue state(s) to not display in branch title when ShowIssueStateInBranchTitle = true.
             </summary>
