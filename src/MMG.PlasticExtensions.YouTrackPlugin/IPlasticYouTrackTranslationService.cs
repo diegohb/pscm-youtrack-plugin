@@ -1,5 +1,5 @@
 using Codice.Client.IssueTracker;
-using MMG.PlasticExtensions.YouTrackPlugin.Models;
+using MMG.PlasticExtensions.YouTrackPlugin.Core.Models;
 using YouTrackSharp.Issues;
 
 namespace MMG.PlasticExtensions.YouTrackPlugin

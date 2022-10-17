@@ -11,7 +11,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Codice.Client.IssueTracker;
 using log4net;
-using MMG.PlasticExtensions.YouTrackPlugin.Models;
+using MMG.PlasticExtensions.YouTrackPlugin.Core.Models;
 using YouTrackSharp;
 using YouTrackSharp.Generated;
 using YouTrackSharp.Issues;

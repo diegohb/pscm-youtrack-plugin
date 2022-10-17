@@ -11,6 +11,7 @@ using System.Linq;
 using System.Text;
 using Codice.Client.IssueTracker;
 using MMG.PlasticExtensions.YouTrackPlugin;
+using MMG.PlasticExtensions.YouTrackPlugin.Core.Models;
 using NUnit.Framework;
 
 namespace MMG.PlasticExtensions.Tests

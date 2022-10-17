@@ -1,4 +1,6 @@
-﻿namespace MMG.PlasticExtensions.YouTrackPlugin
+﻿using MMG.PlasticExtensions.YouTrackPlugin.Core.Models;
+
+namespace MMG.PlasticExtensions.YouTrackPlugin
 {
     #region
 

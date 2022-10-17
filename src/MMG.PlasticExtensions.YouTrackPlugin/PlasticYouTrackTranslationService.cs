@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Codice.Client.IssueTracker;
 using log4net;
-using MMG.PlasticExtensions.YouTrackPlugin.Models;
+using MMG.PlasticExtensions.YouTrackPlugin.Core.Models;
 using YouTrackSharp.Issues;
 
 namespace MMG.PlasticExtensions.YouTrackPlugin
