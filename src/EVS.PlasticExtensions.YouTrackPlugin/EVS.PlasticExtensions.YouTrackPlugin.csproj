@@ -7,8 +7,8 @@
     <ProjectGuid>{B9AD489C-9657-4B06-86CB-2D148F0DCB65}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>MMG.PlasticExtensions.YouTrackPlugin</RootNamespace>
-    <AssemblyName>MMG.PlasticExtensions.YouTrackPlugin</AssemblyName>
+    <RootNamespace>EVS.PlasticExtensions.YouTrackPlugin</RootNamespace>
+    <AssemblyName>PlasticExtensions.YouTrackPlugin</AssemblyName>
     <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <TargetFrameworkProfile />
@@ -28,7 +28,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <DocumentationFile>MMG.PlasticExtensions.YouTrackPlugin.XML</DocumentationFile>
+    <DocumentationFile>PlasticExtensions.YouTrackPlugin.XML</DocumentationFile>
     <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
@@ -38,7 +38,7 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <DocumentationFile>bin\Release\MMG.PlasticExtensions.YouTrackPlugin.XML</DocumentationFile>
+    <DocumentationFile>bin\Release\PlasticExtensions.YouTrackPlugin.xml</DocumentationFile>
     <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug-Plastic|AnyCPU'">

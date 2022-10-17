@@ -3,11 +3,11 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using Codice.Client.IssueTracker;
+using EVS.PlasticExtensions.YouTrackPlugin.Core.Models;
 using log4net;
-using MMG.PlasticExtensions.YouTrackPlugin.Core.Models;
 using YouTrackSharp.Issues;
 
-namespace MMG.PlasticExtensions.YouTrackPlugin.Core.Services.Impl
+namespace EVS.PlasticExtensions.YouTrackPlugin.Core.Services.Impl
 {
     public class PlasticYouTrackTranslationService : IPlasticYouTrackTranslationService
     {

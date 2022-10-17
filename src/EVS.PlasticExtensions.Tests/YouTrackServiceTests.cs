@@ -10,14 +10,13 @@ using System.Configuration;
 using System.Linq;
 using System.Text;
 using Codice.Client.IssueTracker;
-using MMG.PlasticExtensions.YouTrackPlugin;
-using MMG.PlasticExtensions.YouTrackPlugin.Core;
-using MMG.PlasticExtensions.YouTrackPlugin.Core.Models;
-using MMG.PlasticExtensions.YouTrackPlugin.Core.Services.Impl;
-using MMG.PlasticExtensions.YouTrackPlugin.Infrastructure;
+using EVS.PlasticExtensions.YouTrackPlugin.Core;
+using EVS.PlasticExtensions.YouTrackPlugin.Core.Models;
+using EVS.PlasticExtensions.YouTrackPlugin.Core.Services.Impl;
+using EVS.PlasticExtensions.YouTrackPlugin.Infrastructure;
 using NUnit.Framework;
 
-namespace MMG.PlasticExtensions.Tests
+namespace EVS.PlasticExtensions.Tests
 {
     [TestFixture]
     public class YouTrackServiceTests

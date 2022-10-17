@@ -1,8 +1,8 @@
 using Codice.Client.IssueTracker;
-using MMG.PlasticExtensions.YouTrackPlugin.Core.Models;
+using EVS.PlasticExtensions.YouTrackPlugin.Core.Models;
 using YouTrackSharp.Issues;
 
-namespace MMG.PlasticExtensions.YouTrackPlugin.Core.Services
+namespace EVS.PlasticExtensions.YouTrackPlugin.Core.Services
 {
     public interface IPlasticYouTrackTranslationService
     {

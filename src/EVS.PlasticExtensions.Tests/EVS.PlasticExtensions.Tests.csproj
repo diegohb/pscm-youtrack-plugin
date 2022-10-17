@@ -7,8 +7,8 @@
     <ProjectGuid>{ADA50EA5-58D0-4D49-96F2-B12ACDAEB914}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>MMG.PlasticExtensions.Tests</RootNamespace>
-    <AssemblyName>MMG.PlasticExtensions.Tests</AssemblyName>
+    <RootNamespace>EVS.PlasticExtensions.Tests</RootNamespace>
+    <AssemblyName>EVS.PlasticExtensions.Tests</AssemblyName>
     <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <SccProjectName>Plastic SCM</SccProjectName>
