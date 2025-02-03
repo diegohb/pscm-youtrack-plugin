@@ -173,7 +173,7 @@ namespace EVS.PlasticExtensions.YouTrackPlugin
         return new List<PlasticTask>();
       }
 
-
+      
     }
 
     public List<PlasticTask> GetPendingTasks(string pAssignee)
