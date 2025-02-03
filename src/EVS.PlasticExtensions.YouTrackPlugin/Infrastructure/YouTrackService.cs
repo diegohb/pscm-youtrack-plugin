@@ -271,7 +271,7 @@ namespace EVS.PlasticExtensions.YouTrackPlugin.Infrastructure
            !changeSetUriBuilder.Scheme.Equals("http", StringComparison.CurrentCultureIgnoreCase)))
         changeSetUriBuilder.Scheme = "http";
 
-      changeSetUriBuilder.Path += $"repositories/{pRepository}/changesets/{pChangeSetGuid}";
+      changeSetUriBuilder.Path += $"repositories/{pRepository}/changesets/{pChangeSetId}";
 
       var tildes = "---";
 
