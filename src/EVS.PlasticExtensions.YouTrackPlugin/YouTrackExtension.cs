@@ -87,7 +87,7 @@ namespace EVS.PlasticExtensions.YouTrackPlugin
       try
       {
         var config = new YouTrackExtensionConfigFacade(pConfiguration);
-        YouTrackService.VerifyConnection(config).RunSynchronously();
+        YouTrackService.VerifyConnectionSync(config);
         return true;
       }
       catch (Exception)

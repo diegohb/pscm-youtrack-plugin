@@ -237,6 +237,22 @@ namespace EVS.PlasticExtensions.YouTrackPlugin.Infrastructure
       }
     }
 
+    public static void VerifyConnectionSync(YouTrackExtensionConfigFacade pConfig)
+    {
+      validateConfig(pConfig);
+
+      try
+      {
+        var testConnection = getServiceConnection(pConfig);
+        var issueCount = testConnection.CreateIssuesService().GetIssueCount().Result;
+      }
+      catch (Exception e)
+      {
+        _log.Warn($"Failed to verify configuration against host '{pConfig.HostUri}'.", e);
+        throw new ApplicationException($"Failed to authenticate against the host. Message: {e.Message}", e);
+      }
+    }
+
     public static string GetBranchCreationMessage()
     {
       return "*PSCM - BRANCH CREATED*";
