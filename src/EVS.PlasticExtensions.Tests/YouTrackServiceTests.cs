@@ -27,7 +27,7 @@ namespace EVS.PlasticExtensions.Tests
         {
             var svc = new YouTrackService(getTestConfig());
             svc.Authenticate();
-            var user = AsyncHelpers.RunSync(() => svc.GetAuthenticatedUser());
+            var user = svc.GetAuthenticatedUser().Result;
             Assert.IsNotNull(user);
 
             var expectedValue = ConfigurationManager.AppSettings["test.authUserEmail"];
@@ -41,7 +41,7 @@ namespace EVS.PlasticExtensions.Tests
         {
             var svc = new YouTrackService(getTestConfig());
             var expectedIssueKey = ConfigurationManager.AppSettings["test.issueKey"];
-            var actualTask = AsyncHelpers.RunSync(() => svc.GetPlasticTask(expectedIssueKey));
+            var actualTask = svc.GetPlasticTask(expectedIssueKey).Result;
             Assert.IsNotNull(actualTask);
             Assert.AreEqual(expectedIssueKey, actualTask.Id);
             Assert.IsTrue(actualTask.CanBeLinked);
@@ -57,7 +57,7 @@ namespace EVS.PlasticExtensions.Tests
             Assert.IsNotNull(svc.GetAuthenticatedUser());
 
             var testIssueID = ConfigurationManager.AppSettings["test.issueKey"];
-            Assert.DoesNotThrow(() => AsyncHelpers.RunSync(() => svc.EnsureIssueInProgress(testIssueID)));
+            Assert.DoesNotThrow(() => svc.EnsureIssueInProgress(testIssueID).RunSynchronously());
         }
 
         [Test]
@@ -82,7 +82,7 @@ namespace EVS.PlasticExtensions.Tests
         {
             var config = getTestConfig();
             var svc = new YouTrackService(config);
-            var issues = AsyncHelpers.RunSync(() => svc.GetUnresolvedPlasticTasks()).ToList();
+            var issues = svc.GetUnresolvedPlasticTasks().Result.ToList();
             CollectionAssert.IsNotEmpty(issues);
             var assigneeName = ConfigurationManager.AppSettings["test.fieldValue"];
             Assert.IsTrue(issues.Any(pIssue =>
@@ -96,7 +96,7 @@ namespace EVS.PlasticExtensions.Tests
             var config = getTestConfig();
             var svc = new YouTrackService(config);
             var assigneeName = ConfigurationManager.AppSettings["test.fieldValue"];
-            var issues = AsyncHelpers.RunSync(() => svc.GetUnresolvedPlasticTasks(assigneeName)).ToList();
+            var issues = svc.GetUnresolvedPlasticTasks(assigneeName).Result.ToList();
             CollectionAssert.IsNotEmpty(issues);
             Assert.IsTrue(issues.All(pIssue =>
                 pIssue.Owner.Equals(assigneeName, StringComparison.InvariantCultureIgnoreCase)));
