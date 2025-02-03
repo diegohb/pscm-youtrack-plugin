@@ -5,6 +5,7 @@
 // *************************************************
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -24,6 +25,7 @@ namespace EVS.PlasticExtensions.YouTrackPlugin.Infrastructure
   {
     private static readonly ILog _log = LogManager.GetLogger("extensions");
     private readonly IYouTrackExtensionConfigFacade _config;
+    private readonly ConcurrentDictionary<string, (PlasticTask task, DateTime timestamp)> _taskCache;
     private readonly IPlasticYouTrackTranslationService _translationService;
     private readonly Connection _ytConnection;
     private readonly IIssuesService _ytIssues;
@@ -37,6 +39,7 @@ namespace EVS.PlasticExtensions.YouTrackPlugin.Infrastructure
       _ytIssues = _ytConnection.CreateIssuesService();
       _log.Debug("YouTrackService: ctor called");
       _translationService = new PlasticYouTrackTranslationService(_config);
+      _taskCache = new ConcurrentDictionary<string, (PlasticTask task, DateTime timestamp)>();
     }
 
     #endregion
@@ -45,6 +48,13 @@ namespace EVS.PlasticExtensions.YouTrackPlugin.Infrastructure
     {
       _log.DebugFormat("YouTrackService: GetPlasticTask {0}", pTaskID);
 
+      if (_taskCache.TryGetValue(pTaskID, out var cachedTask) &&
+          DateTime.UtcNow - cachedTask.timestamp < TimeSpan.FromSeconds(90))
+      {
+        _log.DebugFormat("YouTrackService: GetPlasticTask {0} - {1}", pTaskID, "fetched from cache");
+        return cachedTask.task;
+      }
+
       ensureAuthenticated();
 
       try
@@ -52,7 +62,13 @@ namespace EVS.PlasticExtensions.YouTrackPlugin.Infrastructure
         if (await _ytIssues.Exists(pTaskID))
         {
           var issue = await _ytIssues.GetIssue(pTaskID);
-          if (issue != null) return _translationService.GetPlasticTaskFromIssue(issue);
+          if (issue != null)
+          {
+            var plasticTaskFromIssue = _translationService.GetPlasticTaskFromIssue(issue);
+            _taskCache[pTaskID] = (plasticTaskFromIssue, DateTime.UtcNow);
+            evictOldestCacheItems();
+            return plasticTaskFromIssue;
+          }
         }
       }
       catch (Exception ex)
@@ -195,6 +211,14 @@ namespace EVS.PlasticExtensions.YouTrackPlugin.Infrastructure
         _log.Error($"Unable to assign issue '{pIssueID}' to '{pAssignee}'.", ex);
         throw new ApplicationException("Error occurred marking issue assigned.", ex);
       }
+    }
+
+    private void evictOldestCacheItems()
+    {
+      if (_taskCache.Count <= 300) return;
+
+      var keys = _taskCache.Keys.Take(100).ToArray();
+      foreach (var key in keys) _taskCache.TryRemove(key, out _);
     }
 
     public static async Task VerifyConnection(YouTrackExtensionConfigFacade pConfig)

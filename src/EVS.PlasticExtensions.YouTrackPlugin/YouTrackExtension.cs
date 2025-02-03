@@ -148,7 +148,7 @@ namespace EVS.PlasticExtensions.YouTrackPlugin
     {
       try
       {
-        var plasticTasks = _ytService.GetPlasticTasks(pTaskIds.ToArray()).GetAwaiter().GetResult().ToList();
+        var plasticTasks = _ytService.GetPlasticTasks(pTaskIds.ToArray()).Result.ToList();
         _log.DebugFormat("YouTrackExtension: Loaded {0} YouTrack plastic tasks.", plasticTasks.Count);
         return plasticTasks;
       }
@@ -163,7 +163,7 @@ namespace EVS.PlasticExtensions.YouTrackPlugin
     {
       try
       {
-        var plasticTasks = _ytService.GetUnresolvedPlasticTasks().GetAwaiter().GetResult().ToList();
+        var plasticTasks = _ytService.GetUnresolvedPlasticTasks().Result.ToList();
         _log.DebugFormat("YouTrackExtension: Loaded {0} YouTrack unresolved plastic tasks.", plasticTasks.Count);
         return plasticTasks;
       }
@@ -180,7 +180,7 @@ namespace EVS.PlasticExtensions.YouTrackPlugin
     {
       try
       {
-        var plasticTasks = _ytService.GetUnresolvedPlasticTasks(pAssignee).GetAwaiter().GetResult().ToList();
+        var plasticTasks = _ytService.GetUnresolvedPlasticTasks(pAssignee).Result.ToList();
         _log.DebugFormat("YouTrackExtension: Loaded {0} YouTrack unresolved plastic tasks.", plasticTasks.Count);
         return plasticTasks;
       }

@@ -29,7 +29,6 @@
     <Product>PlasticExtensions.YouTrackPlugin</Product>
     <AssemblyVersion>3.0.0.0</AssemblyVersion>
     <FileVersion>3.0.0.0</FileVersion>
-    <BaseOutputPath>C:\Program Files\PlasticSCM5\client\extensions\youtrack</BaseOutputPath>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="JetBrains.Annotations">
