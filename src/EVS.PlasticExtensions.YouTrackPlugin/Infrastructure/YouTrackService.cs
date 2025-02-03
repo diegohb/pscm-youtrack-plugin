@@ -271,21 +271,15 @@ namespace EVS.PlasticExtensions.YouTrackPlugin.Infrastructure
            !changeSetUriBuilder.Scheme.Equals("http", StringComparison.CurrentCultureIgnoreCase)))
         changeSetUriBuilder.Scheme = "http";
 
-      changeSetUriBuilder.Path += $"repos/{pRepository}/diff/changeset/{pChangeSetGuid}";
+      changeSetUriBuilder.Path += $"repositories/{pRepository}/changesets/{pChangeSetGuid}";
 
-      var hostName = pHost.StartsWith("localhost", StringComparison.CurrentCultureIgnoreCase) ||
-                     pHost.StartsWith("127.0.0.", StringComparison.CurrentCultureIgnoreCase)
-        ? Environment.MachineName + (pHost.Contains(":") ? pHost.Substring(pHost.IndexOf(":")) : "")
-        : pHost;
-
-      var tildes = "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~";
+      var tildes = "---";
 
       var commentBuilder = new StringBuilder();
       commentBuilder.Append($"{pComment}{nl}{nl}");
       commentBuilder.Append($"{tildes}{nl}");
       commentBuilder.Append($"[{mdComment}]({changeSetUriBuilder}){nl}");
       //commentBuilder.Append($"{{monospace}}");
-      commentBuilder.Append($"{pChangeSetGuid} @ {pBranch} @ {pRepository} @ {hostName}");
       //commentBuilder.Append($"{{monospace}}");
 
       return commentBuilder.ToString();
