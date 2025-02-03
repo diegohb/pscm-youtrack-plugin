@@ -1,224 +1,74 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{ADA50EA5-58D0-4D49-96F2-B12ACDAEB914}</ProjectGuid>
+    <TargetFramework>net48</TargetFramework>
     <OutputType>Library</OutputType>
-    <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>EVS.PlasticExtensions.Tests</RootNamespace>
-    <AssemblyName>EVS.PlasticExtensions.Tests</AssemblyName>
-    <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
-    <FileAlignment>512</FileAlignment>
     <SccProjectName>Plastic SCM</SccProjectName>
     <SccLocalPath>Plastic SCM</SccLocalPath>
     <SccAuxPath>Plastic SCM</SccAuxPath>
     <SccProvider>Plastic SCM Source Control Service:{774e58ba-f1b9-40a7-b676-834fa2c220fe}</SccProvider>
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
     <RestorePackages>true</RestorePackages>
-    <TargetFrameworkProfile />
-    <NuGetPackageImportStamp>
-    </NuGetPackageImportStamp>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <Prefer32Bit>false</Prefer32Bit>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <DebugType>pdbonly</DebugType>
-    <Optimize>true</Optimize>
-    <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <Prefer32Bit>false</Prefer32Bit>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <Configurations>Debug;Debug-Plastic;Release</Configurations>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="issuetrackerinterface">
       <HintPath>..\..\lib\pscm\issuetrackerinterface.dll</HintPath>
     </Reference>
-    <Reference Include="System" />
-    <Reference Include="System.ComponentModel.Composition" />
     <Reference Include="System.Configuration" />
-    <Reference Include="System.Core" />
-    <Reference Include="System.IO.Compression.FileSystem" />
-    <Reference Include="System.Numerics" />
-    <Reference Include="System.Xml.Linq" />
-    <Reference Include="System.Data.DataSetExtensions" />
-    <Reference Include="Microsoft.CSharp" />
-    <Reference Include="System.Data" />
-    <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ConnectionTests.cs" />
-    <Compile Include="PlasticYouTrackTranslationServiceTests.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="YouTrackServiceTests.cs" />
+    <ProjectReference Include="..\EVS.PlasticExtensions.YouTrackPlugin\EVS.PlasticExtensions.YouTrackPlugin.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="App.config">
-      <SubType>Designer</SubType>
-    </None>
+    <PackageReference Include="JetBrains.Annotations" />
+    <PackageReference Include="Microsoft.CSharp" />
+    <PackageReference Include="Microsoft.NETCore.Platforms" />
+    <PackageReference Include="Microsoft.Win32.Primitives" />
+    <PackageReference Include="Moq" />
+    <PackageReference Include="NETStandard.Library" VersionOverride="2.0.3" />
+    <PackageReference Include="Newtonsoft.Json" />
+    <PackageReference Include="NUnit" />
+    <PackageReference Include="System.AppContext" />
+    <PackageReference Include="System.Collections" />
+    <PackageReference Include="System.Collections.Concurrent" />
+    <PackageReference Include="System.ComponentModel.Composition" />
+    <PackageReference Include="System.Console" />
+    <PackageReference Include="System.Data.DataSetExtensions" />
+    <PackageReference Include="System.Diagnostics.Debug" />
+    <PackageReference Include="System.Diagnostics.DiagnosticSource" />
+    <PackageReference Include="System.Diagnostics.Tools" />
+    <PackageReference Include="System.Diagnostics.Tracing" />
+    <PackageReference Include="System.Globalization" />
+    <PackageReference Include="System.Globalization.Calendars" />
+    <PackageReference Include="System.IO.Compression" />
+    <PackageReference Include="System.IO.Compression.ZipFile" />
+    <PackageReference Include="System.IO.FileSystem" />
+    <PackageReference Include="System.Linq" />
+    <PackageReference Include="System.Linq.Expressions" />
+    <PackageReference Include="System.Net.Http" />
+    <PackageReference Include="System.Net.Primitives" />
+    <PackageReference Include="System.Net.Sockets" />
+    <PackageReference Include="System.ObjectModel" />
+    <PackageReference Include="System.Reflection" />
+    <PackageReference Include="System.Reflection.Extensions" />
+    <PackageReference Include="System.Reflection.Primitives" />
+    <PackageReference Include="System.Resources.ResourceManager" />
+    <PackageReference Include="System.Runtime.Extensions" />
+    <PackageReference Include="System.Runtime.Handles" />
+    <PackageReference Include="System.Runtime.InteropServices" />
+    <PackageReference Include="System.Runtime.InteropServices.RuntimeInformation" />
+    <PackageReference Include="System.Runtime.Numerics" />
+    <PackageReference Include="System.Security.Cryptography.Algorithms" />
+    <PackageReference Include="System.Security.Cryptography.X509Certificates" />
+    <PackageReference Include="System.Text.Encoding" />
+    <PackageReference Include="System.Text.Encoding.Extensions" />
+    <PackageReference Include="System.Text.RegularExpressions" />
+    <PackageReference Include="System.Threading" />
+    <PackageReference Include="System.Threading.Tasks" />
+    <PackageReference Include="System.Threading.Timer" />
+    <PackageReference Include="System.Xml.ReaderWriter" />
+    <PackageReference Include="System.Xml.XDocument" />
+    <PackageReference Include="YouTrackSharp" />
   </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\EVS.PlasticExtensions.YouTrackPlugin\EVS.PlasticExtensions.YouTrackPlugin.csproj">
-      <Project>{B9AD489C-9657-4B06-86CB-2D148F0DCB65}</Project>
-      <Name>MMG.PlasticExtensions.YouTrackPlugin</Name>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <PackageReference Include="JetBrains.Annotations">
-      <Version>2022.1.0</Version>
-    </PackageReference>
-    <PackageReference Include="Microsoft.NETCore.Platforms">
-      <Version>6.0.6</Version>
-    </PackageReference>
-    <PackageReference Include="Microsoft.Win32.Primitives">
-      <Version>4.3.0</Version>
-    </PackageReference>
-    <PackageReference Include="Moq">
-      <Version>4.18.2</Version>
-    </PackageReference>
-    <PackageReference Include="NETStandard.Library">
-      <Version>2.0.3</Version>
-    </PackageReference>
-    <PackageReference Include="Newtonsoft.Json" Version="12.*">
-      <Version>12.0.3</Version>
-    </PackageReference>
-    <PackageReference Include="NUnit">
-      <Version>3.13.3</Version>
-    </PackageReference>
-    <PackageReference Include="System.AppContext">
-      <Version>4.3.0</Version>
-    </PackageReference>
-    <PackageReference Include="System.Collections">
-      <Version>4.3.0</Version>
-    </PackageReference>
-    <PackageReference Include="System.Collections.Concurrent">
-      <Version>4.3.0</Version>
-    </PackageReference>
-    <PackageReference Include="System.Console">
-      <Version>4.3.1</Version>
-    </PackageReference>
-    <PackageReference Include="System.Diagnostics.Debug">
-      <Version>4.3.0</Version>
-    </PackageReference>
-    <PackageReference Include="System.Diagnostics.DiagnosticSource">
-      <Version>6.0.0</Version>
-    </PackageReference>
-    <PackageReference Include="System.Diagnostics.Tools">
-      <Version>4.3.0</Version>
-    </PackageReference>
-    <PackageReference Include="System.Diagnostics.Tracing">
-      <Version>4.3.0</Version>
-    </PackageReference>
-    <PackageReference Include="System.Globalization">
-      <Version>4.3.0</Version>
-    </PackageReference>
-    <PackageReference Include="System.Globalization.Calendars">
-      <Version>4.3.0</Version>
-    </PackageReference>
-    <PackageReference Include="System.IO.Compression">
-      <Version>4.3.0</Version>
-    </PackageReference>
-    <PackageReference Include="System.IO.Compression.ZipFile">
-      <Version>4.3.0</Version>
-    </PackageReference>
-    <PackageReference Include="System.IO.FileSystem">
-      <Version>4.3.0</Version>
-    </PackageReference>
-    <PackageReference Include="System.Linq">
-      <Version>4.3.0</Version>
-    </PackageReference>
-    <PackageReference Include="System.Linq.Expressions">
-      <Version>4.3.0</Version>
-    </PackageReference>
-    <PackageReference Include="System.Net.Http">
-      <Version>4.3.4</Version>
-    </PackageReference>
-    <PackageReference Include="System.Net.Primitives">
-      <Version>4.3.1</Version>
-    </PackageReference>
-    <PackageReference Include="System.Net.Sockets">
-      <Version>4.3.0</Version>
-    </PackageReference>
-    <PackageReference Include="System.ObjectModel">
-      <Version>4.3.0</Version>
-    </PackageReference>
-    <PackageReference Include="System.Reflection">
-      <Version>4.3.0</Version>
-    </PackageReference>
-    <PackageReference Include="System.Reflection.Extensions">
-      <Version>4.3.0</Version>
-    </PackageReference>
-    <PackageReference Include="System.Reflection.Primitives">
-      <Version>4.3.0</Version>
-    </PackageReference>
-    <PackageReference Include="System.Resources.ResourceManager">
-      <Version>4.3.0</Version>
-    </PackageReference>
-    <PackageReference Include="System.Runtime.Extensions">
-      <Version>4.3.1</Version>
-    </PackageReference>
-    <PackageReference Include="System.Runtime.Handles">
-      <Version>4.3.0</Version>
-    </PackageReference>
-    <PackageReference Include="System.Runtime.InteropServices">
-      <Version>4.3.0</Version>
-    </PackageReference>
-    <PackageReference Include="System.Runtime.InteropServices.RuntimeInformation">
-      <Version>4.3.0</Version>
-    </PackageReference>
-    <PackageReference Include="System.Runtime.Numerics">
-      <Version>4.3.0</Version>
-    </PackageReference>
-    <PackageReference Include="System.Security.Cryptography.Algorithms">
-      <Version>4.3.1</Version>
-    </PackageReference>
-    <PackageReference Include="System.Security.Cryptography.X509Certificates">
-      <Version>4.3.2</Version>
-    </PackageReference>
-    <PackageReference Include="System.Text.Encoding">
-      <Version>4.3.0</Version>
-    </PackageReference>
-    <PackageReference Include="System.Text.Encoding.Extensions">
-      <Version>4.3.0</Version>
-    </PackageReference>
-    <PackageReference Include="System.Text.RegularExpressions">
-      <Version>4.3.1</Version>
-    </PackageReference>
-    <PackageReference Include="System.Threading">
-      <Version>4.3.0</Version>
-    </PackageReference>
-    <PackageReference Include="System.Threading.Tasks">
-      <Version>4.3.0</Version>
-    </PackageReference>
-    <PackageReference Include="System.Threading.Timer">
-      <Version>4.3.0</Version>
-    </PackageReference>
-    <PackageReference Include="System.Xml.ReaderWriter">
-      <Version>4.3.1</Version>
-    </PackageReference>
-    <PackageReference Include="System.Xml.XDocument">
-      <Version>4.3.0</Version>
-    </PackageReference>
-    <PackageReference Include="YouTrackSharp">
-      <Version>2021.3.6</Version>
-    </PackageReference>
-  </ItemGroup>
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
-       Other similar extension points exist, see Microsoft.Common.targets.
-  <Target Name="BeforeBuild">
-  </Target>
-  <Target Name="AfterBuild">
-  </Target>
-  -->
 </Project>
