@@ -46,7 +46,6 @@
     </Reference>
     <Reference Include="utils">
       <HintPath>..\..\lib\pscm\utils.dll</HintPath>
-      <Private>True</Private>
     </Reference>
   </ItemGroup>
 </Project>
